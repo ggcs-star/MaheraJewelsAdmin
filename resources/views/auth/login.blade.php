@@ -336,6 +336,46 @@
                 
                 <form method="POST" action="/login">
                     @csrf
+                  
+@if(session('success'))
+    <div style="
+        background:#ecfdf5;
+        border:1px solid #a7f3d0;
+        color:#065f46;
+        padding:14px;
+        border-radius:8px;
+        margin-bottom:20px;
+        font-size:14px;
+    ">
+        {{ session('success') }}
+    </div>
+@endif
+
+@if(session('error'))
+    <div style="
+        background:#fef2f2;
+        border:1px solid #fee2e2;
+        color:#dc2626;
+        padding:14px;
+        border-radius:8px;
+        margin-bottom:20px;
+        font-size:14px;
+    ">
+        {{ session('error') }}
+    </div>
+@endif
+
+
+@if ($errors->any())
+    <div class="error-container">
+        <ul class="error-list">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
                     
                     <div class="form-group">
                         <input type="email" name="email" placeholder="Email address" required>

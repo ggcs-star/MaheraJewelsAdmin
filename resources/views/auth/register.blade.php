@@ -329,6 +329,20 @@
                 
                 <form method="POST" action="/register">
                     @csrf
+                    @if(session('success'))
+    <div style="
+        background:#ecfdf5;
+        border:1px solid #a7f3d0;
+        color:#065f46;
+        padding:14px;
+        border-radius:8px;
+        margin-bottom:20px;
+        font-size:14px;
+    ">
+        {{ session('success') }}
+    </div>
+@endif
+
                     @if ($errors->any())
     <div class="error-container">
         <ul class="error-list">

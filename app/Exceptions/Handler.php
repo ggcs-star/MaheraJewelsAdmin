@@ -4,6 +4,8 @@ namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
+
 
 class Handler extends ExceptionHandler
 {
@@ -18,13 +20,19 @@ class Handler extends ExceptionHandler
         'password_confirmation',
     ];
 
-    /**
-     * Register the exception handling callbacks for the application.
-     */
     public function register(): void
-    {
-        $this->reportable(function (Throwable $e) {
-            //
-        });
-    }
+{
+    $this->reportable(function (Throwable $e) {
+    });
+
+    $this->renderable(function (Throwable $e, $request) {
+        if ($e instanceof ThrottleRequestsException) {
+            return back()->with(
+                'error',
+                'Too many attempts. Please wait a few minutes and try again.'
+            );
+        }
+    });
+}
+
 }

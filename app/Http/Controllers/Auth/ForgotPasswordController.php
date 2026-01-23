@@ -26,15 +26,14 @@ class ForgotPasswordController extends Controller
 
         $user = User::where('email', $email)->first();
 
-        // 🔥 GENERATE OTP
         $otp = $otpService->generate($email, 'password_reset');
 
-        // 🔥 SEND OTP MAIL
         Mail::to($email)->send(new OtpMail($otp->code));
 
-        // 🔥 STORE EMAIL IN SESSION
         session()->put('reset_email', $email);
 
-        return redirect()->route('password.verify');
+        return redirect()->route('password.verify')
+    ->with('success', 'OTP has been sent to your registered email.');
+
     }
 }

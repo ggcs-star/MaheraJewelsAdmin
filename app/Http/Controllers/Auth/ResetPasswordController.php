@@ -16,34 +16,41 @@ class ResetPasswordController extends Controller
         return view('auth.reset-password');
     }
 
-    public function reset(Request $request, OtpService $otpService)
-    {
-        $request->validate([
-            'otp' => 'required|string',
-            'password' => 'required|confirmed|min:8'
-        ]);
+  public function reset(Request $request, OtpService $otpService)
+{
+    $request->validate([
+        'otp' => 'required|string',
+        'password' => 'required|confirmed|min:8'
+    ]);
 
-        $email = session('reset_email');
+    $email = session('reset_email');
 
-        abort_if(!$email, 403);
-
-        $otp = $otpService->verify(
-            $email,
-            trim($request->otp),
-            'password_reset'
-        );
-
-        abort_if(!$otp, 422, 'Invalid or expired OTP');
-
-        $user = User::where('email', $email)->firstOrFail();
-
-        $user->update([
-            'password' => Hash::make($request->password)
-        ]);
-
-        $otp->delete();
-        session()->forget('reset_email');
-
-        return redirect()->route('login')->with('success', 'Password reset successfully');
+    if (!$email) {
+        return redirect()->route('forgot.password')
+            ->with('error', 'Your password reset session has expired.');
     }
+
+    $otp = $otpService->verify(
+        $email,
+        trim($request->otp),
+        'password_reset'
+    );
+
+    if (!$otp) {
+        return back()->with('error', 'Invalid or expired OTP.');
+    }
+
+    $user = User::where('email', $email)->firstOrFail();
+
+    $user->update([
+        'password' => Hash::make($request->password)
+    ]);
+
+    $otp->delete();
+    session()->forget('reset_email');
+
+    return redirect()->route('login')
+        ->with('success', 'Password reset successfully. Please login.');
+}
+
 }

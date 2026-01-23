@@ -352,11 +352,28 @@
                 
                 <form method="POST" action="/reset-password">
                     @csrf
+                 
+@if(session('error'))
+    <div class="error-container">
+        <ul class="error-list">
+            <li>{{ session('error') }}</li>
+        </ul>
+    </div>
+@endif
+
+@if ($errors->any())
+    <div class="error-container">
+        <ul class="error-list">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
                     
-                    <div class="form-group">
-                        <label class="form-label">Email Address</label>
-                        <input type="email" name="email" placeholder="Enter your email address" required>
-                    </div>
+                    <input type="hidden" name="email" value="{{ session('reset_email') }}">
+
                     
                     <div class="form-group">
                         <label class="form-label">OTP Code</label>
