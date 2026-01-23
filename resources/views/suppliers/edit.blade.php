@@ -17,7 +17,7 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('admin.suppliers.update', $supplier->id) }}">
+    <form method="POST" action="{{ admin_route('suppliers.update', $supplier->id) }}">
         @csrf
         @method('PUT')
 
@@ -128,7 +128,7 @@
         </div>
 
         <button class="btn btn-primary">Update Supplier</button>
-        <a href="{{ route('admin.suppliers.index') }}" class="btn btn-secondary">Back</a>
+        <a href="{{ admin_route('suppliers.index') }}" class="btn btn-secondary">Back</a>
     </form>
 </div>
 </body>

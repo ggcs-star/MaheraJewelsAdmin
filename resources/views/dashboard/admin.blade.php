@@ -24,12 +24,17 @@
                     </div>
                     <div class="card-body">
                         <div class="list-group">
-                            <a href="{{ route('admin.suppliers.index') }}" class="list-group-item list-group-item-action">
+                            <a href="{{ admin_route('suppliers.index') }}" class="list-group-item list-group-item-action">
                                 <h6 class="mb-1">📦 Manage Suppliers</h6>
                                 <p class="mb-1 text-muted">View, add, edit, and delete suppliers</p>
                                 <small>Route: /admin/suppliers</small>
                             </a>
-                            <a href="{{ route('admin.dashboard') }}" class="list-group-item list-group-item-action">
+                            <a href="{{ admin_route('categories.index') }}" class="list-group-item list-group-item-action">
+                                <h6 class="mb-1">📁 Manage Categories</h6>
+                                <p class="mb-1 text-muted">View, add, edit, and delete categories</p>
+                                <small>Route: /admin/categories</small>
+                            </a>
+                            <a href="{{ admin_route('dashboard') }}" class="list-group-item list-group-item-action">
                                 <h6 class="mb-1">🏠 Dashboard</h6>
                                 <p class="mb-1 text-muted">Return to admin dashboard</p>
                             </a>
@@ -74,6 +79,21 @@
                                     <td><code>admin.suppliers.edit</code></td>
                                     <td><code>/admin/suppliers/{id}/edit</code></td>
                                     <td>Edit supplier</td>
+                                </tr>
+                                <tr>
+                                    <td><code>admin.categories.index</code></td>
+                                    <td><code>/admin/categories</code></td>
+                                    <td>List all categories</td>
+                                </tr>
+                                <tr>
+                                    <td><code>admin.categories.create</code></td>
+                                    <td><code>/admin/categories/create</code></td>
+                                    <td>Add new category</td>
+                                </tr>
+                                <tr>
+                                    <td><code>admin.categories.edit</code></td>
+                                    <td><code>/admin/categories/{id}/edit</code></td>
+                                    <td>Edit category</td>
                                 </tr>
                             </tbody>
                         </table>

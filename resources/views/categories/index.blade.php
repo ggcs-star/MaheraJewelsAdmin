@@ -6,7 +6,7 @@
 <body><div class="container">
     <div class="d-flex justify-content-between mb-3">
         <h2>Categories</h2>
-        <a href="{{ route('categories.create') }}" class="btn btn-primary">+ Add Category</a>
+        <a href="{{ admin_route('categories.create') }}" class="btn btn-primary">+ Add Category</a>
     </div>
 
     @if(session('success'))
@@ -93,8 +93,8 @@
                                 </span>
                             </td>
                             <td>
-                                <a href="{{ route('categories.edit', $category) }}" class="btn btn-sm btn-primary">Edit</a>
-                                <form action="{{ route('categories.destroy', $category) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure?');">
+                                <a href="{{ admin_route('categories.edit', $category) }}" class="btn btn-sm btn-primary">Edit</a>
+                                <form action="{{ admin_route('categories.destroy', $category) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure?');">
                                     @csrf
                                     @method('DELETE')
                                     <button class="btn btn-sm btn-danger">Delete</button>

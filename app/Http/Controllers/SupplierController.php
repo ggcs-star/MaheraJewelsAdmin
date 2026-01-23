@@ -41,7 +41,7 @@ class SupplierController extends Controller
         Supplier::create($data);
 
         return redirect()
-            ->route('admin.suppliers.index')
+            ->to(admin_route('suppliers.index'))
             ->with('success', 'Supplier created successfully.');
     }
 
@@ -59,7 +59,7 @@ class SupplierController extends Controller
         $supplier->update($data);
 
         return redirect()
-            ->route('admin.suppliers.index')
+            ->to(admin_route('suppliers.index'))
             ->with('success', 'Supplier updated successfully.');
     }
 
