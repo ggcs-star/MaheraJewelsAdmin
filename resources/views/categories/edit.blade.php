@@ -17,7 +17,7 @@
             </div>
         @endif
 
-        <form action="{{ route('categories.update', $category->id) }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ admin_route('categories.update', $category->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
@@ -141,7 +141,7 @@
     </div>
 
     <div class="text-end">
-        <a href="{{ route('categories.index') }}" class="btn btn-secondary">
+        <a href="{{ admin_route('categories.index') }}" class="btn btn-secondary">
             Back
         </a>
         <button type="submit" class="btn btn-primary">

@@ -15,7 +15,7 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('suppliers.store') }}">
+    <form method="POST" action="{{ admin_route('suppliers.store') }}">
         @csrf
 
         <div class="row">
@@ -124,7 +124,7 @@
         </div>
 
         <button class="btn btn-success">Save Supplier</button>
-        <a href="{{ route('suppliers.index') }}" class="btn btn-secondary">Back</a>
+        <a href="{{ admin_route('suppliers.index') }}" class="btn btn-secondary">Back</a>
     </form>
 </div>
 

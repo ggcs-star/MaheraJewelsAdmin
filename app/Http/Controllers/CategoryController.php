@@ -53,7 +53,7 @@ class CategoryController extends Controller
         Category::create($data);
 
         return redirect()
-            ->route('categories.index')
+            ->to(admin_route('categories.index'))
             ->with('success', 'Category created successfully.');
     }
 
@@ -79,7 +79,7 @@ class CategoryController extends Controller
         $category->update($data);
 
         return redirect()
-            ->route('categories.index')
+            ->to(admin_route('categories.index'))
             ->with('success', 'Category updated successfully.');
     }
 
@@ -95,7 +95,7 @@ class CategoryController extends Controller
         $category->delete();
 
         return redirect()
-            ->route('categories.index')
+            ->to(admin_route('categories.index'))
             ->with('success', 'Category deleted successfully.');
     }
 
