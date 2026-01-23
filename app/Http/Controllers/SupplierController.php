@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+
 class SupplierController extends Controller
 {
    
@@ -23,32 +24,79 @@ class SupplierController extends Controller
             });
         }) ->latest()->paginate(10);
 
-    return view('suppliers.index', compact('suppliers'));
-}
+        return view('suppliers.index', compact('suppliers'));
+    }
 
- public function create()
+
+    public function create()
     {
         return view('suppliers.create');
     }
 
-    
+
     public function store(Request $request)
     {
-        $request->validate([
-            'type' => 'required|in:manufacturer,distributor',
-            'name' => 'required|string|max:255',
-            'company_name' => 'nullable|string|max:255',
-            'email' => 'nullable|email|unique:suppliers,email',
-            'phone' => 'nullable|string|max:20',
-            'commission_type' => 'required|in:percentage,fixed',
-            'commission_value' => 'required|numeric|min:0',
-            'status' => 'required|in:active,inactive',
-        ]);
+        $data = $this->validatedData($request);
 
-        Supplier::create($request->all());
+        Supplier::create($data);
 
         return redirect()
             ->route('suppliers.index')
-            ->with('success', 'Supplier created successfully');
+            ->with('success', 'Supplier created successfully.');
+    }
+
+
+    public function edit(Supplier $supplier)
+    {
+        return view('suppliers.edit', compact('supplier'));
+    }
+
+
+    public function update(Request $request, Supplier $supplier)
+    {
+        $data = $this->validatedData($request, $supplier->id);
+
+        $supplier->update($data);
+
+        return redirect()
+            ->route('suppliers.index')
+            ->with('success', 'Supplier updated successfully.');
+    }
+
+
+    public function destroy(Supplier $supplier)
+    {
+        $supplier->delete();
+
+        return back()->with('success', 'Supplier deleted successfully.');
+    }
+
+
+    private function validatedData(Request $request, $supplierId = null): array
+    {
+        return $request->validate([
+            'type' => 'required|in:manufacturer,distributor',
+            'name' => 'required|string|max:255',
+            'company_name' => 'nullable|string|max:255',
+
+            'email' => 'nullable|email|max:255|unique:suppliers,email,' . $supplierId,
+
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string',
+            'city' => 'nullable|string|max:100',
+            'state' => 'nullable|string|max:100',
+            'country' => 'nullable|string|max:100',
+            'pincode' => 'nullable|string|max:10',
+
+            'gst_number' => 'nullable|string|max:20',
+            'pan_number' => 'nullable|string|max:20',
+
+            'commission_type' => 'required|in:percentage,fixed',
+            'commission_value' => 'required|numeric|min:0',
+
+            'payment_terms' => 'nullable|string|max:50',
+            'status' => 'required|in:active,inactive',
+            'notes' => 'nullable|string',
+        ]);
     }
 }
