@@ -70,11 +70,11 @@
                                 </span>
                             </td>
                             <td>
-                                <a href="{{ route('suppliers.edit', $supplier) }}" class="btn btn-sm btn-primary">
+                                <a href="{{ route('admin.suppliers.edit', $supplier) }}" class="btn btn-sm btn-primary">
                                     Edit
                                 </a>
 
-                                <form action="{{ route('suppliers.destroy', $supplier) }}" method="POST"
+                                <form action="{{ route('admin.suppliers.destroy', $supplier) }}" method="POST"
                                     style="display:inline-block;"
                                     onsubmit="return confirm('Are you sure you want to delete this supplier?');">
 
