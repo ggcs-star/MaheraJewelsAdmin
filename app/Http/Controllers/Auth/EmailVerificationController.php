@@ -13,7 +13,7 @@ class EmailVerificationController extends Controller
     {
         $email = session('verify_email');
 
-        // 🔥 SAFE GUARD (no hard abort)
+       
         if (!$email) {
             return redirect()->route('register');
         }
@@ -32,8 +32,10 @@ class EmailVerificationController extends Controller
         $email = session('verify_email');
 
         if (!$email) {
-            return redirect()->route('register');
-        }
+    return redirect()->route('register')
+        ->with('error', 'Your verification session has expired. Please register again.');
+}
+
 
         $otp = $otpService->verify(
             $email,
@@ -58,6 +60,8 @@ class EmailVerificationController extends Controller
 
         session()->forget('verify_email');
 
-        return redirect()->route('dashboard');
+        return redirect()->route('dashboard')
+    ->with('success', 'Email verified successfully.');
+
     }
 }
