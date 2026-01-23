@@ -379,6 +379,31 @@
                 
                 <form method="POST" action="/verify-email">
                     @csrf
+                    
+@if(session('success'))
+    <div class="success-message">
+        {{ session('success') }}
+    </div>
+@endif
+
+@if(session('error'))
+    <div class="error-container">
+        <ul class="error-list">
+            <li>{{ session('error') }}</li>
+        </ul>
+    </div>
+@endif
+
+@if ($errors->any())
+    <div class="error-container">
+        <ul class="error-list">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
                 
                     <input type="hidden" name="email" value="{{ $email }}">
                     <div class="form-group">
