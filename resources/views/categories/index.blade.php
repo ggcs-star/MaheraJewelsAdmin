@@ -1,9 +1,7 @@
-<html>
+@extends('layouts.admin')
 
-<head>
-</head>
-
-<body><div class="container">
+@section('content')
+<div class="container">
     <div class="d-flex justify-content-between mb-3">
         <h2>Categories</h2>
         <a href="{{ admin_route('categories.create') }}" class="btn btn-primary">+ Add Category</a>
@@ -115,6 +113,4 @@
         {{ $categories->appends(request()->query())->links() }}
     </div>
 </div>
-    </body>
-
-</html>
+@endsection

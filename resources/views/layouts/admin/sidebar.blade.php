@@ -30,7 +30,7 @@
             <span>Dashboard</span>
         </a>
 
-        <a href="{{ route('suppliers.index') }}"
+        <a href="{{ admin_route('suppliers.index') }}"
            class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
            {{ request()->routeIs('suppliers.*') ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20 font-medium' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100' }}">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -39,7 +39,7 @@
             <span>Suppliers</span>
         </a>
 
-        <a href="#"
+        <a href="{{ admin_route('categories.index') }}"
            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-slate-100">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />

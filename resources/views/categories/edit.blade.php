@@ -1,9 +1,6 @@
-<html>
+@extends('layouts.admin')
 
-<head>
-</head>
-
-<body>
+@section('content')
     <div class="container">
         <h2 class="mb-4">Edit Category</h2>
 
@@ -151,6 +148,4 @@
 
     </form>
     </div>
-</body>
-
-</html>
+@endsection
