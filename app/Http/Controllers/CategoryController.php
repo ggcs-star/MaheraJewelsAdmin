@@ -151,4 +151,11 @@ class CategoryController extends Controller
             ->orderBy('name')
             ->get();
     }
+    public function details(Category $category)
+{
+    $category->load('parent', 'children');
+
+    return view('categories.details', compact('category'));
+}
+
 }

@@ -14,13 +14,30 @@
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
-    <form method="GET" class="card mb-4">
+    <form method="GET" class="card mb-4" id="filterForm">
         <div class="card-body row g-2">
 
             <div class="col-md-3">
-                <input type="text" name="search" class="form-control" placeholder="Search name or slug" value="{{ request('search') }}">
-            </div>
+                <div class="position-relative">
+                    <input
+                        type="text"
+                        name="search"
+                        id="categorySearch"
+                        class="form-control pe-5"
+                        placeholder="Search name or slug"
+                        value="{{ request('search') }}"
+                        autocomplete="off"
+                    >
 
+                    <span
+                        id="clearSearch"
+                        class="position-absolute top-50 end-0 translate-middle-y me-3 text-muted"
+                        style="cursor:pointer; display:none;"
+                    >
+                        ✕
+                    </span>
+                </div>
+            </div>
             <div class="col-md-2">
                 <select name="status" class="form-control">
                     <option value="">All Status</option>
@@ -57,8 +74,8 @@
 
     <div class="card">
         <div class="card-body table-responsive">
-            <table class="table table-bordered table-hover align-middle">
-                <thead class="table-light">
+            <table class="table table-hover align-middle">
+                <thead class="bg-white border-bottom">
                     <tr>
                         <th>#</th>
                         <th>Name</th>
@@ -71,8 +88,12 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($categories as $category)
-                        <tr>
+                  @forelse($categories as $category)
+    <tr
+        style="cursor:pointer"
+        onclick="window.location='{{ route('admin.categories.details', $category->id) }}'"
+    >
+
                             <td>{{ $category->id }}</td>
                             <td>
                                 @if($category->parent)
@@ -81,16 +102,17 @@
                                     <strong>{{ $category->name }}</strong>
                                 @endif
                             </td>
-                            <td>{{ $category->slug }}</td>
-                            <td>{{ $category->parent?->name ?? '-' }}</td>
-                            <td>{{ $category->children->count() }}</td>
-                            <td><span class="badge bg-info">{{ ucfirst($category->visibility) }}</span></td>
+                            <td class="text-muted">{{ $category->slug }}</td>
+                            <td class="text-muted">{{ $category->parent?->name ?? '—' }}</td>
+                            <td><span class="fw-semibold">{{ $category->children->count() }}</span></td>
+
+                            <td><span class="badge rounded-pill bg-primary-subtle text-primary px-3">{{ ucfirst($category->visibility) }}</span></td>
                             <td>
                                 <span class="badge {{ $category->status == 'active' ? 'bg-success' : 'bg-secondary' }}">
                                     {{ ucfirst($category->status) }}
                                 </span>
                             </td>
-                            <td>
+                            <td onclick="event.stopPropagation()">
                                 <a href="{{ admin_route('categories.edit', $category) }}" class="btn btn-sm btn-primary">Edit</a>
                                 <form action="{{ admin_route('categories.destroy', $category) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure?');">
                                     @csrf
@@ -113,4 +135,33 @@
         {{ $categories->appends(request()->query())->links() }}
     </div>
 </div>
+<script>
+    const searchInput = document.getElementById('categorySearch');
+    const clearBtn = document.getElementById('clearSearch');
+    const form = document.getElementById('filterForm');
+
+    let debounceTimer;
+
+    function toggleClearIcon() {
+        clearBtn.style.display = searchInput.value ? 'block' : 'none';
+    }
+
+    searchInput.addEventListener('input', function () {
+        toggleClearIcon();
+
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            form.submit();
+        }, 400);
+    });
+
+    clearBtn.addEventListener('click', function () {
+        searchInput.value = '';
+        toggleClearIcon();
+        form.submit();
+    });
+
+    toggleClearIcon();
+</script>
+
 @endsection
