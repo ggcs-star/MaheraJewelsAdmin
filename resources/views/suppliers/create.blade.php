@@ -1,7 +1,6 @@
-<html>
-<head>
-</head>
-<body>
+@extends('layouts.admin')
+
+@section('content')
 <div class="container">
     <h2 class="mb-4">Add Supplier</h2>
 
@@ -128,5 +127,4 @@
     </form>
 </div>
 
-</body>
-</html>
+@endsection

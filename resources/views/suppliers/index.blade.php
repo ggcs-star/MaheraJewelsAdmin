@@ -1,9 +1,6 @@
-<html>
+@extends('layouts.admin')
 
-<head>
-</head>
-
-<body>
+@section('content')
     <div class="container">
 
         <h2 class="mb-3">Suppliers List</h2>
@@ -100,6 +97,4 @@
         {{ $suppliers->withQueryString()->links() }}
 
     </div>
-</body>
-
-</html>
+@endsection

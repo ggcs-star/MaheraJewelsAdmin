@@ -1,9 +1,6 @@
-<html>
+@extends('layouts.admin')
 
-<head>
-</head>
-
-<body>
+@section('content')
 <div class="container">
     <h2 class="mb-4">Edit Supplier</h2>
 
@@ -131,6 +128,4 @@
         <a href="{{ admin_route('suppliers.index') }}" class="btn btn-secondary">Back</a>
     </form>
 </div>
-</body>
-
-</html>
+@endsection
