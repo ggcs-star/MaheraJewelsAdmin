@@ -1,3 +1,7 @@
+@php
+    /** @var \App\Models\Product|null $product */
+@endphp
+
 <div class="card mb-4 shadow-sm">
     <div class="card-header bg-white fw-semibold d-flex align-items-center gap-2">
         <span class="text-primary fs-5">🚚</span>
@@ -12,10 +16,12 @@
                 <label class="form-label fw-semibold">
                     Select Supplier
                 </label>
+
                 <select id="supplierSelect"
                         name="supplier_id"
                         class="form-select">
                     <option value="">Select supplier</option>
+
                     @foreach ($suppliers as $sup)
                         <option value="{{ $sup->id }}"
                             data-name="{{ $sup->name }}"
@@ -23,7 +29,8 @@
                             data-phone="{{ $sup->phone }}"
                             data-email="{{ $sup->email }}"
                             data-type="{{ ucfirst($sup->type) }}"
-                            data-commission="{{ $sup->commission_type }} ({{ $sup->commission_value }})">
+                            data-commission="{{ $sup->commission_type }} ({{ $sup->commission_value }})"
+                            {{ old('supplier_id', $product->supplier_id ?? '') == $sup->id ? 'selected' : '' }}>
                             {{ $sup->name }}
                             @if($sup->company_name)
                                 ({{ $sup->company_name }})
@@ -31,13 +38,16 @@
                         </option>
                     @endforeach
                 </select>
+
                 <div class="form-text">
                     Optional – used for purchase & commission calculation.
                 </div>
             </div>
 
             <!-- Supplier Details -->
-            <div class="col-md-12 d-none" id="supplierBox">
+            <div class="col-md-12 {{ old('supplier_id', $product->supplier_id ?? false) ? '' : 'd-none' }}"
+                 id="supplierBox">
+
                 <div class="border rounded bg-light p-3">
                     <div class="fw-semibold mb-2 text-primary">
                         Supplier Details

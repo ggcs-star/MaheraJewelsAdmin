@@ -7,16 +7,14 @@ use App\Models\Category;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 class ProductController extends Controller
 {
-    /**
-     * Display products list with search & filters
-     */
+
     public function index(Request $request)
     {
         $products = Product::with(['category', 'supplier'])
 
-            // 🔍 Search (name, sku, slug)
             ->when($request->filled('search'), function ($q) use ($request) {
                 $search = $request->search;
                 $q->where(function ($sub) use ($search) {
@@ -26,28 +24,24 @@ class ProductController extends Controller
                 });
             })
 
-            // 📂 Category filter
             ->when(
                 $request->filled('category_id'),
                 fn($q) =>
                 $q->where('category_id', $request->category_id)
             )
 
-            // 🧑 Supplier filter
             ->when(
                 $request->filled('supplier_id'),
                 fn($q) =>
                 $q->where('supplier_id', $request->supplier_id)
             )
 
-            // 👁 Visibility filter
             ->when(
                 $request->filled('visibility'),
                 fn($q) =>
                 $q->where('visibility', $request->visibility)
             )
 
-            // ⚡ Status filter
             ->when(
                 $request->filled('status'),
                 fn($q) =>
@@ -185,7 +179,7 @@ class ProductController extends Controller
                 'variant_value' => $variant['variant_value'],
                 'quantity' => $variant['quantity'] ?? 0,
                 'purchase_price' => $purchase,
-                'total_price'    => ($variant['quantity'] ?? 0) * ($variant['purchase_price'] ?? 0),
+                'total_price' => ($variant['quantity'] ?? 0) * ($variant['purchase_price'] ?? 0),
                 'selling_price' => $selling,
                 'sku_suffix' => $variant['sku_suffix'] ?? null,
                 'sort_order' => $variant['sort_order'] ?? 0,
@@ -215,8 +209,140 @@ class ProductController extends Controller
             'base_selling_price' => $totals['totalSelling'],
         ]);
     }
+    public function edit(Product $product)
+    {
+        $product->load('variants');
+
+        $categories = Category::select('id', 'name', 'parent_id')
+            ->orderBy('name')
+            ->get();
+        // dd($categories);
+        $suppliers = Supplier::active()
+            ->orderBy('name')
+            ->get();
+
+        return view('products.edit', compact(
+            'product',
+            'categories',
+            'suppliers'
+        ));
+    }
+
+    public function update(Request $request, Product $product)
+    {
+        DB::transaction(function () use ($request, $product) {
+
+            $productData = $this->validateProductForUpdate($request, $product);
+            $productData = $this->handleProductImagesForUpdate($request, $product, $productData);
+
+            $product->update($productData);
+
+            $product->variants()->delete();
+
+            $totals = $this->handleVariants($request, $product);
+
+            $this->updateProductPrices($product, $totals);
+        });
+
+        return redirect()
+            ->to(admin_route('products.index'))
+            ->with('success', 'Product & variants updated successfully.');
+    }
+    private function validateProductForUpdate(Request $request, Product $product): array
+    {
+        $data = $request->validate([
+            'sku' => 'required|string|max:100|unique:products,sku,' . $product->id,
+            'name' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:products,slug,' . $product->id,
+
+            'short_description' => 'nullable|string|max:500',
+            'description' => 'nullable|string',
+
+            'category_id' => 'required|exists:categories,id',
+            'supplier_id' => 'nullable|exists:suppliers,id',
+            'brand' => 'nullable|string|max:100',
+
+            'image_url' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'gallery_images' => 'nullable|array',
+            'gallery_images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string',
+            'meta_keywords' => 'nullable|string',
+
+            'sort_order' => 'nullable|integer|min:0',
+            'is_featured' => 'nullable|boolean',
+            'is_top_selling' => 'nullable|boolean',
+
+            'visibility' => 'required|in:public,private',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        $data['is_featured'] = $request->boolean('is_featured');
+        $data['is_top_selling'] = $request->boolean('is_top_selling');
+
+        return $data;
+    }
+
+    private function handleProductImagesForUpdate(
+        Request $request,
+        Product $product,
+        array $data
+    ): array {
+
+        if ($request->hasFile('image_url')) {
+            $data['image_url'] =
+                $request->file('image_url')->store('products', 'public');
+        }
+
+        if ($request->hasFile('gallery_images')) {
+            $gallery = [];
+
+            foreach ($request->file('gallery_images') as $img) {
+                $gallery[] = $img->store('products/gallery', 'public');
+            }
+
+            $data['gallery_images'] = $gallery;
+        }
+
+        return $data;
+    }
 
 
 
+
+    public function destroy(Product $product)
+    {
+        DB::transaction(function () use ($product) {
+
+            foreach ($product->variants as $variant) {
+
+                if ($variant->image_url && Storage::disk('public')->exists($variant->image_url)) {
+                    Storage::disk('public')->delete($variant->image_url);
+                }
+            }
+
+
+            if ($product->image_url && Storage::disk('public')->exists($product->image_url)) {
+                Storage::disk('public')->delete($product->image_url);
+            }
+
+            if (is_array($product->gallery_images)) {
+                foreach ($product->gallery_images as $img) {
+                    if (Storage::disk('public')->exists($img)) {
+                        Storage::disk('public')->delete($img);
+                    }
+                }
+            }
+
+            $product->variants()->delete();
+
+            $product->delete();
+        });
+
+        return redirect()
+            ->to(admin_route('products.index'))
+            ->with('success', 'Product deleted successfully.');
+    }
 
 }

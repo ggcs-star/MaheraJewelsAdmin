@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container">
-    <h2 class="mb-4">Create Product</h2>
+    <h2 class="mb-4">Create Inventory</h2>
 
     @include('products.partials._errors')
 
