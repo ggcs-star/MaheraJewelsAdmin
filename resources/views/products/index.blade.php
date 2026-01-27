@@ -5,8 +5,10 @@
 
     <div class="d-flex justify-content-between mb-3">
         <h2>Inventory</h2>
+        <h2>Inventory</h2>
         <a href="{{ admin_route('products.create') }}" class="btn btn-primary">
             + Add Inventory
+            + Add Inventory 
         </a>
     </div>
 

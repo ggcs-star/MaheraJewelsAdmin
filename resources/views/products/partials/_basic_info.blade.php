@@ -1,3 +1,7 @@
+@php
+    /** @var \App\Models\Product|null $product */
+@endphp
+
 <div class="card mb-4 shadow-sm">
     <div class="card-header bg-white fw-semibold d-flex align-items-center gap-2">
         <span class="text-primary fs-5">📝</span>
@@ -16,7 +20,7 @@
                        name="name"
                        class="form-control"
                        placeholder="Enter product name"
-                       value="{{ old('name') }}"
+                       value="{{ old('name', $product->name ?? '') }}"
                        required>
                 <div class="form-text">
                     This name will be visible to customers.
@@ -32,7 +36,7 @@
                        name="sku"
                        class="form-control"
                        placeholder="Unique product code"
-                       value="{{ old('sku') }}"
+                       value="{{ old('sku', $product->sku ?? '') }}"
                        required>
                 <div class="form-text">
                     Must be unique for inventory tracking.
@@ -48,7 +52,7 @@
                        name="slug"
                        class="form-control"
                        placeholder="product-name-slug"
-                       value="{{ old('slug') }}"
+                       value="{{ old('slug', $product->slug ?? '') }}"
                        required>
                 <div class="form-text">
                     Used in product URL.
@@ -63,7 +67,7 @@
                 <textarea name="short_description"
                           class="form-control"
                           rows="2"
-                          placeholder="One-line summary of the product">{{ old('short_description') }}</textarea>
+                          placeholder="One-line summary of the product">{{ old('short_description', $product->short_description ?? '') }}</textarea>
                 <div class="form-text">
                     Displayed in product listings.
                 </div>
@@ -77,7 +81,7 @@
                 <textarea name="description"
                           class="form-control"
                           rows="4"
-                          placeholder="Detailed product description">{{ old('description') }}</textarea>
+                          placeholder="Detailed product description">{{ old('description', $product->description ?? '') }}</textarea>
                 <div class="form-text">
                     Shown on the product detail page.
                 </div>
