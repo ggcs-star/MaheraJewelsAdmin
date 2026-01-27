@@ -82,6 +82,14 @@ Route::post('/categories/bulk-delete', [CategoryController::class, 'bulkDelete']
         Route::get('/products', [ProductController::class, 'index'])->name('products.index');
         Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
         Route::post('/products', [ProductController::class, 'store'])->name('products.store');
+        
+        // Products Listing & Push (must be before /products/{product} route)
+        Route::get('/products/list', [ProductController::class, 'list'])->name('products.list');
+        Route::get('/products/push', [ProductController::class, 'push'])->name('products.push');
+        Route::post('/products/push', [ProductController::class, 'pushStore'])->name('products.push.store');
+        
+        // Product detail routes (must be after specific routes)
+        Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
         Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
         Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
         Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');

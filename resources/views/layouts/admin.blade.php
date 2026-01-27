@@ -32,6 +32,7 @@
            
             <main class="p-4 md:p-8 mt-[64px] flex-grow">
                 @yield('content')
+                @yield('scripts')
             </main>
             
             <footer class="p-4 text-center text-sm text-gray-500 border-t bg-white">
@@ -39,5 +40,6 @@
             </footer>
         </div>
     </div>
+    
 </body>
 </html>
