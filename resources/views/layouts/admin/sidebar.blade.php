@@ -114,12 +114,4 @@
         </a>
 
     </nav>
-
-    <div class="absolute bottom-8 left-4 right-4 p-4 rounded-2xl bg-indigo-600/10 border border-indigo-500/20">
-        <p class="text-xs text-indigo-300 font-semibold mb-2 uppercase">Storage Usage</p>
-        <div class="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
-            <div class="h-full bg-indigo-500 w-[75%] rounded-full"></div>
-        </div>
-        <p class="text-[10px] text-slate-400 mt-2 uppercase tracking-wide">750 / 1000 Items (75%)</p>
-    </div>
 </aside>

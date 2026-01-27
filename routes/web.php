@@ -66,7 +66,8 @@ Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:admin']
         Route::put('/suppliers/{supplier}', [SupplierController::class, 'update'])->name('suppliers.update');
         Route::delete('/suppliers/{supplier}', [SupplierController::class, 'destroy'])->name('suppliers.destroy');
         Route::get('/suppliers/{supplier}/details', [SupplierController::class, 'details'])->name('suppliers.details');
-
+Route::post('/suppliers/bulk-delete', [SupplierController::class, 'bulkDelete'])
+    ->name('suppliers.bulk-delete');
         Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
         Route::get('/categories/create', [CategoryController::class, 'create'])->name('categories.create');
         Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
@@ -74,6 +75,9 @@ Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:admin']
         Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
         Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
         Route::get('/categories/{category}/details', [CategoryController::class, 'details'])->name('categories.details');
+Route::post('/categories/bulk-delete', [CategoryController::class, 'bulkDelete'])
+    ->name('categories.bulk-delete');
+
 
         Route::get('/products', [ProductController::class, 'index'])->name('products.index');
         Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');

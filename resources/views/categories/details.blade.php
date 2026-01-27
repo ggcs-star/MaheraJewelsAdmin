@@ -1,9 +1,7 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="container-fluid">
-
-    {{-- HEADER --}}
+<div class="container-fluid category-page">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <nav aria-label="breadcrumb" class="mb-2">
@@ -26,8 +24,6 @@
             </a>
         </div>
     </div>
-
-    {{-- QUICK STATS CARDS WITH ICONS --}}
     <div class="row g-3 mb-4">
         <div class="col-md-3">
             <div class="card border-0 shadow-sm h-100 hover-card">
@@ -93,8 +89,6 @@
     </div>
 
     <div class="row g-4">
-
-        {{-- LEFT PROFILE CARD --}}
         <div class="col-xl-4 col-lg-4">
             <div class="card shadow-lg border-0 h-100">
                 <div class="card-header bg-white border-0 pt-4">
@@ -140,8 +134,6 @@
                             {{ ucfirst($category->status) }}
                         </span>
                     </div>
-
-                    {{-- QUICK INFO --}}
                     <div class="border-top pt-4 mt-3">
                         <div class="d-flex align-items-center mb-3">
                             <div class="bg-light rounded-circle p-2 me-3">
@@ -167,12 +159,8 @@
                 </div>
             </div>
         </div>
-
-        {{-- RIGHT DETAILS --}}
         <div class="col-xl-8 col-lg-8">
             <div class="row g-4">
-
-                {{-- BASIC INFORMATION CARD --}}
                 <div class="col-12">
                     <div class="card shadow-sm border-0">
                         <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between py-3">
@@ -222,7 +210,6 @@
                     </div>
                 </div>
 
-                {{-- DESCRIPTION CARD --}}
                 <div class="col-12">
                     <div class="card shadow-sm border-0">
                         <div class="card-header bg-white border-0 d-flex align-items-center py-3">
@@ -249,7 +236,6 @@
                     </div>
                 </div>
 
-                {{-- SEO INFORMATION CARD --}}
                 <div class="col-md-6">
                     <div class="card shadow-sm border-0 h-100">
                         <div class="card-header bg-white border-0 d-flex align-items-center py-3">
@@ -291,8 +277,6 @@
                         </div>
                     </div>
                 </div>
-
-                {{-- HIERARCHY & SETTINGS CARD --}}
                 <div class="col-md-6">
                     <div class="card shadow-sm border-0 h-100">
                         <div class="card-header bg-white border-0 d-flex align-items-center py-3">
@@ -362,8 +346,6 @@
                         </div>
                     </div>
                 </div>
-
-                {{-- META KEYWORDS CARD --}}
                 @if($category->meta_keywords)
                 <div class="col-12">
                     <div class="card shadow-sm border-0">
@@ -395,27 +377,4 @@
 
 </div>
 
-<style>
-.hover-card {
-    transition: all 0.3s ease;
-    border: 1px solid transparent;
-}
-.hover-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
-    border-color: #e0e0e0;
-}
-.bg-gradient-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-.border-start {
-    border-left-width: 4px !important;
-}
-.small {
-    font-size: 0.85rem;
-}
-.object-fit-cover {
-    object-fit: cover;
-}
-</style>
 @endsection
