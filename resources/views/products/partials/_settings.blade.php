@@ -1,7 +1,9 @@
-<div class="card mb-4 shadow-sm">
-    <div class="card-header bg-white fw-semibold d-flex align-items-center gap-2">
-        <span class="text-primary fs-5">⚙️</span>
-        <span>Product Settings</span>
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white border-0 d-flex align-items-center py-3">
+        <h6 class="fw-bold mb-0 d-flex align-items-center">
+            <i class="fas fa-cog text-primary me-2"></i>
+            Additional Settings
+        </h6>
     </div>
 
     <div class="card-body">
