@@ -107,7 +107,7 @@
                         <td>{{ $product->sku }}</td>
                         <td>{{ $product->category?->name }}</td>
                         <td>{{ $product->supplier?->name }}</td>
-                        <td>₹{{ number_format($product->base_selling_price, 2) }}</td>
+                        <td>₹{{ number_format($product->cost_price, 2) }}</td>
                         <td>
                             <span class="badge {{ $product->status == 'active' ? 'bg-success' : 'bg-secondary' }}">
                                 {{ ucfirst($product->status) }}

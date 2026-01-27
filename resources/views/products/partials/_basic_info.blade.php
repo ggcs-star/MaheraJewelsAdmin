@@ -1,0 +1,88 @@
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-white fw-semibold d-flex align-items-center gap-2">
+        <span class="text-primary fs-5">📝</span>
+        <span>Basic Information</span>
+    </div>
+
+    <div class="card-body">
+        <div class="row g-3">
+
+            <!-- Product Name -->
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">
+                    Product Name <span class="text-danger">*</span>
+                </label>
+                <input type="text"
+                       name="name"
+                       class="form-control"
+                       placeholder="Enter product name"
+                       value="{{ old('name') }}"
+                       required>
+                <div class="form-text">
+                    This name will be visible to customers.
+                </div>
+            </div>
+
+            <!-- SKU -->
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">
+                    SKU <span class="text-danger">*</span>
+                </label>
+                <input type="text"
+                       name="sku"
+                       class="form-control"
+                       placeholder="Unique product code"
+                       value="{{ old('sku') }}"
+                       required>
+                <div class="form-text">
+                    Must be unique for inventory tracking.
+                </div>
+            </div>
+
+            <!-- Slug -->
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">
+                    Slug <span class="text-danger">*</span>
+                </label>
+                <input type="text"
+                       name="slug"
+                       class="form-control"
+                       placeholder="product-name-slug"
+                       value="{{ old('slug') }}"
+                       required>
+                <div class="form-text">
+                    Used in product URL.
+                </div>
+            </div>
+
+            <!-- Short Description -->
+            <div class="col-md-12">
+                <label class="form-label fw-semibold">
+                    Short Description
+                </label>
+                <textarea name="short_description"
+                          class="form-control"
+                          rows="2"
+                          placeholder="One-line summary of the product">{{ old('short_description') }}</textarea>
+                <div class="form-text">
+                    Displayed in product listings.
+                </div>
+            </div>
+
+            <!-- Full Description -->
+            <div class="col-md-12">
+                <label class="form-label fw-semibold">
+                    Full Description
+                </label>
+                <textarea name="description"
+                          class="form-control"
+                          rows="4"
+                          placeholder="Detailed product description">{{ old('description') }}</textarea>
+                <div class="form-text">
+                    Shown on the product detail page.
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
