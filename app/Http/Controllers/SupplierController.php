@@ -22,7 +22,23 @@ class SupplierController extends Controller
                     ->orWhere('email', 'like', "%{$search}%")
                     ->orWhere('phone', 'like', "%{$search}%");
             });
-        }) ->latest()->paginate(10);
+        }) 
+        ->when(
+    $request->filled('adv_field') && $request->filled('adv_value'),
+    function ($q) use ($request) {
+
+        $field = $request->adv_field;
+        $condition = $request->adv_condition;
+        $value = $request->adv_value;
+
+        if ($condition === 'like') {
+            $q->where($field, 'LIKE', "%{$value}%");
+        } else {
+            $q->where($field, $value);
+        }
+    }
+)
+->latest()->paginate(10);
 
         return view('suppliers.index', compact('suppliers'));
     }
@@ -103,5 +119,18 @@ class SupplierController extends Controller
 {
     return view('suppliers.details', compact('supplier'));
 }
-
+public function bulkDelete(Request $request)
+{
+    $ids = $request->input('ids', []);
+    
+    if (empty($ids)) {
+        return back()->with('error', 'No suppliers selected.');
+    }
+    
+    Supplier::whereIn('id', $ids)->delete();
+    
+    return redirect()
+        ->to(admin_route('suppliers.index'))
+        ->with('success', 'Selected suppliers deleted successfully.');
+}
 }

@@ -9,33 +9,72 @@ use Illuminate\Support\Facades\Storage;
 class CategoryController extends Controller
 {
 
-    public function index(Request $request)
-    {
-        $categories = Category::with('parent', 'children')
-            ->when($request->filled('search'), function ($q) use ($request) {
-                $search = $request->search;
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('slug', 'like', "%{$search}%");
-            })
-            ->when($request->filled('status'), function ($q) use ($request) {
-                $q->where('status', $request->status);
-            })
-            ->when($request->filled('visibility'), function ($q) use ($request) {
-                $q->where('visibility', $request->visibility);
-            })
-            ->when($request->filled('parent_id'), function ($q) use ($request) {
-                $q->where('parent_id', $request->parent_id);
-            })
-            ->orderBy('sort_order')
-            ->paginate(10);
+  public function index(Request $request)
+{
+    $categories = Category::with('children')
+        ->whereNull('parent_id')
+      ->when($request->filled('search'), function ($q) use ($request) {
+    $search = $request->search;
 
-        $parents = Category::whereNull('parent_id')->get();
+    $q->where(function ($query) use ($search) {
+        
+        $query->where('name', 'like', "%{$search}%")
+              ->orWhere('slug', 'like', "%{$search}%")
+              ->orWhereHas('children', function ($childQuery) use ($search) {
+                  $childQuery->where('name', 'like', "%{$search}%")
+                             ->orWhere('slug', 'like', "%{$search}%");
+              });
+    });
+})
 
-        return view('categories.index', compact('categories', 'parents'));
+        ->when($request->filled('status'), function ($q) use ($request) {
+            $q->where('status', $request->status);
+        })
+        ->when($request->filled('visibility'), function ($q) use ($request) {
+            $q->where('visibility', $request->visibility);
+        })
+        ->when($request->filled('parent_id'), function ($q) use ($request) {
+            $q->where('parent_id', $request->parent_id);
+        })
+        ->when(
+    $request->filled('adv_field') && $request->filled('adv_value'),
+    function ($q) use ($request) {
+
+        $allowedFields = ['name', 'slug', 'status', 'visibility'];
+
+        $field = $request->adv_field;
+        $condition = $request->adv_condition;
+        $value = $request->adv_value;
+
+        if (!in_array($field, $allowedFields)) {
+            return;
+        }
+
+        $q->where(function ($query) use ($field, $condition, $value) {
+
+            if ($condition === 'like') {
+                $query->where($field, 'LIKE', "%{$value}%")
+                      ->orWhereHas('children', function ($child) use ($field, $value) {
+                          $child->where($field, 'LIKE', "%{$value}%");
+                      });
+            } else {
+                $query->where($field, $value)
+                      ->orWhereHas('children', function ($child) use ($field, $value) {
+                          $child->where($field, $value);
+                      });
+            }
+
+        });
     }
+)
 
+        ->orderBy('sort_order')
+        ->paginate(10);
 
+    $parents = Category::whereNull('parent_id')->get();
 
+    return view('categories.index', compact('categories', 'parents'));
+}
    public function create()
     {
         return view('categories.create', [
@@ -156,6 +195,30 @@ class CategoryController extends Controller
     $category->load('parent', 'children');
 
     return view('categories.details', compact('category'));
+}
+public function bulkDelete(Request $request)
+{
+    $ids = $request->input('ids', []);
+    
+    if (empty($ids)) {
+        return back()->with('error', 'No categories selected.');
+    }
+    
+    // Check if any category has children
+    $categoriesWithChildren = Category::whereIn('id', $ids)
+        ->whereHas('children')
+        ->pluck('id');
+        
+    if ($categoriesWithChildren->count() > 0) {
+        return back()->with('error', 'Cannot delete categories that have subcategories.');
+    }
+    
+    // Delete categories
+    Category::whereIn('id', $ids)->delete();
+    
+    return redirect()
+        ->to(admin_route('categories.index'))
+        ->with('success', 'Selected categories deleted successfully.');
 }
 
 }
