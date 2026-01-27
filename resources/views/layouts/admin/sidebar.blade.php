@@ -48,7 +48,17 @@
         </a>
 
         <a href="{{ admin_route('products.index') }}"
-           class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-slate-100">
+           class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+           {{ request()->routeIs('products.*') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 font-medium' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100' }}">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+            </svg>
+            <span>Inventory</span>
+        </a>
+
+        <a href="{{ admin_route('products.list') }}"
+           class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+           {{ request()->routeIs('products.list') || request()->routeIs('products.push') ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 font-medium' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100' }}">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
             </svg>
@@ -104,12 +114,4 @@
         </a>
 
     </nav>
-
-    <div class="absolute bottom-8 left-4 right-4 p-4 rounded-2xl bg-indigo-600/10 border border-indigo-500/20">
-        <p class="text-xs text-indigo-300 font-semibold mb-2 uppercase">Storage Usage</p>
-        <div class="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
-            <div class="h-full bg-indigo-500 w-[75%] rounded-full"></div>
-        </div>
-        <p class="text-[10px] text-slate-400 mt-2 uppercase tracking-wide">750 / 1000 Items (75%)</p>
-    </div>
 </aside>

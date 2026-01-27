@@ -5,7 +5,9 @@
 
     <div class="d-flex justify-content-between mb-3">
         <h2>Inventory</h2>
+        <h2>Inventory</h2>
         <a href="{{ admin_route('products.create') }}" class="btn btn-primary">
+            + Add Inventory
             + Add Inventory 
         </a>
     </div>
@@ -103,7 +105,12 @@
                                      class="img-thumbnail">
                             @endif
                         </td>
-                        <td>{{ $product->name }}</td>
+                        <td>
+                            <a href="{{ admin_route('products.show', $product->id) }}" 
+                               class="text-decoration-none fw-semibold">
+                                {{ $product->name }}
+                            </a>
+                        </td>
                         <td>{{ $product->sku }}</td>
                         <td>{{ $product->category?->name }}</td>
                         <td>{{ $product->supplier?->name }}</td>
@@ -114,6 +121,10 @@
                             </span>
                         </td>
                         <td>
+                            <a href="{{ admin_route('products.show', $product->id) }}"
+                               class="btn btn-sm btn-info me-1">
+                                <i class="fas fa-eye"></i> View
+                            </a>
                             <a href="{{ admin_route('products.edit', $product->id) }}"
                                class="btn btn-sm btn-primary">Edit</a>
 
@@ -142,9 +153,22 @@
     </div>
 
     {{-- Pagination --}}
-    <div class="mt-3">
-        {{ $products->links() }}
+    @if($products->hasPages())
+    <div class="mt-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="text-muted small">
+                <strong>Showing:</strong> {{ $products->firstItem() ?? 0 }} to {{ $products->lastItem() ?? 0 }} of {{ $products->total() }} products
+            </div>
+            <div>
+                {{ $products->appends(request()->query())->links('pagination::bootstrap-4') }}
+            </div>
+        </div>
     </div>
+    @else
+    <div class="mt-3 text-muted small">
+        Showing {{ $products->count() }} product(s)
+    </div>
+    @endif
 
 </div>
 @endsection

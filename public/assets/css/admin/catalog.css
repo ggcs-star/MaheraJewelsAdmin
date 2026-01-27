@@ -1,0 +1,110 @@
+.category-page .hover-card,
+.supplier-page .hover-card {
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.category-page .hover-card:hover,
+.supplier-page .hover-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+    border-color: #e0e0e0;
+}
+
+.category-page .bg-gradient-primary,
+.supplier-page .bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.category-page .border-start,
+.supplier-page .border-start {
+    border-left-width: 4px !important;
+}
+
+.category-page .small,
+.supplier-page .small {
+    font-size: 0.85rem;
+}
+
+.category-page .object-fit-cover,
+.supplier-page .object-fit-cover {
+    object-fit: cover;
+}
+.category-page .category-row {
+    cursor: pointer;
+}
+
+.category-page .subcategory-row {
+    background: #fafafa;
+}
+
+.category-page .toggle-icon {
+    font-size: 12px;
+    user-select: none;
+}
+.category-page .category-image {
+    cursor: zoom-in;
+}
+.image-preview-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.6);
+    z-index: 1050;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease;
+}
+
+.image-preview-modal.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.image-preview-modal img {
+    max-width: 90%;
+    max-height: 90%;
+    background: #fff;
+    padding: 10px;
+    border-radius: 8px;
+}
+.category-name-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.category-name-link:hover {
+    text-decoration: underline;
+}
+.filter-sidebar {
+    position: fixed;
+    top: 0;
+    right: -360px;
+    width: 360px;
+    height: 100%;
+    background: #fff;
+    box-shadow: -10px 0 25px rgba(0,0,0,.15);
+    z-index: 1050;
+    transition: right .3s ease;
+}
+
+.filter-sidebar.active {
+    right: 0;
+}
+
+.filter-sidebar-header {
+    padding: 16px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.filter-sidebar-body {
+    padding: 16px;
+}
+

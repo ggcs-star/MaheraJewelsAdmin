@@ -1,10 +1,13 @@
-<div class="card mb-4 shadow-sm">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <div class="fw-semibold fs-6">
-            📦 Product Variants
-        </div>
-        <button type="button" id="addVariantBtn" class="btn btn-sm btn-outline-primary">
-            + Add Variant
+<div class="card shadow-sm border-0">
+    <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center py-3">
+        <h6 class="fw-bold mb-0 d-flex align-items-center">
+            <i class="fas fa-boxes text-primary me-2"></i>
+            Product Variants
+        </h6>
+        <button type="button"
+                id="addVariantBtn"
+                class="btn btn-sm btn-primary">
+            <i class="fas fa-plus me-1"></i>Add Variant
         </button>
     </div>
 
