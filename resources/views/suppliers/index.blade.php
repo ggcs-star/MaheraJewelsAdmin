@@ -14,14 +14,32 @@
     {{-- Filter Card --}}
     <div class="card shadow-sm mb-4">
         <div class="card-body">
-            <form method="GET" class="row g-3 align-items-end">
+            <form method="GET" class="row g-3 align-items-end" id="supplierFilterForm">
 
-                <div class="col-md-4">
-                    <label class="form-label fw-semibold">Search</label>
-                    <input type="text" name="search" class="form-control"
-                        placeholder="Name / Company / Phone"
-                        value="{{ request('search') }}">
-                </div>
+               <div class="col-md-4">
+    <label class="form-label fw-semibold">Search</label>
+
+    <div class="position-relative">
+        <input
+            type="text"
+            name="search"
+            id="supplierSearch"
+            class="form-control pe-5"
+            placeholder="Name / Company / Phone"
+            value="{{ request('search') }}"
+            autocomplete="off"
+        >
+
+        <span
+            id="clearSupplierSearch"
+            class="position-absolute top-50 end-0 translate-middle-y me-3 text-muted"
+            style="cursor:pointer; display:none;"
+        >
+            ✕
+        </span>
+    </div>
+</div>
+
 
                 <div class="col-md-3">
                     <label class="form-label fw-semibold">Supplier Type</label>
@@ -70,7 +88,11 @@
 
                     <tbody>
                         @forelse ($suppliers as $supplier)
-                            <tr>
+                        <tr
+                            style="cursor:pointer"
+                            onclick="window.location='{{ route('admin.suppliers.details', $supplier->id) }}'"
+                        >
+
                                 <td class="text-muted">
                                     {{ $loop->iteration + ($suppliers->currentPage() - 1) * $suppliers->perPage() }}
                                 </td>
@@ -104,23 +126,24 @@
                                     </span>
                                 </td>
 
-                                <td class="text-center">
-                                    <div class="btn-group btn-group-sm">
-                                        <a href="{{ admin_route('suppliers.edit', $supplier) }}"
-                                           class="btn btn-outline-primary">
-                                            Edit
-                                        </a>
+                                <td class="text-center" onclick="event.stopPropagation()">
+                                  <div class="d-flex gap-1 justify-content-center">
+    <a href="{{ admin_route('suppliers.edit', $supplier) }}"
+       class="btn btn-sm btn-light text-primary fw-semibold px-3">
+        Edit
+    </a>
 
-                                        <form action="{{ admin_route('suppliers.destroy', $supplier) }}"
-                                              method="POST"
-                                              onsubmit="return confirm('Delete this supplier?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="btn btn-outline-danger">
-                                                Delete
-                                            </button>
-                                        </form>
-                                    </div>
+    <form action="{{ admin_route('suppliers.destroy', $supplier) }}"
+          method="POST"
+          onsubmit="return confirm('Delete this supplier?');">
+        @csrf
+        @method('DELETE')
+        <button class="btn btn-sm btn-light text-danger fw-semibold px-3">
+            Delete
+        </button>
+    </form>
+</div>
+
                                 </td>
                             </tr>
                         @empty
@@ -145,4 +168,33 @@
     </div>
 
 </div>
+<script>
+    const supplierSearch = document.getElementById('supplierSearch');
+    const clearSupplierBtn = document.getElementById('clearSupplierSearch');
+    const supplierForm = document.getElementById('supplierFilterForm');
+
+    let supplierDebounce;
+
+    function toggleSupplierClear() {
+        clearSupplierBtn.style.display = supplierSearch.value ? 'block' : 'none';
+    }
+
+    supplierSearch.addEventListener('input', function () {
+        toggleSupplierClear();
+
+        clearTimeout(supplierDebounce);
+        supplierDebounce = setTimeout(() => {
+            supplierForm.submit();
+        }, 400);
+    });
+
+    clearSupplierBtn.addEventListener('click', function () {
+        supplierSearch.value = '';
+        toggleSupplierClear();
+        supplierForm.submit();
+    });
+
+    toggleSupplierClear();
+</script>
+
 @endsection

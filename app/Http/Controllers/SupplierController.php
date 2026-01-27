@@ -99,4 +99,9 @@ class SupplierController extends Controller
             'notes' => 'nullable|string',
         ]);
     }
+    public function details(Supplier $supplier)
+{
+    return view('suppliers.details', compact('supplier'));
+}
+
 }
