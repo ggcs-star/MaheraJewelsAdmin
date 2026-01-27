@@ -27,7 +27,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         @php
             $stats = [
-                ['title' => 'Total Products', 'value' => '1,284', 'icon' => 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4', 'gradient' => 'from-blue-500 to-indigo-600'],
+                ['title' => 'Total Inventory', 'value' => '1,284', 'icon' => 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4', 'gradient' => 'from-blue-500 to-indigo-600'],
                 ['title' => 'Total Categories', 'value' => '24', 'icon' => 'M7 7h.01M7 11h.01M7 15h.01M11 7h.01M11 11h.01M11 15h.01M15 7h.01M15 11h.01M15 15h.01M19 7h.01M19 11h.01M19 15h.01M4 3h16a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1z', 'gradient' => 'from-purple-500 to-indigo-600'],
                 ['title' => 'Low Stock Items', 'value' => '12', 'icon' => 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z', 'gradient' => 'from-orange-500 to-red-600'],
                 ['title' => 'Total Orders', 'value' => '458', 'icon' => 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z', 'gradient' => 'from-emerald-500 to-teal-600'],
@@ -53,7 +53,7 @@
         
         <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="px-6 py-5 border-b border-gray-50 flex items-center justify-between">
-                <h3 class="text-lg font-bold text-gray-900">Recent Products</h3>
+                <h3 class="text-lg font-bold text-gray-900">Recent Inventory</h3>
                 <a href="#" class="text-indigo-600 text-sm font-semibold hover:underline underline-offset-4">View All</a>
             </div>
             <div class="overflow-x-auto">
