@@ -16,9 +16,9 @@
 
         @include('products.push._product_selection')
         @include('products.push._product_details')
+        @include('products.push._product_variants') 
         @include('products.push._platform_selection')
         @include('products.push._platform_pricing')
-        @include('products.push._variant_images')
 
         <div class="text-end mt-4">
             <a href="{{ admin_route('products.index') }}" class="btn btn-secondary me-2">Cancel</a>
