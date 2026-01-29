@@ -13,13 +13,16 @@
                     <th>Status</th>
                 </tr>
             </thead>
-            <tbody id="variantsTableBody">
-                <tr>
-                    <td colspan="6" class="text-center text-muted">
-                        Select product to view variants
-                    </td>
-                </tr>
-            </tbody>
+           <tbody id="variantsTableBody">
+    <tr>
+        <td colspan="6" class="text-center text-muted">
+            Select product to view variants
+        </td>
+    </tr>
+</tbody>
+
         </table>
     </div>
 </div>
+
+

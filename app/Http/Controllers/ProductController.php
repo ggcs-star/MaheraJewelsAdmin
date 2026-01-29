@@ -8,15 +8,27 @@ use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Platform;
+use App\Models\PlatformProduct;
+
 class ProductController extends Controller
 {
 
     public function index(Request $request)
     {
         $products = Product::select([
-                'id', 'name', 'sku', 'slug', 'category_id', 'supplier_id',
-                'cost_price', 'base_selling_price', 'image_url', 'status', 'visibility'
-            ])
+            'id',
+            'name',
+            'sku',
+            'slug',
+            'category_id',
+            'supplier_id',
+            'cost_price',
+            'base_selling_price',
+            'image_url',
+            'status',
+            'visibility'
+        ])
             ->with([
                 'category:id,name',
                 'supplier:id,name'
@@ -53,44 +65,44 @@ class ProductController extends Controller
                 $request->filled('status'),
                 fn($q) => $q->where('status', $request->status)
             )
-         ->when(
-    $request->filled(['adv_field', 'adv_condition', 'adv_value']),
-    function ($q) use ($request) {
+            ->when(
+                $request->filled(['adv_field', 'adv_condition', 'adv_value']),
+                function ($q) use ($request) {
 
-        $field = $request->adv_field;
-        $condition = $request->adv_condition;
-        $value = $request->adv_value;
+                    $field = $request->adv_field;
+                    $condition = $request->adv_condition;
+                    $value = $request->adv_value;
 
-        $allowedFields = [
-            'name',
-            'sku',
-            'cost_price',
-            'status',
-            'visibility'
-        ];
+                    $allowedFields = [
+                        'name',
+                        'sku',
+                        'cost_price',
+                        'status',
+                        'visibility'
+                    ];
 
-        if (!in_array($field, $allowedFields)) {
-            return;
-        }
+                    if (!in_array($field, $allowedFields)) {
+                        return;
+                    }
 
-        if ($condition === 'like') {
+                    if ($condition === 'like') {
 
-            $q->where($field, 'LIKE', "%{$value}%");
+                        $q->where($field, 'LIKE', "%{$value}%");
 
-        } elseif ($condition === 'starts_with') {
+                    } elseif ($condition === 'starts_with') {
 
-            $q->where($field, 'LIKE', "{$value}%");
+                        $q->where($field, 'LIKE', "{$value}%");
 
-        } elseif ($condition === 'ends_with') {
+                    } elseif ($condition === 'ends_with') {
 
-            $q->where($field, 'LIKE', "%{$value}");
+                        $q->where($field, 'LIKE', "%{$value}");
 
-        } else {
-            // =, !=, >, <
-            $q->where($field, $condition, $value);
-        }
-    }
-)
+                    } else {
+                        // =, !=, >, <
+                        $q->where($field, $condition, $value);
+                    }
+                }
+            )
 
             ->orderBy('id', 'desc')
             ->paginate(10);
@@ -408,7 +420,17 @@ class ProductController extends Controller
 
     public function list()
     {
-        return view('products.list');
+        $pushedProducts = PlatformProduct::with([
+            'platform:id,display_name',
+            'product:id,name,category_id,supplier_id',
+            'product.category:id,name',
+            'product.supplier:id,name',
+            'product.variants:id,product_id,variant_type,variant_value,quantity'
+        ])
+        ->latest()
+        ->paginate(10);
+
+        return view('products.list', compact('pushedProducts'));
     }
 
 
@@ -441,32 +463,36 @@ class ProductController extends Controller
 
                 return $product;
             });
-        // dd($products->toArray());
+        $platforms = Platform::select('id', 'name')->where('is_enabled', true)->get();
 
         return view('products.push', [
-            'products' => $products
+            'products' => $products,
+            'platforms' => $platforms,
         ]);
     }
 
 
     public function pushStore(Request $request)
     {
+
         return redirect()
-            ->to(admin_route('products.list'))
-            ->with('success', 'Product pushed successfully to selected platforms.');
+            ->route('admin.products.list')
+            ->with('success','Products pushed successfully');
     }
 
-        public function bulkDelete(Request $request)
-        {
-            $ids = $request->ids;
 
-            if (!$ids || !is_array($ids)) {
-                return redirect()->back();
-            }
 
-            Product::whereIn('id', $ids)->delete();
+    public function bulkDelete(Request $request)
+    {
+        $ids = $request->ids;
 
-            return redirect()->back()->with('success', 'Selected products deleted successfully');
+        if (!$ids || !is_array($ids)) {
+            return redirect()->back();
         }
+
+        Product::whereIn('id', $ids)->delete();
+
+        return redirect()->back()->with('success', 'Selected products deleted successfully');
+    }
 
 }
