@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="container">
+<div class="container-fluid">
     <h2 class="mb-4">Edit Inventory</h2>
 
     @include('products.partials._errors')

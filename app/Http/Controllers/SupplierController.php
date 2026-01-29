@@ -23,22 +23,46 @@ class SupplierController extends Controller
                     ->orWhere('phone', 'like', "%{$search}%");
             });
         }) 
-        ->when(
+  ->when(
     $request->filled('adv_field') && $request->filled('adv_value'),
     function ($q) use ($request) {
+
+        $allowedFields = [
+            'name',
+            'company_name',
+            'email',
+            'phone',
+            'type',
+            'status',
+        ];
 
         $field = $request->adv_field;
         $condition = $request->adv_condition;
         $value = $request->adv_value;
 
+        if (!in_array($field, $allowedFields)) {
+            return;
+        }
+
         if ($condition === 'like') {
+
             $q->where($field, 'LIKE', "%{$value}%");
+
+        } elseif ($condition === 'starts_with') {
+
+            $q->where($field, 'LIKE', "{$value}%");
+
+        } elseif ($condition === 'ends_with') {
+
+            $q->where($field, 'LIKE', "%{$value}");
+
         } else {
-            $q->where($field, $value);
+            $q->where($field, $condition, $value);
         }
     }
 )
-->latest()->paginate(10);
+
+    ->latest()->paginate(10);
 
         return view('suppliers.index', compact('suppliers'));
     }

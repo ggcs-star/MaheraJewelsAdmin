@@ -13,7 +13,14 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        $products = Product::with(['category', 'supplier'])
+        $products = Product::select([
+                'id', 'name', 'sku', 'slug', 'category_id', 'supplier_id',
+                'cost_price', 'base_selling_price', 'image_url', 'status', 'visibility'
+            ])
+            ->with([
+                'category:id,name',
+                'supplier:id,name'
+            ])
 
             ->when($request->filled('search'), function ($q) use ($request) {
                 $search = $request->search;
@@ -44,17 +51,63 @@ class ProductController extends Controller
 
             ->when(
                 $request->filled('status'),
-                fn($q) =>
-                $q->where('status', $request->status)
+                fn($q) => $q->where('status', $request->status)
             )
+         ->when(
+    $request->filled(['adv_field', 'adv_condition', 'adv_value']),
+    function ($q) use ($request) {
+
+        $field = $request->adv_field;
+        $condition = $request->adv_condition;
+        $value = $request->adv_value;
+
+        $allowedFields = [
+            'name',
+            'sku',
+            'cost_price',
+            'status',
+            'visibility'
+        ];
+
+        if (!in_array($field, $allowedFields)) {
+            return;
+        }
+
+        if ($condition === 'like') {
+
+            $q->where($field, 'LIKE', "%{$value}%");
+
+        } elseif ($condition === 'starts_with') {
+
+            $q->where($field, 'LIKE', "{$value}%");
+
+        } elseif ($condition === 'ends_with') {
+
+            $q->where($field, 'LIKE', "%{$value}");
+
+        } else {
+            // =, !=, >, <
+            $q->where($field, $condition, $value);
+        }
+    }
+)
 
             ->orderBy('id', 'desc')
             ->paginate(10);
+        $categories = Category::select('id', 'name')
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+
+        $suppliers = Supplier::select('id', 'name')
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
 
         return view('products.index', [
             'products' => $products,
-            'categories' => Category::orderBy('name')->get(),
-            'suppliers' => Supplier::orderBy('name')->get(),
+            'categories' => $categories,
+            'suppliers' => $suppliers,
         ]);
     }
 
@@ -70,11 +123,6 @@ class ProductController extends Controller
 
         return view('products.create', compact('categories', 'suppliers'));
     }
-
-
-
-
-
     public function store(Request $request)
     {
         DB::transaction(function () use ($request) {
@@ -407,5 +455,18 @@ class ProductController extends Controller
             ->to(admin_route('products.list'))
             ->with('success', 'Product pushed successfully to selected platforms.');
     }
+
+        public function bulkDelete(Request $request)
+        {
+            $ids = $request->ids;
+
+            if (!$ids || !is_array($ids)) {
+                return redirect()->back();
+            }
+
+            Product::whereIn('id', $ids)->delete();
+
+            return redirect()->back()->with('success', 'Selected products deleted successfully');
+        }
 
 }

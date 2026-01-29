@@ -33,32 +33,28 @@ Route::middleware('guest')->group(function () {
         ->middleware('throttle:5,5');
 });
 
-// Email verification (accessible to authenticated users)
 Route::get('/verify-email', [EmailVerificationController::class, 'index'])->name('verify.email');
 Route::post('/verify-email', [EmailVerificationController::class, 'verify'])
     ->middleware('throttle:5,5');
 
-// Logout (accessible to all authenticated users)
 Route::post('/logout', [LoginController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
 
-// Main dashboard - redirects to role-specific dashboard
 Route::middleware(['auth', 'verified.email', 'log.login.activity'])
     ->get('/dashboard', [DashboardController::class, 'index'])
     ->name('dashboard');
 
-// ============================================
+
 // ADMIN ROUTES - Prefix: /admin
-// ============================================
+
 Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
-        // Admin Dashboard
+       
         Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
         
-        // Admin Supplier Management
         Route::get('/suppliers', [SupplierController::class, 'index'])->name('suppliers.index');
         Route::get('/suppliers/create', [SupplierController::class, 'create'])->name('suppliers.create');
         Route::post('/suppliers/create', [SupplierController::class, 'store'])->name('suppliers.store');
@@ -66,8 +62,8 @@ Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:admin']
         Route::put('/suppliers/{supplier}', [SupplierController::class, 'update'])->name('suppliers.update');
         Route::delete('/suppliers/{supplier}', [SupplierController::class, 'destroy'])->name('suppliers.destroy');
         Route::get('/suppliers/{supplier}/details', [SupplierController::class, 'details'])->name('suppliers.details');
-Route::post('/suppliers/bulk-delete', [SupplierController::class, 'bulkDelete'])
-    ->name('suppliers.bulk-delete');
+        Route::post('/suppliers/bulk-delete', [SupplierController::class, 'bulkDelete'])->name('suppliers.bulk-delete');
+
         Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
         Route::get('/categories/create', [CategoryController::class, 'create'])->name('categories.create');
         Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
@@ -75,34 +71,30 @@ Route::post('/suppliers/bulk-delete', [SupplierController::class, 'bulkDelete'])
         Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
         Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
         Route::get('/categories/{category}/details', [CategoryController::class, 'details'])->name('categories.details');
-Route::post('/categories/bulk-delete', [CategoryController::class, 'bulkDelete'])
-    ->name('categories.bulk-delete');
+        Route::post('/categories/bulk-delete', [CategoryController::class, 'bulkDelete'])->name('categories.bulk-delete');
 
 
         Route::get('/products', [ProductController::class, 'index'])->name('products.index');
         Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
         Route::post('/products', [ProductController::class, 'store'])->name('products.store');
         
-        // Products Listing & Push (must be before /products/{product} route)
         Route::get('/products/list', [ProductController::class, 'list'])->name('products.list');
         Route::get('/products/push', [ProductController::class, 'push'])->name('products.push');
         Route::post('/products/push', [ProductController::class, 'pushStore'])->name('products.push.store');
-        
-        // Product detail routes (must be after specific routes)
+        Route::delete('products/bulk-delete', [ProductController::class, 'bulkDelete'])->name('products.bulk-delete');
+
         Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
         Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
         Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
         Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
     });
 
-// ============================================
+
 // USER ROUTES - Prefix: /users
-// ============================================
+
 Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:user'])
     ->prefix('users')
     ->name('users.')
     ->group(function () {
-        // User Dashboard
         Route::get('/dashboard', [DashboardController::class, 'user'])->name('dashboard');
-        
     });

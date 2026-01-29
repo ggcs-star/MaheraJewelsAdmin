@@ -50,24 +50,38 @@ class CategoryController extends Controller
             return;
         }
 
-        $q->where(function ($query) use ($field, $condition, $value) {
+       $q->where(function ($query) use ($field, $condition, $value) {
 
-            if ($condition === 'like') {
-                $query->where($field, 'LIKE', "%{$value}%")
-                      ->orWhereHas('children', function ($child) use ($field, $value) {
-                          $child->where($field, 'LIKE', "%{$value}%");
-                      });
-            } else {
-                $query->where($field, $value)
-                      ->orWhereHas('children', function ($child) use ($field, $value) {
-                          $child->where($field, $value);
-                      });
-            }
+    if ($condition === 'like') {
 
-        });
+        $query->where($field, 'LIKE', "%{$value}%")
+              ->orWhereHas('children', function ($child) use ($field, $value) {
+                  $child->where($field, 'LIKE', "%{$value}%");
+              });
+
+    } elseif ($condition === 'starts_with') {
+
+        $query->where($field, 'LIKE', "{$value}%")
+              ->orWhereHas('children', function ($child) use ($field, $value) {
+                  $child->where($field, 'LIKE', "{$value}%");
+              });
+
+    } elseif ($condition === 'ends_with') {
+
+        $query->where($field, 'LIKE', "%{$value}")
+              ->orWhereHas('children', function ($child) use ($field, $value) {
+                  $child->where($field, 'LIKE', "%{$value}");
+              });
+
+    } else {
+        $query->where($field, $condition, $value)
+              ->orWhereHas('children', function ($child) use ($field, $condition, $value) {
+                  $child->where($field, $condition, $value);
+              });
     }
+});
+}
 )
-
         ->orderBy('sort_order')
         ->paginate(10);
 
@@ -80,9 +94,7 @@ class CategoryController extends Controller
         return view('categories.create', [
             'parents' => $this->parentCategories()
         ]);
-    }
-
-   
+    }   
     public function store(Request $request)
     {
         $data = $this->validatedData($request);
@@ -94,18 +106,14 @@ class CategoryController extends Controller
         return redirect()
             ->to(admin_route('categories.index'))
             ->with('success', 'Category created successfully.');
-    }
-
-   
+    }   
     public function edit(Category $category)
     {
         return view('categories.edit', [
             'category' => $category,
             'parents'  => $this->parentCategories($category->id),
         ]);
-    }
-
-   
+    }   
     public function update(Request $request, Category $category)
     {
         $data = $this->validatedData($request, $category->id);
@@ -120,9 +128,7 @@ class CategoryController extends Controller
         return redirect()
             ->to(admin_route('categories.index'))
             ->with('success', 'Category updated successfully.');
-    }
-
-    
+    }    
     public function destroy(Category $category)
     {
         if ($category->children()->exists()) {
@@ -136,9 +142,7 @@ class CategoryController extends Controller
         return redirect()
             ->to(admin_route('categories.index'))
             ->with('success', 'Category deleted successfully.');
-    }
-
-   
+    }   
     private function validatedData(Request $request, $categoryId = null): array
     {
         return $request->validate([
@@ -159,9 +163,7 @@ class CategoryController extends Controller
             'visibility' => 'required|in:public,private',
             'status' => 'required|in:active,inactive',
         ]);
-    }
-
-    
+    }    
     private function uploadImage(Request $request): ?string
     {
         if (!$request->hasFile('image_url')) {
@@ -171,17 +173,13 @@ class CategoryController extends Controller
         return $request->file('image_url')
             ->store('categories', 'public');
     }
-
-  
     private function deleteImage(?string $imagePath): void
     {
         if ($imagePath && Storage::disk('public')->exists($imagePath)) {
             Storage::disk('public')->delete($imagePath);
         }
     }
-
-    
-    private function parentCategories($excludeId = null)
+   private function parentCategories($excludeId = null)
     {
         return Category::whereNull('parent_id')
             ->when($excludeId, fn ($q) =>
@@ -203,8 +201,6 @@ public function bulkDelete(Request $request)
     if (empty($ids)) {
         return back()->with('error', 'No categories selected.');
     }
-    
-    // Check if any category has children
     $categoriesWithChildren = Category::whereIn('id', $ids)
         ->whereHas('children')
         ->pluck('id');
@@ -212,8 +208,6 @@ public function bulkDelete(Request $request)
     if ($categoriesWithChildren->count() > 0) {
         return back()->with('error', 'Cannot delete categories that have subcategories.');
     }
-    
-    // Delete categories
     Category::whereIn('id', $ids)->delete();
     
     return redirect()

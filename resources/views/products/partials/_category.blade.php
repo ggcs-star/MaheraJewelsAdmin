@@ -44,20 +44,27 @@
 
 
             <!-- Brand -->
-           <div class="col-md-4">
-    <label class="form-label fw-semibold">
-        Brand
-    </label>
-    <input type="text"
-           name="brand"
-           class="form-control"
-           placeholder="e.g. Samsung, Nike"
-           value="{{ old('brand', $product->brand ?? '') }}">
-    <div class="form-text">
-        Optional – helps with filtering & search.
-    </div>
-</div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">
+                    Brand
+                </label>
 
+                <input type="text"
+                       name="brand"
+                       class="form-control"
+                       placeholder="e.g. Samsung, Nike"
+                       value="{{ old('brand', $product->brand ?? '') }}">
+
+                <div class="form-text">
+                    Optional – helps with filtering & search.
+                </div>
+            </div>
+
+            <!-- Hidden final category -->
+            <input type="hidden"
+                   name="category_id"
+                   id="finalCategoryId"
+                   value="{{ old('category_id', $product->category_id ?? '') }}">
 
         </div>
     </div>
