@@ -5,7 +5,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Push Product to Marketplace</h2>
         <a href="{{ admin_route('products.index') }}" class="btn btn-secondary">
-            ← Back to Inventory
+            ← Back to Product
         </a>
     </div>
 
