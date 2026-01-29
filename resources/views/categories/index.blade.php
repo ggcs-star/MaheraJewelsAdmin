@@ -271,7 +271,7 @@
                                     <td class="px-4">
                                         <div class="d-flex justify-content-center gap-2">
                                             <a href="{{ admin_route('categories.edit', $child) }}" 
-                                               class="btn btn-sm text-primary p-0 fw-semibold text-decoration-none border-bottom">
+                                               class="btn btn-sm btn-outline-primary px-3 fw-medium">
                                                 Edit
                                             </a>
                                             <form action="{{ admin_route('categories.destroy', $child) }}" 
@@ -280,7 +280,7 @@
                                                   onsubmit="return confirm('Are you sure?');">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button class="btn btn-sm text-danger p-0 fw-semibold text-decoration-none border-bottom">
+                                                <button class="btn btn-sm btn-outline-danger px-3 fw-medium">
                                                     Delete
                                                 </button>
                                             </form>
@@ -332,7 +332,7 @@
         <h5 class="mb-0 fw-bold">
             <i class="fas fa-filter me-2 text-primary"></i>Advanced Filter
         </h5>
-        <button type="button" id="closeFilterSidebar" class="btn btn-sm btn-light rounded-circle border p-0 d-flex align-items-center justify-content-center" style="width:32px; height:32px;">
+        <button type="button" id="closeFilterSidebar">✕
             <i class="fas fa-times"></i>
         </button>
     </div>

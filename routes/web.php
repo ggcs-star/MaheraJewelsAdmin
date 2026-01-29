@@ -10,6 +10,8 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\Admin\ProfileController;
+
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -54,7 +56,11 @@ Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:admin']
     ->group(function () {
        
         Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
-        
+
+        Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
+
+        Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
         Route::get('/suppliers', [SupplierController::class, 'index'])->name('suppliers.index');
         Route::get('/suppliers/create', [SupplierController::class, 'create'])->name('suppliers.create');
         Route::post('/suppliers/create', [SupplierController::class, 'store'])->name('suppliers.store');

@@ -9,14 +9,17 @@ class User extends Authenticatable
 {
     use HasRoles;
 
-   protected $fillable = [
-    'name',
-    'email',
-    'password',
-    'email_verified_at',
-];
-protected $casts = [
-    'email_verified_at' => 'datetime',
-];
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'email_verified_at',
+        'profile_image',
+        'mobile',
+        'address',
+    ];
 
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+    ];
 }
