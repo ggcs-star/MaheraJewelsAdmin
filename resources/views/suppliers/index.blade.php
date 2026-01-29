@@ -1,6 +1,10 @@
 @extends('layouts.admin')
 
 @section('content')
+@push('scripts')
+    <script src="{{ asset('assets/js/admin/suppliers.js') }}"></script>
+@endpush
+
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="mb-0 fw-bold">Suppliers</h4>
@@ -60,20 +64,17 @@
             </form>
         </div>
     </div>
-    
- {{-- BULK DELETE FORM (ONLY BUTTON) --}}
 <form method="POST"
       action="{{ route('admin.suppliers.bulk-delete') }}"
       id="supplierBulkDeleteForm">
     @csrf
 
-    <button type="submit" class="btn btn-danger mb-3">
-        Delete Selected
-    </button>
+    <button type="button"
+        id="bulkDeleteBtn"
+        class="btn btn-danger mb-3">
+    Delete Selected
+</button>
 </form>
-
-
-{{-- TABLE CARD --}}
 <div class="card shadow-sm">
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -83,7 +84,7 @@
                         <th width="50">
                             <input type="checkbox" id="selectAllSuppliers">
                         </th>
-                        <th width="60">#</th>
+                        <th width="60">Id</th>
                         <th>Type</th>
                         <th>Name</th>
                         <th>Company</th>
@@ -98,8 +99,6 @@
                     @forelse ($suppliers as $supplier)
                         <tr style="cursor:pointer"
                             onclick="window.location='{{ route('admin.suppliers.details', $supplier->id) }}'">
-
-                            {{-- CHECKBOX (BULK DELETE) --}}
                             <td onclick="event.stopPropagation()">
                                 <input type="checkbox"
                                        class="supplier-row-checkbox"
@@ -139,8 +138,6 @@
                                     {{ ucfirst($supplier->status) }}
                                 </span>
                             </td>
-
-                            {{-- ACTIONS --}}
                             <td class="text-center" onclick="event.stopPropagation()">
                                 <div class="d-flex gap-1 justify-content-center">
 
@@ -148,8 +145,6 @@
                                        class="btn btn-sm btn-light text-primary fw-semibold px-3">
                                         Edit
                                     </a>
-
-                                    {{-- SINGLE DELETE --}}
                                     <form action="{{ admin_route('suppliers.destroy', $supplier) }}"
                                           method="POST"
                                           onsubmit="return confirm('Delete this supplier?');">
@@ -183,8 +178,6 @@
         </div>
     @endif
 </div>
-
-    
     <div id="supplierFilterSidebar" class="filter-sidebar">
         <div class="filter-sidebar-header">
             <h5 class="mb-0">Advanced Filter</h5>
@@ -204,10 +197,14 @@
             </div>
             <div class="mb-3">
                 <label class="form-label">Condition</label>
-                <select id="advCondition" class="form-control">
+               <select id="advCondition" class="form-control">
                     <option value="like">Contains</option>
                     <option value="=">Equals</option>
+                    <option value="!=">Not Equals</option>
+                    <option value="starts_with">Starts With</option>
+                    <option value="ends_with">Ends With</option>
                 </select>
+
             </div>
             <div class="mb-3">
                 <label class="form-label">Value</label>
@@ -219,105 +216,4 @@
         </div>
     </div>
 </div>
-
-<script>
-    const supplierSearch = document.getElementById('supplierSearch');
-    const clearSupplierBtn = document.getElementById('clearSupplierSearch');
-    const supplierForm = document.getElementById('supplierFilterForm');
-    
-    let supplierDebounce;
-    
-    function toggleSupplierClear() {
-        clearSupplierBtn.style.display = supplierSearch.value ? 'block' : 'none';
-    }
-    
-    supplierSearch.addEventListener('input', function () {
-        toggleSupplierClear();
-        clearTimeout(supplierDebounce);
-        supplierDebounce = setTimeout(() => {
-            supplierForm.submit();
-        }, 400);
-    });
-    
-    clearSupplierBtn.addEventListener('click', function () {
-        supplierSearch.value = '';
-        toggleSupplierClear();
-        supplierForm.submit();
-    });
-    
-    toggleSupplierClear();
-    
-    const supplierTypeSelect = supplierForm.querySelector('select[name="type"]');
-    if (supplierTypeSelect) {
-        supplierTypeSelect.addEventListener('change', function () {
-            supplierForm.submit();
-        });
-    }
-</script>
-
-<script>
-    const openSupplierBtn = document.getElementById('openSupplierFilterSidebar');
-    const closeSupplierBtn = document.getElementById('closeSupplierFilterSidebar');
-    const supplierSidebar = document.getElementById('supplierFilterSidebar');
-    
-    openSupplierBtn?.addEventListener('click', () => {
-        supplierSidebar.classList.add('active');
-    });
-    
-    closeSupplierBtn?.addEventListener('click', () => {
-        supplierSidebar.classList.remove('active');
-    });
-    
-    document.getElementById('applySupplierAdvancedFilter')
-        ?.addEventListener('click', () => {
-            const field = document.getElementById('advField').value;
-            const condition = document.getElementById('advCondition').value;
-            const value = document.getElementById('advValue').value;
-            
-            if (!value) return;
-            
-            const url = new URL(window.location.href);
-            url.searchParams.set('adv_field', field);
-            url.searchParams.set('adv_condition', condition);
-            url.searchParams.set('adv_value', value);
-            window.location.href = url.toString();
-        });
-</script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const selectAll = document.getElementById('selectAllSuppliers');
-        const bulkDeleteForm = document.getElementById('supplierBulkDeleteForm');
-        const rowCheckboxes = document.querySelectorAll('.supplier-row-checkbox');
-        
-        if (selectAll) {
-            selectAll.addEventListener('change', function() {
-                rowCheckboxes.forEach(checkbox => {
-                    checkbox.checked = selectAll.checked;
-                });
-            });
-        }
-        
-        rowCheckboxes.forEach(cb => {
-            cb.addEventListener('click', e => {
-                e.stopPropagation();
-            });
-            cb.addEventListener('mousedown', e => {
-                e.stopPropagation();
-            });
-        });
-        
-        if (bulkDeleteForm) {
-            bulkDeleteForm.addEventListener('submit', function(e) {
-                const checked = document.querySelectorAll('.supplier-row-checkbox:checked');
-                if (checked.length === 0) {
-                    e.preventDefault();
-                    alert('Please select at least one supplier to delete.');
-                    return false;
-                }
-                return confirm('Are you sure you want to delete ' + checked.length + ' supplier(s)?');
-            });
-        }
-    });
-</script>
 @endsection

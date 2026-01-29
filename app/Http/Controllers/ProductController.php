@@ -13,7 +13,6 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        // Optimized query with select only needed columns
         $products = Product::select([
                 'id', 'name', 'sku', 'slug', 'category_id', 'supplier_id',
                 'cost_price', 'base_selling_price', 'image_url', 'status', 'visibility'
@@ -51,12 +50,48 @@ class ProductController extends Controller
                 $request->filled('status'),
                 fn($q) => $q->where('status', $request->status)
             )
+         ->when(
+    $request->filled(['adv_field', 'adv_condition', 'adv_value']),
+    function ($q) use ($request) {
+
+        $field = $request->adv_field;
+        $condition = $request->adv_condition;
+        $value = $request->adv_value;
+
+        $allowedFields = [
+            'name',
+            'sku',
+            'cost_price',
+            'status',
+            'visibility'
+        ];
+
+        if (!in_array($field, $allowedFields)) {
+            return;
+        }
+
+        if ($condition === 'like') {
+
+            $q->where($field, 'LIKE', "%{$value}%");
+
+        } elseif ($condition === 'starts_with') {
+
+            $q->where($field, 'LIKE', "{$value}%");
+
+        } elseif ($condition === 'ends_with') {
+
+            $q->where($field, 'LIKE', "%{$value}");
+
+        } else {
+            // =, !=, >, <
+            $q->where($field, $condition, $value);
+        }
+    }
+)
 
             ->orderBy('id', 'desc')
             ->paginate(10)
-            ->withQueryString(); // Preserve query parameters in pagination links
-
-        // Optimize categories and suppliers loading - only get active ones
+            ->withQueryString();
         $categories = Category::select('id', 'name')
             ->where('status', 'active')
             ->orderBy('name')
@@ -76,7 +111,6 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
-        // Load product with all relationships and variants
         $product->load([
             'category:id,name,slug,parent_id',
             'category.parent:id,name',
@@ -101,11 +135,6 @@ class ProductController extends Controller
 
         return view('products.create', compact('categories', 'suppliers'));
     }
-
-
-
-
-
     public function store(Request $request)
     {
         DB::transaction(function () use ($request) {
@@ -240,21 +269,12 @@ class ProductController extends Controller
             'base_selling_price' => $totals['totalSelling'],
         ]);
     }
-
-    /**
-     * Display products listing page (blank/empty state)
-     */
-    public function list()
+        public function list()
     {
         return view('products.list');
     }
-
-    /**
-     * Show push product form
-     */
     public function push()
     {
-        // Get all products from inventory with their variants and category relationships
         $products = Product::with([
             'category:id,name,parent_id',
             'category.parent:id,name',
@@ -367,10 +387,6 @@ class ProductController extends Controller
 
         return $data;
     }
-
-
-
-
     public function destroy(Product $product)
     {
         DB::transaction(function () use ($product) {
@@ -405,14 +421,25 @@ class ProductController extends Controller
             ->with('success', 'Product deleted successfully.');
     }
 
-    /**
-     * Store pushed product (placeholder - will be implemented later)
-     */
     public function pushStore(Request $request)
     {
-        // TODO: Implement product push logic
+       
         return redirect()
             ->to(admin_route('products.list'))
             ->with('success', 'Product pushed successfully to selected platforms.');
     }
+
+        public function bulkDelete(Request $request)
+        {
+            $ids = $request->ids;
+
+            if (!$ids || !is_array($ids)) {
+                return redirect()->back();
+            }
+
+            Product::whereIn('id', $ids)->delete();
+
+            return redirect()->back()->with('success', 'Selected products deleted successfully');
+        }
+
 }

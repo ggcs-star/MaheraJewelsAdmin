@@ -299,109 +299,7 @@
                     </div>
                 </div>
                 @endif
-
-                {{-- VARIANTS TABLE CARD --}}
-                <div class="col-12">
-                    <div class="card shadow-sm border-0">
-                        <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between py-3">
-                            <h6 class="fw-bold mb-0 d-flex align-items-center">
-                                <i class="fas fa-boxes text-primary me-2"></i>
-                                Product Variants
-                            </h6>
-                            <span class="badge bg-info text-white">
-                                {{ $product->variants->count() }} Variant(s)
-                            </span>
-                        </div>
-                        <div class="card-body pt-0 p-0">
-                            @if($product->variants->count() > 0)
-                            <div class="table-responsive">
-                                <table class="table table-bordered mb-0">
-                                    <thead class="table-light">
-                                        <tr class="text-center align-middle">
-                                            <th>#</th>
-                                            <th>Type</th>
-                                            <th>Value</th>
-                                            <th>SKU Suffix</th>
-                                            <th>Image</th>
-                                            <th>Quantity</th>
-                                            <th>Purchase Price</th>
-                                            <th>Selling Price</th>
-                                            <th>Total Value</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($product->variants as $index => $variant)
-                                        <tr>
-                                            <td class="text-center">{{ $index + 1 }}</td>
-                                            <td>
-                                                <span class="badge bg-primary bg-opacity-10 text-primary">
-                                                    {{ $variant->variant_type }}
-                                                </span>
-                                            </td>
-                                            <td class="fw-semibold">{{ $variant->variant_value }}</td>
-                                            <td>
-                                                <code class="small">{{ $variant->sku_suffix ?? '—' }}</code>
-                                            </td>
-                                            <td class="text-center">
-                                                @if($variant->image_url)
-                                                    <img src="{{ asset('storage/' . $variant->image_url) }}"
-                                                         width="50" height="50"
-                                                         class="img-thumbnail rounded"
-                                                         alt="{{ $variant->variant_value }}">
-                                                @else
-                                                    <div class="bg-light rounded d-inline-flex align-items-center justify-content-center"
-                                                         style="width: 50px; height: 50px;">
-                                                        <i class="fas fa-image text-muted"></i>
-                                                    </div>
-                                                @endif
-                                            </td>
-                                            <td class="text-center">
-                                                <span class="badge bg-info text-white">{{ $variant->quantity }}</span>
-                                            </td>
-                                            <td class="text-end">₹{{ number_format($variant->purchase_price, 2) }}</td>
-                                            <td class="text-end">₹{{ number_format($variant->selling_price, 2) }}</td>
-                                            <td class="text-end fw-bold text-success">
-                                                ₹{{ number_format($variant->total_price, 2) }}
-                                            </td>
-                                            <td class="text-center">
-                                                <span class="badge {{ $variant->status === 'active' ? 'bg-success' : 'bg-secondary' }}">
-                                                    {{ ucfirst($variant->status) }}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                        @endforeach
-                                    </tbody>
-                                    <tfoot class="table-light">
-                                        <tr>
-                                            <td colspan="5" class="text-end fw-bold">Totals:</td>
-                                            <td class="text-center fw-bold">
-                                                <span class="badge bg-primary">{{ $product->variants->sum('quantity') }}</span>
-                                            </td>
-                                            <td class="text-end fw-bold">
-                                                ₹{{ number_format($product->variants->sum('purchase_price'), 2) }}
-                                            </td>
-                                            <td class="text-end fw-bold">
-                                                ₹{{ number_format($product->variants->sum('selling_price'), 2) }}
-                                            </td>
-                                            <td class="text-end fw-bold text-success fs-5">
-                                                ₹{{ number_format($product->variants->sum('total_price'), 2) }}
-                                            </td>
-                                            <td></td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
-                            @else
-                            <div class="text-center text-muted py-5">
-                                <i class="fas fa-box-open fa-3x mb-3"></i>
-                                <div>No variants added for this product</div>
-                            </div>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-
+                
                 {{-- PRICING INFORMATION CARD --}}
                 <div class="col-md-6">
                     <div class="card shadow-sm border-0 h-100">
@@ -508,7 +406,106 @@
 
             </div>
         </div>
-
+        <div class="col-12">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between py-3">
+                            <h6 class="fw-bold mb-0 d-flex align-items-center">
+                                <i class="fas fa-boxes text-primary me-2"></i>
+                                Product Variants
+                            </h6>
+                            <span class="badge bg-info text-white">
+                                {{ $product->variants->count() }} Variant(s)
+                            </span>
+                        </div>
+                        <div class="card-body pt-0 p-0">
+                            @if($product->variants->count() > 0)
+                            <div class="table-responsive">
+                                <table class="table table-bordered mb-0">
+                                    <thead class="table-light">
+                                        <tr class="text-center align-middle">
+                                            <th>#</th>
+                                            <th>Type</th>
+                                            <th>Value</th>
+                                            <th>SKU Suffix</th>
+                                            <th>Image</th>
+                                            <th>Quantity</th>
+                                            <th>Cost Price</th>
+                                            <th>Selling Price</th>
+                                            <th>Total Value</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($product->variants as $index => $variant)
+                                        <tr>
+                                            <td class="text-center">{{ $index + 1 }}</td>
+                                            <td>
+                                                <span class="badge bg-primary bg-opacity-10 text-primary">
+                                                    {{ $variant->variant_type }}
+                                                </span>
+                                            </td>
+                                            <td class="fw-semibold">{{ $variant->variant_value }}</td>
+                                            <td>
+                                                <code class="small">{{ $variant->sku_suffix ?? '—' }}</code>
+                                            </td>
+                                            <td class="text-center">
+                                                @if($variant->image_url)
+                                                    <img src="{{ asset('storage/' . $variant->image_url) }}"
+                                                         width="50" height="50"
+                                                         class="img-thumbnail rounded"
+                                                         alt="{{ $variant->variant_value }}">
+                                                @else
+                                                    <div class="bg-light rounded d-inline-flex align-items-center justify-content-center"
+                                                         style="width: 50px; height: 50px;">
+                                                        <i class="fas fa-image text-muted"></i>
+                                                    </div>
+                                                @endif
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-info text-white">{{ $variant->quantity }}</span>
+                                            </td>
+                                            <td class="text-end">₹{{ number_format($variant->purchase_price, 2) }}</td>
+                                            <td class="text-end">₹{{ number_format($variant->selling_price, 2) }}</td>
+                                            <td class="text-end fw-bold text-success">
+                                                ₹{{ number_format($variant->total_price, 2) }}
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge {{ $variant->status === 'active' ? 'bg-success' : 'bg-secondary' }}">
+                                                    {{ ucfirst($variant->status) }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                    <tfoot class="table-light">
+                                        <tr>
+                                            <td colspan="5" class="text-end fw-bold">Totals:</td>
+                                            <td class="text-center fw-bold">
+                                                <span class="badge bg-primary">{{ $product->variants->sum('quantity') }}</span>
+                                            </td>
+                                            <td class="text-end fw-bold">
+                                                ₹{{ number_format($product->variants->sum('purchase_price'), 2) }}
+                                            </td>
+                                            <td class="text-end fw-bold">
+                                                ₹{{ number_format($product->variants->sum('selling_price'), 2) }}
+                                            </td>
+                                            <td class="text-end fw-bold text-success fs-5">
+                                                ₹{{ number_format($product->variants->sum('total_price'), 2) }}
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            @else
+                            <div class="text-center text-muted py-5">
+                                <i class="fas fa-box-open fa-3x mb-3"></i>
+                                <div>No variants added for this product</div>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
     </div>
 
 </div>
