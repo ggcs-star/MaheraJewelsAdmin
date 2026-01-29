@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Platform;
+use App\Models\PlatformProduct;
+
 class ProductController extends Controller
 {
 
@@ -418,7 +420,17 @@ class ProductController extends Controller
 
     public function list()
     {
-        return view('products.list');
+        $pushedProducts = PlatformProduct::with([
+            'platform:id,display_name',
+            'product:id,name,category_id,supplier_id',
+            'product.category:id,name',
+            'product.supplier:id,name',
+            'product.variants:id,product_id,variant_type,variant_value,quantity'
+        ])
+        ->latest()
+        ->paginate(10);
+
+        return view('products.list', compact('pushedProducts'));
     }
 
 
@@ -462,7 +474,10 @@ class ProductController extends Controller
 
     public function pushStore(Request $request)
     {
-        dd($request->all());
+
+        return redirect()
+            ->route('admin.products.list')
+            ->with('success','Products pushed successfully');
     }
 
 
