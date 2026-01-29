@@ -13,15 +13,7 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        // Optimized query with select only needed columns
-        $products = Product::select([
-                'id', 'name', 'sku', 'slug', 'category_id', 'supplier_id',
-                'cost_price', 'base_selling_price', 'image_url', 'status', 'visibility'
-            ])
-            ->with([
-                'category:id,name',
-                'supplier:id,name'
-            ])
+        $products = Product::with(['category', 'supplier'])
 
             ->when($request->filled('search'), function ($q) use ($request) {
                 $search = $request->search;
@@ -34,59 +26,36 @@ class ProductController extends Controller
 
             ->when(
                 $request->filled('category_id'),
-                fn($q) => $q->where('category_id', $request->category_id)
+                fn($q) =>
+                $q->where('category_id', $request->category_id)
             )
 
             ->when(
                 $request->filled('supplier_id'),
-                fn($q) => $q->where('supplier_id', $request->supplier_id)
+                fn($q) =>
+                $q->where('supplier_id', $request->supplier_id)
             )
 
             ->when(
                 $request->filled('visibility'),
-                fn($q) => $q->where('visibility', $request->visibility)
+                fn($q) =>
+                $q->where('visibility', $request->visibility)
             )
 
             ->when(
                 $request->filled('status'),
-                fn($q) => $q->where('status', $request->status)
+                fn($q) =>
+                $q->where('status', $request->status)
             )
 
             ->orderBy('id', 'desc')
-            ->paginate(10)
-            ->withQueryString(); // Preserve query parameters in pagination links
-
-        // Optimize categories and suppliers loading - only get active ones
-        $categories = Category::select('id', 'name')
-            ->where('status', 'active')
-            ->orderBy('name')
-            ->get();
-
-        $suppliers = Supplier::select('id', 'name')
-            ->where('status', 'active')
-            ->orderBy('name')
-            ->get();
+            ->paginate(10);
 
         return view('products.index', [
             'products' => $products,
-            'categories' => $categories,
-            'suppliers' => $suppliers,
+            'categories' => Category::orderBy('name')->get(),
+            'suppliers' => Supplier::orderBy('name')->get(),
         ]);
-    }
-
-    public function show(Product $product)
-    {
-        // Load product with all relationships and variants
-        $product->load([
-            'category:id,name,slug,parent_id',
-            'category.parent:id,name',
-            'supplier:id,name,company_name,phone,email,type,commission_type,commission_value',
-            'variants' => function($query) {
-                $query->orderBy('sort_order')->orderBy('id');
-            }
-        ]);
-
-        return view('products.show', compact('product'));
     }
 
     public function create()
@@ -240,35 +209,6 @@ class ProductController extends Controller
             'base_selling_price' => $totals['totalSelling'],
         ]);
     }
-
-    /**
-     * Display products listing page (blank/empty state)
-     */
-    public function list()
-    {
-        return view('products.list');
-    }
-
-    /**
-     * Show push product form
-     */
-    public function push()
-    {
-        // Get all products from inventory with their variants and category relationships
-        $products = Product::with([
-            'category:id,name,parent_id',
-            'category.parent:id,name',
-            'variants:id,product_id,variant_type,variant_value,sku_suffix,image_url,sort_order,status'
-        ])
-            ->where('status', 'active')
-            ->orderBy('name')
-            ->get();
-
-        return view('products.push', [
-            'products' => $products
-        ]);
-    }
-
     public function edit(Product $product)
     {
         $product->load('variants');
@@ -369,8 +309,6 @@ class ProductController extends Controller
     }
 
 
-
-
     public function destroy(Product $product)
     {
         DB::transaction(function () use ($product) {
@@ -405,14 +343,69 @@ class ProductController extends Controller
             ->with('success', 'Product deleted successfully.');
     }
 
-    /**
-     * Store pushed product (placeholder - will be implemented later)
-     */
+    public function show(Product $product)
+    {
+        $product->load([
+            'category:id,name,slug,parent_id',
+            'category.parent:id,name',
+            'supplier:id,name,company_name,phone,email,type,commission_type,commission_value',
+            'variants' => function ($query) {
+                $query->orderBy('sort_order')->orderBy('id');
+            }
+        ]);
+
+        return view('products.show', compact('product'));
+    }
+
+
+    public function list()
+    {
+        return view('products.list');
+    }
+
+
+    public function push()
+    {
+        $products = Product::with([
+            'category:id,name,parent_id',
+            'category.parent:id,name',
+            'variants:id,product_id,variant_type,variant_value,sku_suffix,image_url,sort_order,status,quantity'
+        ])
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get()
+            ->map(function ($product) {
+
+                $category = $product->category;
+
+                $product->display_category = null;
+                $product->display_subcategory = null;
+
+                if ($category) {
+                    if ($category->parent) {
+                        $product->display_category = $category->parent->name;
+                        $product->display_subcategory = $category->name;
+                    } else {
+                        $product->display_category = $category->name;
+                        $product->display_subcategory = null;
+                    }
+                }
+
+                return $product;
+            });
+        // dd($products->toArray());
+
+        return view('products.push', [
+            'products' => $products
+        ]);
+    }
+
+
     public function pushStore(Request $request)
     {
-        // TODO: Implement product push logic
         return redirect()
             ->to(admin_route('products.list'))
             ->with('success', 'Product pushed successfully to selected platforms.');
     }
+
 }
