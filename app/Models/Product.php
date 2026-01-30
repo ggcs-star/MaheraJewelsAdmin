@@ -30,12 +30,16 @@ class Product extends Model
         'is_top_selling',
         'visibility',
         'status',
+        'warehouse_id',
+        'expected_delivery_date',
+        'payment_terms',
     ];
 
     protected $casts = [
         'gallery_images' => 'array',
         'is_featured' => 'boolean',
         'is_top_selling' => 'boolean',
+        'expected_delivery_date' => 'date',
     ];
 
     public function category()
@@ -67,5 +71,9 @@ public function platformListings()
     return $this->hasMany(PlatformProduct::class);
 }
 
+public function warehouse()
+{
+    return $this->belongsTo(Warehouse::class);
+}
 
 }
