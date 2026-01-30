@@ -8,16 +8,18 @@ class PlatformPricing extends Model
 {
     protected $table = 'platform_pricing'; // 🔥 IMPORTANT FIX
 
-    protected $fillable = [
-        'platform_product_id',
-        'product_variant_id',
-        'price',
-        'discount_type',
-        'discount_value',
-        'final_price',
-        'currency',
-        'status',
-    ];
+ protected $fillable = [
+    'platform_product_id',
+    'product_variant_id',
+    'price',
+    'discount_type',
+    'discount_value',
+    'final_price',
+    'quantity',      // ⭐ ADD THIS
+    'currency',
+    'status',
+];
+
 
     public function platformProduct()
     {

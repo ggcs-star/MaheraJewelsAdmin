@@ -9,6 +9,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Platform;
+use App\Models\ProductVariant;
+use App\Models\PlatformPricing;
+
 use App\Models\PlatformProduct;
 
 class ProductController extends Controller
@@ -418,20 +421,21 @@ class ProductController extends Controller
     }
 
 
-    public function list()
-    {
-        $pushedProducts = PlatformProduct::with([
-            'platform:id,display_name',
-            'product:id,name,category_id,supplier_id',
-            'product.category:id,name',
-            'product.supplier:id,name',
-            'product.variants:id,product_id,variant_type,variant_value,quantity'
-        ])
-        ->latest()
-        ->paginate(10);
+public function list()
+{
+    $pushedProducts = PlatformProduct::with([
+        'platform:id,display_name',
+        'product.category:id,name',
+        'product.supplier:id,name',
+        'pricing.variant:id,variant_type,variant_value',
+    ])
+    ->withSum('pricing as total_stock', 'quantity') // if you have qty column
+    ->paginate(10);
 
-        return view('products.list', compact('pushedProducts'));
-    }
+    return view('products.list', compact('pushedProducts'));
+}
+
+
 
 
     public function push()
@@ -471,15 +475,77 @@ class ProductController extends Controller
         ]);
     }
 
+public function pushStore(Request $request)
+{
+    try {
 
-    public function pushStore(Request $request)
-    {
+    
+$request->validate([
+    'variant_platform_data' => 'required'
+]);
 
-        return redirect()
-            ->route('admin.products.list')
-            ->with('success','Products pushed successfully');
+
+    
+        //   dd($request->all());
+
+        $data = json_decode($request->variant_platform_data, true);
+
+        if (!$data || !is_array($data)) {
+            return back()->with('error', 'No platform data found');
+        }
+
+DB::transaction(function () use ($data) {
+
+    foreach ($data as $variantId => $platforms) {
+
+        $variant = ProductVariant::where('id', $variantId)->lockForUpdate()->firstOrFail();
+
+        $totalRequested = collect($platforms)->sum('qty');
+
+        if ($variant->quantity < $totalRequested) {
+            throw new \Exception("Total quantity exceeds stock for variant {$variant->variant_value}");
+        }
+
+       foreach ($platforms as $platformId => $p) {
+
+    $platformProduct = PlatformProduct::firstOrCreate([
+        'platform_id' => $platformId,
+        'product_id'  => $variant->product_id,
+    ]);
+
+    $discountType = $p['discount_type'] === 'percent' ? 'percentage' : 'fixed';
+
+    PlatformPricing::updateOrCreate(
+    [
+        'platform_product_id' => $platformProduct->id,
+        'product_variant_id'  => $variantId,
+    ],
+    [
+        'price'          => $p['price'],
+        'discount_type'  => $discountType,
+        'discount_value' => $p['discount_value'],
+        'final_price'    => $p['final_total'] / max($p['qty'],1),
+        'quantity'       => $p['qty'],
+        'currency'       => 'INR',
+        'status'         => 'active',
+    ]);
+
+
+        }
+
+        // ⭐ Deduct stock ONCE
+        $variant->decrement('quantity', $totalRequested);
     }
+});
 
+return redirect()->route('admin.products.list')
+    ->with('success', 'Product pushed to marketplace successfully!');
+
+
+    } catch (\Throwable $e) {
+        dd($e->getMessage(), $e->getLine()); // show real error if any
+    }
+}
 
 
     public function bulkDelete(Request $request)
