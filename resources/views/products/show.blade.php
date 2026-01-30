@@ -264,6 +264,57 @@
                         </div>
                     </div>
                 </div>
+                {{-- PROCUREMENT DETAILS --}}
+<div class="col-12">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white border-0 d-flex align-items-center py-3">
+            <h6 class="fw-bold mb-0 d-flex align-items-center">
+                <i class="fas fa-warehouse text-primary me-2"></i>
+                Procurement Details
+            </h6>
+        </div>
+
+        <div class="card-body pt-0">
+            <div class="row g-3">
+
+                {{-- Warehouse --}}
+                <div class="col-md-4">
+                    <div class="p-3 border rounded bg-light">
+                        <div class="text-muted small mb-1">Warehouse (City)</div>
+                        <div class="fw-semibold">
+                            {{ $product->warehouse
+                                ? $product->warehouse->city . ' — ' . $product->warehouse->name
+                                : 'N/A' }}
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Expected Delivery --}}
+                <div class="col-md-4">
+                    <div class="p-3 border rounded">
+                        <div class="text-muted small mb-1">Expected Delivery</div>
+                        <div class="fw-semibold">
+                            {{ $product->expected_delivery_date
+                                ? \Carbon\Carbon::parse($product->expected_delivery_date)->format('d M Y')
+                                : 'N/A' }}
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Payment Terms --}}
+                <div class="col-md-4">
+                    <div class="p-3 border rounded">
+                        <div class="text-muted small mb-1">Payment Terms</div>
+                        <div class="fw-semibold text-capitalize">
+                            {{ $product->payment_terms ?? 'N/A' }}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
 
                 {{-- DESCRIPTION CARD --}}
                 @if($product->description || $product->short_description)

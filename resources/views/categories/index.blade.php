@@ -10,7 +10,7 @@
             <p class="text-muted small mb-0 mt-1">Manage your catalog hierarchy and visibility settings.</p>
         </div>
         <a href="{{ admin_route('categories.create') }}" class="btn btn-primary px-4 shadow-sm fw-medium">
-            <i class="fas fa-plus me-2"></i>Add Category
+            <i class="fas fa-plus me-2"></i> + Add Category
         </a>
     </div>
 
@@ -180,10 +180,10 @@
                                 <td class="px-4 text-muted font-monospace small">
                                     <span class="bg-light px-2 rounded">{{ $category->slug }}</span>
                                 </td>
-                                <td class="px-4 text-muted opacity-50">—</td>
+                                <!-- <td class="px-4 text-muted opacity-50">—</td>
                                 <td class="px-4 text-center">
                                     <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-1 border border-info border-opacity-25">{{ $category->children->count() }}</span>
-                                </td>
+                                </td> -->
                                 <td class="px-4">
                                     <span class="badge rounded-pill fw-medium px-3 py-2 {{ $category->visibility == 'public' ? 'bg-primary bg-opacity-10 text-primary' : 'bg-secondary bg-opacity-10 text-secondary' }}">
                                         {{ ucfirst($category->visibility) }}
@@ -252,12 +252,12 @@
                                         </div>
                                     </td>
                                     <td class="px-4 text-muted font-monospace small">{{ $child->slug }}</td>
-                                    <td class="px-4">
+                                    <!-- <td class="px-4">
                                         <small class="text-primary fw-medium border px-2 py-1 rounded-pill bg-white">{{ $category->name }}</small>
                                     </td>
                                     <td class="px-4 text-center">
                                         <span class="badge bg-secondary bg-opacity-10 text-muted rounded-pill px-2">0</span>
-                                    </td>
+                                    </td> -->
                                     <td class="px-4">
                                         <span class="badge rounded-pill fw-normal px-2 py-1 {{ $child->visibility == 'public' ? 'bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10' : 'bg-secondary bg-opacity-10 text-secondary' }}">
                                             {{ ucfirst($child->visibility) }}

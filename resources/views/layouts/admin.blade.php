@@ -21,7 +21,11 @@
 <body class="bg-gray-50 text-gray-900" x-data="{ sidebarOpen: true }">
     <div class="min-h-screen flex">
        
-        @include('layouts.admin.sidebar')
+        @if(request()->routeIs('warehouses.*'))
+    @include('layouts.admin.admin-settings-sidebar')
+@else
+    @include('layouts.admin.sidebar')
+@endif
 
         
         <div 

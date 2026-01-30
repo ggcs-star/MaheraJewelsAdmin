@@ -16,8 +16,9 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class,
             ProductVariantSeeder::class,
             PlatformSeeder::class,
-PlatformProductSeeder::class,
-PlatformPricingSeeder::class,
+            PlatformProductSeeder::class,
+            PlatformPricingSeeder::class,
+            WarehouseSeeder::class,
 
 
         ]);
