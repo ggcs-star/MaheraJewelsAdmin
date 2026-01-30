@@ -32,13 +32,13 @@
 
     @if($pushedProducts->count())
 
-    @php
-        $totalProducts = $pushedProducts->count();
-        $totalStock = $pushedProducts->sum('platform_stock');
-        $totalValue = $pushedProducts->sum(fn($item) =>
-            ($item->platform_stock ?? 0) * ($item->platform_price ?? 0)
-        );
-    @endphp
+   @php
+$totalProducts = $pushedProducts->count();
+$totalStock = $pushedProducts->sum(fn($item) => $item->pricing->sum('quantity'));
+$totalValue = $pushedProducts->sum(fn($item) =>
+    $item->pricing->sum(fn($p) => $p->quantity * $p->final_price)
+);
+@endphp
 
     <!-- STATS CARDS -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -108,12 +108,13 @@
                 
                 <tbody class="divide-y divide-gray-100">
                 @foreach($pushedProducts as $item)
-                @php
-                    $totalStock = $item->platform_stock ?? 0;
-                    $totalValue = $totalStock * ($item->platform_price ?? 0);
-                @endphp
+          @php
+$totalStock = $item->pricing->sum('quantity');
+$totalValue = $item->pricing->sum(fn($p) => $p->quantity * $p->final_price);
+@endphp
 
-                <tbody x-data="{ open: false }">
+
+<tr x-data="{ open: false }">
                     <tr class="hover:bg-gray-50/50 transition-colors duration-150">
                         <!-- PRODUCT CELL -->
                         <td class="p-4">
@@ -219,7 +220,7 @@
                                                 </svg>
                                                 <h3 class="font-semibold text-gray-800">Variant Breakdown</h3>
                                             </div>
-                                            <span class="text-sm text-gray-500">{{ $item->product->variants->count() }} variants</span>
+                                            <span class="text-sm text-gray-500">{{ $item->pricing->count() }} variants</span>
                                         </div>
                                     </div>
                                     
@@ -234,36 +235,43 @@
                                                 </tr>
                                             </thead>
                                             <tbody class="divide-y divide-gray-100">
-                                                @foreach($item->product->variants as $variant)
-                                                <tr class="hover:bg-gray-50/50 transition-colors">
-                                                    <td class="p-3">
-                                                        <div class="flex items-center gap-3">
-                                                            <div class="w-8 h-8 bg-gradient-to-br from-gray-100 to-gray-50 rounded-lg flex items-center justify-center">
-                                                                <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
-                                                                </svg>
-                                                            </div>
-                                                            <div>
-                                                                <div class="font-medium text-gray-900">{{ $variant->variant_type }}</div>
-                                                                <div class="text-sm text-gray-500">{{ $variant->variant_value }}</div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td class="text-center p-3">
-                                                        <span class="inline-flex items-center justify-center w-10 h-10 bg-blue-50 text-blue-700 font-semibold rounded-lg">
-                                                            {{ $variant->quantity }}
-                                                        </span>
-                                                    </td>
-                                                    <td class="text-center p-3">
-                                                        <div class="text-gray-600 font-medium">₹{{ number_format($item->platform_price,2) }}</div>
-                                                    </td>
-                                                    <td class="text-center p-3">
-                                                        <div class="font-bold text-emerald-700">
-                                                            ₹{{ number_format($variant->quantity * $item->platform_price,2) }}
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                                @endforeach
+           @foreach($item->pricing as $pricing)
+<tr class="hover:bg-gray-50/50 transition-colors">
+    <td class="p-3">
+        @if($pricing->variant)
+            <div class="font-medium text-gray-900">
+                {{ $pricing->variant->variant_type }}
+            </div>
+            <div class="text-sm text-gray-500">
+                {{ $pricing->variant->variant_value }}
+            </div>
+        @else
+            <div class="text-red-500 text-sm font-semibold">
+                Variant Deleted
+            </div>
+            <div class="text-xs text-gray-400">
+                ID: {{ $pricing->product_variant_id }}
+            </div>
+        @endif
+    </td>
+
+    <td class="text-center p-3">
+        <span class="inline-flex items-center justify-center w-10 h-10 bg-blue-50 text-blue-700 font-semibold rounded-lg">
+            {{ $pricing->quantity }}
+        </span>
+    </td>
+
+    <td class="text-center p-3">
+        ₹{{ number_format($pricing->final_price,2) }}
+    </td>
+
+    <td class="text-center p-3 font-bold text-emerald-700">
+        ₹{{ number_format($pricing->quantity * $pricing->final_price,2) }}
+    </td>
+</tr>
+@endforeach
+
+
                                             </tbody>
                                         </table>
                                     </div>
