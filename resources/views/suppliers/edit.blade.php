@@ -73,11 +73,11 @@
                        value="{{ $supplier->commission_value }}" required>
             </div>
 
-            <div class="col-md-4 mb-3">
+            <!-- <div class="col-md-4 mb-3">
                 <label>Payment Terms</label>
                 <input type="text" name="payment_terms" class="form-control"
                        value="{{ $supplier->payment_terms }}">
-            </div>
+            </div> -->
         </div>
 
         <div class="mb-3">

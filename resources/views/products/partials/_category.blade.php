@@ -61,10 +61,10 @@
             </div>
 
             <!-- Hidden final category -->
-            <input type="hidden"
+            <!-- <input type="hidden"
                    name="category_id"
                    id="finalCategoryId"
-                   value="{{ old('category_id', $product->category_id ?? '') }}">
+                   value="{{ old('category_id', $product->category_id ?? '') }}"> -->
 
         </div>
     </div>

@@ -83,6 +83,62 @@
                             <div class="text-muted">Commission</div>
                             <div id="sCommission" class="fw-semibold text-danger">—</div>
                         </div>
+
+                        <hr class="my-3">
+
+<div class="fw-semibold mb-2 text-primary">
+    Procurement Details
+</div>
+
+<div class="row g-3">
+
+    {{-- 🏬 Warehouse --}}
+    <div class="col-md-4">
+        <label class="form-label fw-semibold">
+            Warehouse (City)
+        </label>
+
+        <select name="warehouse_id" class="form-select">
+            <option value="">Select warehouse</option>
+
+            @foreach($warehouses as $wh)
+                <option value="{{ $wh->id }}"
+                    {{ old('warehouse_id', $product->warehouse_id ?? '') == $wh->id ? 'selected' : '' }}>
+                    {{ $wh->city }} — {{ $wh->name }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+
+    {{-- 📦 Expected Delivery Date --}}
+    <div class="col-md-4">
+        <label class="form-label fw-semibold">
+            Expected Delivery Date
+        </label>
+
+        <input type="date"
+               name="expected_delivery_date"
+               class="form-control"
+               value="{{ old('expected_delivery_date', $product->expected_delivery_date ?? '') }}">
+    </div>
+
+    {{-- 💳 Payment Terms --}}
+    <div class="col-md-4">
+        <label class="form-label fw-semibold">
+            Payment Terms
+        </label>
+
+        <select name="payment_terms" class="form-select">
+            <option value="">Select terms</option>
+            <option value="advance" {{ old('payment_terms', $product->payment_terms ?? '') == 'advance' ? 'selected' : '' }}>Advance</option>
+            <option value="net_7" {{ old('payment_terms', $product->payment_terms ?? '') == 'net_7' ? 'selected' : '' }}>Net 7</option>
+            <option value="net_15" {{ old('payment_terms', $product->payment_terms ?? '') == 'net_15' ? 'selected' : '' }}>Net 15</option>
+            <option value="net_30" {{ old('payment_terms', $product->payment_terms ?? '') == 'net_30' ? 'selected' : '' }}>Net 30</option>
+        </select>
+    </div>
+
+</div>
+
                     </div>
                 </div>
             </div>

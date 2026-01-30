@@ -54,7 +54,8 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
             </svg>
             <span>Inventory</span>
-        </a>
+</a>
+
 
         <a href="{{ admin_route('products.list') }}"
            class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
@@ -105,8 +106,11 @@
             <span>Reports</span>
         </a>
 
-        <a href="#"
-           class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-slate-100">
+      <a href="{{ admin_route('warehouses.index') }}"
+   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+   {{ request()->routeIs('warehouses.*')
+        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 font-medium'
+        : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100' }}">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 16v-2m8-6h-2M6 12H4m13.657-5.657l-1.414 1.414M7.757 16.243l-1.414 1.414" />
             </svg>

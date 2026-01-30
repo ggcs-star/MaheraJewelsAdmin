@@ -72,10 +72,10 @@
                 <input type="number" step="0.01" name="commission_value" class="form-control" required>
             </div>
 
-            <div class="col-md-4 mb-3">
+            <!-- <div class="col-md-4 mb-3">
                 <label>Payment Terms</label>
                 <input type="text" name="payment_terms" class="form-control" placeholder="Net 15 / Net 30">
-            </div>
+            </div> -->
         </div>
 
         <div class="mb-3">

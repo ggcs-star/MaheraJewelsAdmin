@@ -134,7 +134,7 @@ class SupplierController extends Controller
             'commission_type' => 'required|in:percentage,fixed',
             'commission_value' => 'required|numeric|min:0',
 
-            'payment_terms' => 'nullable|string|max:50',
+            // 'payment_terms' => 'nullable|string|max:50',
             'status' => 'required|in:active,inactive',
             'notes' => 'nullable|string',
         ]);

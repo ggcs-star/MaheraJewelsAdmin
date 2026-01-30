@@ -8,9 +8,10 @@
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="mb-0 fw-bold">Suppliers</h4>
-        <a href="{{ admin_route('suppliers.create') }}" class="btn btn-success">
-            + Add Supplier
+       <a href="{{ admin_route('suppliers.create') }}" class="btn btn-primary">
+        + Add Supplier
         </a>
+
     </div>
     
     <div class="card shadow-sm mb-4">

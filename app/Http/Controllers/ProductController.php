@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Platform;
 use App\Models\PlatformProduct;
+use App\Models\Warehouse;
 
 class ProductController extends Controller
 {
@@ -23,6 +24,7 @@ class ProductController extends Controller
             'slug',
             'category_id',
             'supplier_id',
+            'warehouse_id',
             'cost_price',
             'base_selling_price',
             'image_url',
@@ -31,7 +33,8 @@ class ProductController extends Controller
         ])
             ->with([
                 'category:id,name',
-                'supplier:id,name'
+                'supplier:id,name',
+                'warehouse:id,name,city'
             ])
 
             ->when($request->filled('search'), function ($q) use ($request) {
@@ -123,8 +126,9 @@ class ProductController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
+        
         $categories = Category::select('id', 'name', 'parent_id')
             ->orderBy('name')
             ->get();
@@ -133,7 +137,15 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('products.create', compact('categories', 'suppliers'));
+        $warehouses = Warehouse::where('status', 'active')
+        ->orderBy('city')
+        ->get();
+
+    return view('products.create', compact(
+        'categories',
+        'suppliers',
+        'warehouses'
+    ));
     }
     public function store(Request $request)
     {
@@ -182,6 +194,11 @@ class ProductController extends Controller
 
             'visibility' => 'required|in:public,private',
             'status' => 'required|in:active,inactive',
+            'warehouse_id' => 'nullable|exists:warehouses,id',
+            'expected_delivery_date' => 'nullable|date',
+            'payment_terms' => 'nullable|string|max:50',
+
+
         ]);
 
         $data['is_featured'] = $request->boolean('is_featured');
@@ -213,6 +230,9 @@ class ProductController extends Controller
     {
         $data['cost_price'] = 0;
         $data['base_selling_price'] = 0;
+
+          $data['expected_delivery_date'] = $request->expected_delivery_date;
+    $data['payment_terms'] = $request->payment_terms;
 
         return Product::create($data);
     }
@@ -270,23 +290,29 @@ class ProductController extends Controller
         ]);
     }
     public function edit(Product $product)
-    {
-        $product->load('variants');
+{
+    $product->load('variants');
 
-        $categories = Category::select('id', 'name', 'parent_id')
-            ->orderBy('name')
-            ->get();
-        // dd($categories);
-        $suppliers = Supplier::active()
-            ->orderBy('name')
-            ->get();
+    $categories = Category::select('id', 'name', 'parent_id')
+        ->orderBy('name')
+        ->get();
 
-        return view('products.edit', compact(
-            'product',
-            'categories',
-            'suppliers'
-        ));
-    }
+    $suppliers = Supplier::active()
+        ->orderBy('name')
+        ->get();
+
+    $warehouses = Warehouse::where('status', 'active')
+        ->orderBy('city')
+        ->get();
+
+    return view('products.edit', compact(
+        'product',
+        'categories',
+        'suppliers',
+        'warehouses'
+    ));
+}
+
 
     public function update(Request $request, Product $product)
     {
@@ -336,6 +362,11 @@ class ProductController extends Controller
 
             'visibility' => 'required|in:public,private',
             'status' => 'required|in:active,inactive',
+
+            'warehouse_id' => 'nullable|exists:warehouses,id',
+            'expected_delivery_date' => 'nullable|date',
+            'payment_terms' => 'nullable|string|max:50',
+
         ]);
 
         $data['is_featured'] = $request->boolean('is_featured');
@@ -406,13 +437,14 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         $product->load([
-            'category:id,name,slug,parent_id',
-            'category.parent:id,name',
-            'supplier:id,name,company_name,phone,email,type,commission_type,commission_value',
-            'variants' => function ($query) {
-                $query->orderBy('sort_order')->orderBy('id');
-            }
-        ]);
+    'category:id,name,slug,parent_id',
+    'category.parent:id,name',
+    'supplier:id,name,company_name,phone,email,type,commission_type,commission_value',
+    'warehouse:id,name,city',
+    'variants' => function ($query) {
+        $query->orderBy('sort_order')->orderBy('id');
+    }
+]);
 
         return view('products.show', compact('product'));
     }

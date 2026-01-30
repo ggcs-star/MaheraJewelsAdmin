@@ -107,6 +107,7 @@
                             <th>SKU</th>
                             <th>Category</th>
                             <th>Supplier</th>
+                            <th>Warehouse</th>
                             <th>Price</th>
                             <th>Status</th>
                             <th width="160">Action</th>
@@ -147,7 +148,16 @@
                             <td>{{ $product->sku }}</td>
                             <td>{{ $product->category?->name }}</td>
                             <td>{{ $product->supplier?->name }}</td>
-                            <td>₹{{ number_format($product->cost_price, 2) }}</td>
+                            <td>
+                                @if($product->warehouse)
+                                    {{ $product->warehouse->name }}
+                                    
+                                @else
+                                    <span class="text-muted">—</span>
+                                @endif
+                            </td>
+
+                            <td>₹{{ number_format($product->variants->sum('total_price'), 2) }}</td>
                             <td>
                                 <span class="badge {{ $product->status == 'active' ? 'bg-success' : 'bg-secondary' }}">
                                     {{ ucfirst($product->status) }}
