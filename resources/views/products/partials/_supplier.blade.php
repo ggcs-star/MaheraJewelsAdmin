@@ -1,6 +1,9 @@
 @php
     /** @var \App\Models\Product|null $product */
 @endphp
+@php
+    $product = $product ?? null;
+@endphp
 
 <div class="card mb-4 shadow-sm">
     <div class="card-header bg-white fw-semibold d-flex align-items-center gap-2">
@@ -119,23 +122,49 @@
         <input type="date"
                name="expected_delivery_date"
                class="form-control"
-               value="{{ old('expected_delivery_date', $product->expected_delivery_date ?? '') }}">
-    </div>
+value="{{ old(
+    'expected_delivery_date',
+    optional($product)->expected_delivery_date
+        ? \Carbon\Carbon::parse($product->expected_delivery_date)->format('Y-m-d')
+        : ''
+) }}">
 
-    {{-- 💳 Payment Terms --}}
-    <div class="col-md-4">
-        <label class="form-label fw-semibold">
-            Payment Terms
-        </label>
+</div>
+{{-- 💳 Payment Terms --}}
+<div class="col-md-4">
+    <label class="form-label fw-semibold">
+        Payment Terms
+    </label>
 
-        <select name="payment_terms" class="form-select">
-            <option value="">Select terms</option>
-            <option value="advance" {{ old('payment_terms', $product->payment_terms ?? '') == 'advance' ? 'selected' : '' }}>Advance</option>
-            <option value="net_7" {{ old('payment_terms', $product->payment_terms ?? '') == 'net_7' ? 'selected' : '' }}>Net 7</option>
-            <option value="net_15" {{ old('payment_terms', $product->payment_terms ?? '') == 'net_15' ? 'selected' : '' }}>Net 15</option>
-            <option value="net_30" {{ old('payment_terms', $product->payment_terms ?? '') == 'net_30' ? 'selected' : '' }}>Net 30</option>
-        </select>
-    </div>
+    @php
+        $savedTerms = old('payment_terms', $product->payment_terms ?? '');
+        $isCustom = $savedTerms && !in_array($savedTerms, ['advance','net_7','net_15','net_30']);
+        $customDays = $isCustom ? str_replace('net_', '', $savedTerms) : '';
+    @endphp
+
+    <select id="paymentTermsSelect" class="form-select">
+        <option value="">Select terms</option>
+        <option value="advance" {{ $savedTerms === 'advance' ? 'selected' : '' }}>Advance</option>
+        <option value="net_7" {{ $savedTerms === 'net_7' ? 'selected' : '' }}>7 Days</option>
+        <option value="net_15" {{ $savedTerms === 'net_15' ? 'selected' : '' }}>15 Days</option>
+        <option value="net_30" {{ $savedTerms === 'net_30' ? 'selected' : '' }}>30 Days</option>
+        <option value="custom" {{ $isCustom ? 'selected' : '' }}>Custom (Days)</option>
+    </select>
+
+    {{-- 👇 THIS is where you type days --}}
+    <input type="number"
+           id="customPaymentDays"
+           class="form-control mt-2 {{ $isCustom ? '' : 'd-none' }}"
+           placeholder="Enter days (e.g. 60, 90)"
+           min="1"
+           value="{{ $customDays }}">
+
+    {{-- hidden field that actually saves to DB --}}
+    <input type="hidden"
+           name="payment_terms"
+           id="finalPaymentTerms"
+           value="{{ $savedTerms }}">
+</div>
 
 </div>
 
