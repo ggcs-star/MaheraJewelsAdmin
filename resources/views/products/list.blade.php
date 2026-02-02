@@ -106,7 +106,7 @@ $totalValue = $pushedProducts->sum(fn($item) =>
                     </tr>
                 </thead>
                 
-                <tbody class="divide-y divide-gray-100">
+<tbody class="divide-y divide-gray-100" x-data="{ active: null }">
                 @foreach($pushedProducts as $item)
           @php
 $totalStock = $item->pricing->sum('quantity');
@@ -114,8 +114,7 @@ $totalValue = $item->pricing->sum(fn($p) => $p->quantity * $p->final_price);
 @endphp
 
 
-<tr x-data="{ open: false }">
-                    <tr class="hover:bg-gray-50/50 transition-colors duration-150">
+<tr class="hover:bg-gray-50/50 transition-colors duration-150">
                         <!-- PRODUCT CELL -->
                         <td class="p-4">
                             <div class="flex items-center gap-4">
@@ -158,12 +157,12 @@ $totalValue = $item->pricing->sum(fn($p) => $p->quantity * $p->final_price);
 
                         <!-- STOCK CELL -->
                         <td class="p-4">
-                            <button @click="open = !open"
+<button @click="active === {{ $item->id }} ? active = null : active = {{ $item->id }}"
                                 class="group flex items-center gap-3 bg-gradient-to-r from-sky-50 to-blue-50 hover:from-sky-100 hover:to-blue-100 border border-blue-200 text-blue-800 font-semibold px-4 py-2.5 rounded-xl transition-all duration-200 hover:border-blue-300 hover:shadow-sm">
                                 <span class="text-lg">{{ $totalStock }}</span>
                                 <span class="text-sm font-normal">units</span>
                                 <svg class="w-4 h-4 ml-2 transition-transform duration-200 group-hover:translate-y-0.5"
-                                     :class="open ? 'rotate-180' : ''"
+:class="active === {{ $item->id }} ? 'rotate-180' : ''"
                                      fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                 </svg>
@@ -203,7 +202,8 @@ $totalValue = $item->pricing->sum(fn($p) => $p->quantity * $p->final_price);
                     </tr>
 
                     <!-- DROPDOWN VARIANTS SECTION -->
-                    <tr x-show="open" x-transition:enter="transition ease-out duration-200"
+<tr x-show="active === {{ $item->id }}" x-cloak x-transition:enter="transition ease-out duration-200"
+     style="display:none;"
                         x-transition:enter-start="opacity-0 -translate-y-2"
                         x-transition:enter-end="opacity-100 translate-y-0"
                         x-transition:leave="transition ease-in duration-150"
@@ -227,16 +227,20 @@ $totalValue = $item->pricing->sum(fn($p) => $p->quantity * $p->final_price);
                                     <div class="overflow-x-auto">
                                         <table class="w-full">
                                             <thead class="bg-gray-50">
-                                                <tr>
-                                                    <th class="text-left p-3 font-medium text-gray-700 text-sm">Variant</th>
-                                                    <th class="text-center p-3 font-medium text-gray-700 text-sm">Quantity</th>
-                                                    <th class="text-center p-3 font-medium text-gray-700 text-sm">Unit Price</th>
-                                                    <th class="text-center p-3 font-medium text-gray-700 text-sm">Total Value</th>
-                                                </tr>
+                                          <tr>
+    <th class="text-left p-3 font-medium text-gray-700 text-sm">Variant</th>
+    <th class="text-center p-3 font-medium text-gray-700 text-sm">Unit Price</th>
+    <th class="text-center p-3 font-medium text-gray-700 text-sm">Quantity</th>
+    <th class="text-center p-3 font-medium text-gray-700 text-sm">Discount</th>
+    <th class="text-center p-3 font-medium text-gray-700 text-sm">Total Value</th>
+</tr>
+
                                             </thead>
                                             <tbody class="divide-y divide-gray-100">
            @foreach($item->pricing as $pricing)
 <tr class="hover:bg-gray-50/50 transition-colors">
+
+    <!-- Variant -->
     <td class="p-3">
         @if($pricing->variant)
             <div class="font-medium text-gray-900">
@@ -255,20 +259,51 @@ $totalValue = $item->pricing->sum(fn($p) => $p->quantity * $p->final_price);
         @endif
     </td>
 
+    <!-- Unit Price (Selling) -->
+    <td class="text-center p-3">
+        ₹{{ number_format($pricing->final_price,2) }}
+    </td>
+
+    <!-- Quantity -->
     <td class="text-center p-3">
         <span class="inline-flex items-center justify-center w-10 h-10 bg-blue-50 text-blue-700 font-semibold rounded-lg">
             {{ $pricing->quantity }}
         </span>
     </td>
 
+    <!-- Discount -->
     <td class="text-center p-3">
-        ₹{{ number_format($pricing->final_price,2) }}
+    @php
+    $original = $pricing->price ?? 0;        
+    $final    = $pricing->final_price ?? 0;
+
+    $varDiscountAmount  = $original - $final;
+    $varDiscountPercent = $original > 0
+        ? round(($varDiscountAmount / $original) * 100)
+        : 0;
+    @endphp
+
+    @if($varDiscountAmount > 0)
+        <div class="inline-flex flex-col items-center">
+            <span class="bg-red-50 text-red-600 px-2 py-1 rounded text-xs font-semibold">
+                -{{ $varDiscountPercent }}%
+            </span>
+            <span class="text-[11px] text-gray-400">
+                ₹{{ number_format($varDiscountAmount,2) }} off
+            </span>
+        </div>
+    @else
+        <span class="text-gray-300 text-xs">—</span>
+    @endif
     </td>
 
+    <!-- Total Value -->
     <td class="text-center p-3 font-bold text-emerald-700">
         ₹{{ number_format($pricing->quantity * $pricing->final_price,2) }}
     </td>
+
 </tr>
+
 @endforeach
 
 
@@ -279,7 +314,7 @@ $totalValue = $item->pricing->sum(fn($p) => $p->quantity * $p->final_price);
                             </div>
                         </td>
                     </tr>
-                </tbody>
+                
                 @endforeach
                 </tbody>
             </table>

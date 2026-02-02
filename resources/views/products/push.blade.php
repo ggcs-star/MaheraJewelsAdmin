@@ -8,6 +8,10 @@
                 ← Back to Product
             </a>
         </div>
+        <script>
+window.existingVariantPlatformData = @json($existingVariantPlatformData ?? []);
+</script>
+
 
         @include('products.partials._errors')
 

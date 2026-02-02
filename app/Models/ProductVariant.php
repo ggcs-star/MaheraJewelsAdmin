@@ -27,6 +27,11 @@ class ProductVariant extends Model
         'total_price'    => 'decimal:2',
         'sort_order'     => 'integer',
     ];
+    public function platformPricings()
+{
+    return $this->hasMany(\App\Models\PlatformPricing::class, 'product_variant_id');
+}
+
 }
 
 
