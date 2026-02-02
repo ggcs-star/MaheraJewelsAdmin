@@ -6,8 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class PlatformPricing extends Model
 {
-    protected $table = 'platform_pricing'; // 🔥 IMPORTANT FIX
-
+    protected $table = 'platform_pricing'; 
  protected $fillable = [
     'platform_product_id',
     'product_variant_id',
@@ -15,16 +14,17 @@ class PlatformPricing extends Model
     'discount_type',
     'discount_value',
     'final_price',
-    'quantity',      // ⭐ ADD THIS
+    'quantity',      
     'currency',
     'status',
 ];
 
 
-    public function platformProduct()
-    {
-        return $this->belongsTo(PlatformProduct::class);
-    }
+public function platformProduct()
+{
+    return $this->belongsTo(PlatformProduct::class, 'platform_product_id');
+}
+
 
     public function variant()
     {

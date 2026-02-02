@@ -21,9 +21,26 @@ document.addEventListener('DOMContentLoaded', function () {
         if (previewEl) previewModal = new bootstrap.Modal(previewEl);
         if (modalEl) modal = new bootstrap.Modal(modalEl);
     }
-
-let variantPlatformData = window.existingVariantPlatformData || {};
 let activeVariantId = null;
+let variantPlatformData = {};
+
+
+if (window.existingVariantPlatformData && Object.keys(window.existingVariantPlatformData).length) {
+    localStorage.removeItem('variantPlatformData');
+}
+
+
+let saved = localStorage.getItem('variantPlatformData');
+
+if (saved) {
+    let draft = JSON.parse(saved);
+
+    if (draft._productId && draft._productId == document.getElementById('selectedProductId').value) {
+        variantPlatformData = draft.data || {};
+    }
+}
+
+
 
 
     if (productSelect.value) {
@@ -48,10 +65,6 @@ let activeVariantId = null;
 productSelect.addEventListener('change', function () {
     document.getElementById('selectedProductId').value = this.value;
 
-
-    // 🔥 RESET OLD PUSH DATA WHEN PRODUCT CHANGES
-    variantPlatformData = {};
-    localStorage.removeItem('variantPlatformData');
 
     const option = this.options[this.selectedIndex];
 
@@ -78,15 +91,6 @@ productSelect.addEventListener('change', function () {
 
     renderVariants(variants);
 
-    setTimeout(() => {
-        document.querySelectorAll('.configure-variant-btn').forEach(btn => {
-            const vid = btn.dataset.variantId;
-            if (variantPlatformData[vid]) {
-                btn.closest('tr').querySelector('.variant-status').innerHTML =
-                    `<span class="badge bg-success">Configured</span>`;
-            }
-        });
-    }, 100);
 
 });
 
@@ -109,10 +113,11 @@ productSelect.addEventListener('change', function () {
 
             variants.forEach(v => {
 
-                const statusBadge =
-                    variantPlatformData[v.id]
-                        ? `<span class="badge bg-success">Configured</span>`
-                        : `<span class="badge bg-secondary">Not Configured</span>`;
+            const statusBadge =
+    variantPlatformData[v.id] && Object.keys(variantPlatformData[v.id]).length
+        ? `<span class="badge bg-success">Configured</span>`
+        : `<span class="badge bg-secondary">Not Configured</span>`;
+
 
                 variantsBody.insertAdjacentHTML('beforeend', `
                     <tr class="text-center">
@@ -147,19 +152,19 @@ function bindConfigureButtons() {
             let originalStock = parseInt(row.children[4].innerText) || 0;
             window.variantOriginalStock = originalStock;
 
-            // 1️⃣ Reset first
             resetModalUI();
 
-            // 2️⃣ Load saved platform data
-            loadVariantData(activeVariantId);
+        document.getElementById('platformSelectionCard').style.display = 'block';
 
-            document.getElementById('platformSelectionCard').style.display = 'block';
-            document.getElementById('platformPricingSection').style.display = 'none';
+loadVariantData(activeVariantId); 
 
-            // 3️⃣ Show modal AFTER everything ready
+const data = variantPlatformData[activeVariantId];
+document.getElementById('platformPricingSection').style.display =
+    data && Object.keys(data).length ? 'block' : 'none';
+
+
             if (modal) modal.show();
 
-            // 4️⃣ Then update stock UI
             setTimeout(updateSharedStockDisplay, 200);
         });
     });
@@ -201,7 +206,7 @@ function bindConfigureButtons() {
 
     document.getElementById('quantity_' + platformId).value = values.qty;
 
-    calculateFinalTotal(platformId); // ⭐ ADD THIS
+    calculateFinalTotal(platformId); 
 
             });
         }
@@ -270,7 +275,6 @@ document.addEventListener('input', function(e) {
         document.getElementById('platformPricingSection').style.display =
             anyChecked ? 'block' : 'none';
 
-        // 🔥 THIS IS THE FIX
         setTimeout(updateSharedStockDisplay, 150);
     });
 });
@@ -282,10 +286,9 @@ document.addEventListener('input', function(e) {
                 alert('No variant selected');
                 return;
             }
-    // 💾 SAVE TO LOCAL STORAGE
 
 
-    variantPlatformData[activeVariantId] = variantPlatformData[activeVariantId] || {};
+variantPlatformData[activeVariantId] = {}; // RESET old platform data
 
             document.querySelectorAll('.platform-checkbox:checked').forEach(cb => {
 
@@ -296,7 +299,6 @@ document.addEventListener('input', function(e) {
 
 
             });
-                // -------- FINAL STOCK CHECK BEFORE SAVE --------
     let totalQty = 0;
 
     document.querySelectorAll('.platform-checkbox:checked').forEach(cb => {
@@ -321,7 +323,13 @@ document.addEventListener('input', function(e) {
 
             modal.hide();
             activeVariantId = null;
-            localStorage.setItem('variantPlatformData', JSON.stringify(variantPlatformData));
+localStorage.setItem('variantPlatformData', JSON.stringify({
+    _productId: document.getElementById('selectedProductId').value,
+    data: variantPlatformData
+}));
+
+
+
 
         });
     // ---------------- PRICE CALCULATION ----------------
@@ -391,6 +399,8 @@ document.addEventListener('input', function(e) {
             let hasData = false;
 
             Object.keys(variantPlatformData).forEach(variantId => {
+                let seen = new Set();
+
 
                 const platforms = variantPlatformData[variantId];
 
@@ -399,6 +409,10 @@ document.addEventListener('input', function(e) {
                     const p = platforms[platformId];
                     let qty = parseInt(p.qty) || 0;
                     if (!qty) return;
+
+                    let key = variantId + '_' + platformId;
+if (seen.has(key)) return;
+seen.add(key);
 
                     hasData = true;
 
@@ -441,15 +455,13 @@ confirmBtn.addEventListener('click', function () {
         form.appendChild(input);
     }
 
-    // ✅ DATA SAVE KARO
     input.value = JSON.stringify(variantPlatformData);
 
     previewModal.hide();
 
-    // ✅ SUBMIT FIRST
+
     form.submit();
 
-    // ✅ CLEAR BAAD ME
     setTimeout(() => {
         localStorage.removeItem('variantPlatformData');
 variantPlatformData = window.existingVariantPlatformData || {};
@@ -461,7 +473,25 @@ variantPlatformData = window.existingVariantPlatformData || {};
 
         }
     }
+        
+
+if (productSelect && productSelect.value) {
+
+    const option = productSelect.options[productSelect.selectedIndex];
+
+    if (option) {
+        try {
+            let variants = JSON.parse(option.dataset.variants || '[]');
+            renderVariants(variants);
+        } catch (e) {
+            console.error('Auto-load variant JSON error', e);
+        }
+    }
+}
+
 });
+
+
 
 
 

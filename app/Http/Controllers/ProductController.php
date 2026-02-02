@@ -470,42 +470,65 @@ public function list()
 
 
 
-    public function push()
-    {
-        $products = Product::with([
-            'category:id,name,parent_id',
-            'category.parent:id,name',
-            'variants:id,product_id,variant_type,variant_value,sku_suffix,image_url,sort_order,status,quantity'
-        ])
-            ->where('status', 'active')
-            ->orderBy('name')
-            ->get()
-            ->map(function ($product) {
+public function push()
+{
+    $products = Product::with([
+        'category:id,name,parent_id',
+        'category.parent:id,name',
+        'variants:id,product_id,variant_type,variant_value,sku_suffix,image_url,sort_order,status,quantity',
+        'variants.platformPricings.platformProduct'
+    ])
+    ->where('status', 'active')
+    ->orderBy('name')
+    ->get()
+    ->map(function ($product) {
 
-                $category = $product->category;
+        $category = $product->category;
 
-                $product->display_category = null;
+        if ($category) {
+            if ($category->parent) {
+                $product->display_category = $category->parent->name;
+                $product->display_subcategory = $category->name;
+            } else {
+                $product->display_category = $category->name;
                 $product->display_subcategory = null;
+            }
+        }
 
-                if ($category) {
-                    if ($category->parent) {
-                        $product->display_category = $category->parent->name;
-                        $product->display_subcategory = $category->name;
-                    } else {
-                        $product->display_category = $category->name;
-                        $product->display_subcategory = null;
-                    }
-                }
+        return $product;
+    });
 
-                return $product;
-            });
-        $platforms = Platform::select('id', 'name')->where('is_enabled', true)->get();
+    $existingConfig = [];
 
-        return view('products.push', [
-            'products' => $products,
-            'platforms' => $platforms,
-        ]);
+    foreach ($products as $product) {
+        foreach ($product->variants as $variant) {
+
+            foreach ($variant->platformPricings as $pricing) {
+
+                $platformId = $pricing->platformProduct->platform_id;
+
+                $existingConfig[$variant->id][$platformId] = [
+                    'price' => $pricing->price,
+                    'qty'   => $pricing->quantity,
+                    'discount_value' => $pricing->discount_value,
+                    'discount_type'  => $pricing->discount_type === 'percentage' ? 'percent' : 'amount',
+                    'final_total'    => $pricing->quantity * $pricing->final_price
+                ];
+            }
+        }
     }
+
+    $platforms = Platform::select('id', 'name')
+        ->where('is_enabled', true)
+        ->get();
+
+    return view('products.push', [
+        'products' => $products,
+        'platforms' => $platforms,
+        'existingVariantPlatformData' => $existingConfig
+    ]);
+}
+
 
 public function pushStore(Request $request)
 {
@@ -518,7 +541,6 @@ $request->validate([
 
 
     
-        //   dd($request->all());
 
         $data = json_decode($request->variant_platform_data, true);
 
@@ -565,7 +587,6 @@ DB::transaction(function () use ($data) {
 
         }
 
-        // ⭐ Deduct stock ONCE
         $variant->decrement('quantity', $totalRequested);
     }
 });
@@ -575,8 +596,8 @@ return redirect()->route('admin.products.list')
 
 
     } catch (\Throwable $e) {
-        dd($e->getMessage(), $e->getLine()); // show real error if any
-    }
+        dd($e->getMessage(), $e->getLine()); 
+        }
 }
 
 
