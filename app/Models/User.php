@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasRoles;
+    use HasApiTokens, HasRoles, Notifiable;
 
     protected $fillable = [
         'name',
@@ -17,6 +19,11 @@ class User extends Authenticatable
         'profile_image',
         'mobile',
         'address',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
     ];
 
     protected $casts = [

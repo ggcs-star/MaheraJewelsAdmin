@@ -36,8 +36,19 @@ class Platform extends Model
             ->withTimestamps();
     }
     public function listings()
-{
-    return $this->hasMany(PlatformProduct::class);
-}
+    {
+        return $this->hasMany(PlatformProduct::class);
+    }
+    public static function getOwnWebsite()
+    {
+        return static::where(
+            'name',
+            config('constants.own_website_name')
+        )
+            ->where('is_enabled', true)
+            ->where('status', 'active')
+            ->first();
+    }
+
 
 }
