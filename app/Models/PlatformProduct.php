@@ -43,4 +43,10 @@ class PlatformProduct extends Model
     return $this->hasMany(PlatformPricing::class);
 }
 
+  public function scopeUserVisible($query)
+    {
+        return $query
+            ->where('is_enabled', true)
+            ->where('status', 'active');
+    }
 }
