@@ -16,6 +16,8 @@
                         <th>Type</th>
                         <th>Value</th>
                         <th>SKU</th>
+                        <th>Height</th>
+                        <th>Width</th>
                         <th>Image</th>
                         <th style="width:70px;text-align:center;">Sort</th>
                         <th style="width:120px;text-align:center;">Status</th>
@@ -29,24 +31,62 @@
                 <tbody>
                     @if(isset($product) && $product->variants->count())
                         @foreach($product->variants as $i => $variant)
-                            <tr>
+                            <tr class="variant-row">
                                 <!-- Type -->
-                                <td>
-                                    <input type="text" name="variants[{{ $i }}][variant_type]" class="form-control"
-                                        value="{{ $variant->variant_type }}" required>
-                                </td>
+                              <td>
+   <select class="form-control variant-type">
+
+        <option value="">Select</option>
+
+       @foreach($variants as $masterVariant)
+   <option value="{{ $masterVariant->id }}"
+        data-input-type="{{ $masterVariant->input_type }}"
+        {{ $variant->variant_type === $masterVariant->slug ? 'selected' : '' }}>
+    {{ $masterVariant->name }}
+</option>
+
+@endforeach
+
+
+    </select>
+</td>
 
                                 <!-- Value -->
-                                <td>
-                                    <input type="text" name="variants[{{ $i }}][variant_value]" class="form-control"
-                                        value="{{ $variant->variant_value }}" required>
-                                </td>
+                              
+<td class="variant-value-cell">
+  <select name="variants[{{ $i }}][variant_value]"
+        class="form-control variant-value"
+        data-selected="{{ $variant->variant_value }}">
+    <option value="">Select value</option>
+</select>
+
+</td>
+
+
 
                                 <!-- SKU -->
                                 <td>
                                     <input type="text" name="variants[{{ $i }}][sku_suffix]" class="form-control"
                                         value="{{ $variant->sku_suffix }}">
                                 </td>
+                                <!-- Height -->
+<td>
+    <input type="text"
+           name="variants[{{ $i }}][height]"
+           class="form-control"
+           placeholder="e.g. 10 cm"
+           value="{{ $variant->height ?? '' }}">
+</td>
+
+<!-- Width -->
+<td>
+    <input type="text"
+           name="variants[{{ $i }}][width]"
+           class="form-control"
+           placeholder="e.g. 5 cm"
+           value="{{ $variant->width ?? '' }}">
+</td>
+
 
                                 <!-- Image -->
                                 <td>
@@ -98,7 +138,7 @@
                         @endforeach
                     @else
                         <tr id="variantEmptyRow">
-                            <td colspan="10" class="text-center text-muted py-4">
+                            <td colspan="12" class="text-center text-muted py-4">
                                 No variants added yet
                             </td>
                         </tr>
@@ -156,64 +196,111 @@
 
 
 <template id="variantRowTemplate">
-    <tr>
-        <!-- Variant Type -->
-        <td>
-            <input type="text" name="variants[__INDEX__][variant_type]" class="form-control" placeholder="red/kg"
-                required>
-        </td>
+<tr class="variant-row">
 
-        <!-- Variant Value -->
-        <td>
-            <input type="text" name="variants[__INDEX__][variant_value]" class="form-control" placeholder="XL/230g"
-                required>
-        </td>
+    <!-- TYPE -->
+    <td>
+        <select class="form-control variant-type">
+            <option value="">Select</option>
 
-        <!-- SKU Suffix -->
-        <td>
-            <input type="text" name="variants[__INDEX__][sku_suffix]" class="form-control" placeholder="XL-RED">
-        </td>
+           @foreach($variants as $masterVariant)
+    <option value="{{ $masterVariant->id }}"
+            data-input-type="{{ $masterVariant->input_type }}">
+        {{ $masterVariant->name }}
+    </option>
+@endforeach
 
-        <!-- Variant Image -->
-        <td>
-            <input type="file" name="variants[__INDEX__][image_url]" class="form-control" accept="image/*">
-        </td>
+        </select>
+    </td>
 
-        <!-- Sort Order -->
-        <td>
-            <input type="number" name="variants[__INDEX__][sort_order]" class="form-control" placeholder="0" value="0">
-        </td>
+    <!-- VALUE -->
+    <td class="variant-value-cell">
+        <select name="variants[__INDEX__][variant_value]"
+        class="form-control variant-value">
+            <option value="">Select value</option>
+        </select>
+    </td>
 
-        <!-- Status -->
-        <td>
-            <select name="variants[__INDEX__][status]" class="form-control">
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-            </select>
-        </td>
+    <!-- SKU -->
+    <td>
+        <input type="text"
+               name="variants[__INDEX__][sku_suffix]"
+               class="form-control"
+               placeholder="XL-RED">
+    </td>
 
-        <!-- Quantity -->
-        <td>
-            <input type="number" name="variants[__INDEX__][quantity]" class="form-control qty" placeholder="0" min="0"
-                value="0">
-        </td>
+    <!-- Height -->
+    <td>
+        <input type="text"
+               name="variants[__INDEX__][height]"
+               class="form-control"
+               placeholder="e.g. 10 cm">
+    </td>
 
-        <!-- Purchase Price -->
-        <td>
-            <input type="number" step="0.01" name="variants[__INDEX__][purchase_price]" class="form-control purchase"
-                placeholder="0.00">
-        </td>
+    <!-- Width -->
+    <td>
+        <input type="text"
+               name="variants[__INDEX__][width]"
+               class="form-control"
+               placeholder="e.g. 5 cm">
+    </td>
 
-        <!-- Total (Auto Calculated) -->
-        <td>
-            <input type="number" step="0.01" class="form-control total" placeholder="0.00" readonly value="0">
-        </td>
+    <!-- Image -->
+    <td>
+        <input type="file"
+               name="variants[__INDEX__][image_url]"
+               class="form-control"
+               accept="image/*">
+    </td>
 
-        <!-- Remove -->
-        <td class="text-center">
-            <button type="button" class="btn btn-sm btn-outline-danger remove-variant" title="Remove variant">
-                ×
-            </button>
-        </td>
-    </tr>
+    <!-- Sort -->
+    <td>
+        <input type="number"
+               name="variants[__INDEX__][sort_order]"
+               class="form-control"
+               value="0">
+    </td>
+
+    <!-- Status -->
+    <td>
+        <select name="variants[__INDEX__][status]" class="form-control">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+        </select>
+    </td>
+
+    <!-- Qty -->
+    <td>
+        <input type="number"
+               name="variants[__INDEX__][quantity]"
+               class="form-control qty"
+               value="0" min="0">
+    </td>
+
+    <!-- Purchase -->
+    <td>
+        <input type="number"
+               step="0.01"
+               name="variants[__INDEX__][purchase_price]"
+               class="form-control purchase"
+               value="0">
+    </td>
+
+    <!-- Total -->
+    <td>
+        <input type="number"
+               step="0.01"
+               class="form-control total"
+               readonly value="0">
+    </td>
+
+    <!-- Remove -->
+    <td class="text-center">
+        <button type="button"
+                class="btn btn-sm btn-outline-danger remove-variant">
+            ×
+        </button>
+    </td>
+
+</tr>
 </template>

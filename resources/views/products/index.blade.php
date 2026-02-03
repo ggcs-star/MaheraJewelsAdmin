@@ -125,20 +125,30 @@
 
                             </td>
                             <td>{{ $product->id }}</td>
-                            <td>
-                               @if ($product->image_url)
-                                    <img
-                                        src="{{ asset('storage/' . $product->image_url) }}"
-                                        class="img-thumbnail product-image-preview"
-                                        data-image="{{ asset('storage/' . $product->image_url) }}"
-                                        style="width:50px;height:50px;object-fit:cover;cursor:zoom-in;"
-                                        onclick="event.stopPropagation()"
-                                    >
-                                @else
-                                    <span class="text-muted small">No Image</span>
-                                @endif
+ <td>
+    @php
+        $images = [];
 
-                            </td>
+        if (!empty($product->gallery_images) && is_array($product->gallery_images)) {
+            $images = $product->gallery_images;
+        } elseif ($product->image_url) {
+            $images = [$product->image_url];
+        }
+    @endphp
+
+    @if(count($images))
+        <img
+            src="{{ asset('storage/'.$images[0]) }}"
+            class="img-thumbnail product-image-preview"
+            data-images='@json(array_map(fn($i) => asset("storage/".$i), $images))'
+            style="width:50px;height:50px;object-fit:cover;cursor:zoom-in;"
+            onclick="event.stopPropagation()"
+        >
+    @else
+        <span class="text-muted small">No Image</span>
+    @endif
+</td>
+             
                             <td>
                                 <a href="{{ admin_route('products.show', $product->id) }}"
                                    class="text-decoration-none fw-semibold">
@@ -168,6 +178,11 @@
 
                                 <a href="{{ admin_route('products.edit', $product->id) }}"
                                 class="btn btn-sm btn-primary">Edit</a>
+
+                                 <a href="{{ admin_route('products.invoice.view', $product->id) }}"
+       class="btn btn-sm btn-success">
+        Invoice
+    </a>
 
                                 <form action="{{ admin_route('products.destroy', $product->id) }}"
                                     method="POST"
@@ -257,9 +272,20 @@
 </div>
 
 </div>
-
 <div id="imagePreviewModal" class="image-preview-modal">
-    <img id="imagePreviewModalImg" src="">
+    <span class="modal-close">✕</span>
+
+    <div class="modal-content">
+        <!-- LEFT ARROW -->
+        <span class="modal-nav left">‹</span>
+
+        <!-- IMAGE -->
+        <img id="imagePreviewModalImg" src="" alt="Preview">
+
+        <!-- RIGHT ARROW -->
+        <span class="modal-nav right">›</span>
+    </div>
 </div>
+
 
 @endsection
