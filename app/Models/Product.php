@@ -51,10 +51,15 @@ class Product extends Model
     {
         return $this->belongsTo(Supplier::class);
     }
-    public function variants()
+ public function variants()
 {
-    return $this->hasMany(ProductVariant::class);
+    return $this->hasMany(
+        \App\Models\ProductVariant::class,
+        'product_id', // FK in product_variants table
+        'id'          // PK in products table
+    );
 }
+
 public function platforms()
 {
     return $this->belongsToMany(Platform::class, 'platform_products')

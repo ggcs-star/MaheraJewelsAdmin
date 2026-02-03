@@ -12,8 +12,8 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\WarehouseController;
-
-
+use App\Http\Controllers\VariantController;
+use App\Http\Controllers\ProductInvoiceController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -81,6 +81,26 @@ Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:admin']
         Route::get('/categories/{category}/details', [CategoryController::class, 'details'])->name('categories.details');
         Route::post('/categories/bulk-delete', [CategoryController::class, 'bulkDelete'])->name('categories.bulk-delete');
 
+        Route::get(
+            '/products/{product}/invoice',
+            [ProductInvoiceController::class, 'view']
+        )->name('products.invoice.view');
+
+        Route::get(
+    '/products/{product}/invoice/download',
+    [ProductInvoiceController::class, 'download']
+)->name('products.invoice.download');
+
+
+        Route::get(
+            '/products/{product}/invoice/pdf',
+            [ProductInvoiceController::class, 'pdf']
+        )->name('products.invoice.pdf');
+
+        Route::get(
+            '/products/{product}/invoice/image',
+            [ProductInvoiceController::class, 'image']
+        )->name('products.invoice.image');
                 
         Route::get('/warehouses', [WarehouseController::class, 'index'])->name('warehouses.index');
         Route::get('/warehouses/create', [WarehouseController::class, 'create'])->name('warehouses.create');
@@ -91,6 +111,29 @@ Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:admin']
         Route::get('/warehouses/{warehouse}', [WarehouseController::class, 'show'])->name('warehouses.show');
         Route::post('/warehouses/bulk-delete', [WarehouseController::class, 'bulkDelete'])->name('warehouses.bulk-delete');
 
+       // Variants master (add / edit / delete)
+Route::resource('variants', VariantController::class);
+
+// Variant values
+Route::post(
+    'variants/{variant}/values',
+    [VariantController::class, 'storeValue']
+)->name('variants.values.store');
+
+Route::delete(
+    'variant-values/{value}',
+    [VariantController::class, 'destroyValue']
+)->name('variants.values.destroy');
+
+Route::put(
+    'variant-values/{value}',
+    [VariantController::class, 'updateValue']
+)->name('variants.values.update');
+
+Route::get(
+    'variants/{variant}/values',
+    [VariantController::class, 'getValues']
+)->name('admin.variants.values.list');
 
         Route::get('/products', [ProductController::class, 'index'])->name('products.index');
         Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');

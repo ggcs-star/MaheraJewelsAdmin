@@ -1,7 +1,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    const imageInput  = document.getElementById('imageInput');
+    const imageInput   = document.getElementById('imageInput');
     const imagePreview = document.getElementById('imagePreview');
 
     if (!imageInput || !imagePreview) return;
@@ -12,20 +12,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
     imageInput.addEventListener('change', function () {
 
-        if (!this.files || !this.files[0]) return;
+        if (!this.files || this.files.length === 0) return;
 
-        const file = this.files[0];
-        const reader = new FileReader();
+        const placeholder = document.getElementById('imagePlaceholder');
+        if (placeholder) placeholder.remove();
 
-        reader.onload = e => {
-            imagePreview.innerHTML = `
-                <img src="${e.target.result}"
-                     class="img-fluid rounded"
-                     style="max-height:100%; object-fit:contain;">
-            `;
-        };
+        Array.from(this.files).forEach(file => {
 
-        reader.readAsDataURL(file);
+            const reader = new FileReader();
+
+            reader.onload = e => {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.className = 'rounded border';
+                img.style.width = '100px';
+                img.style.height = '100px';
+                img.style.objectFit = 'cover';
+                img.style.marginRight = '8px';
+                img.style.marginBottom = '8px';
+
+                imagePreview.appendChild(img);
+            };
+
+            reader.readAsDataURL(file);
+        });
     });
 
 });

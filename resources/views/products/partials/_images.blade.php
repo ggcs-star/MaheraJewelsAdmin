@@ -5,7 +5,7 @@
 <div class="card mb-4 shadow-sm">
     <div class="card-header bg-white fw-semibold d-flex align-items-center gap-2">
         <span class="text-primary fs-5">🖼️</span>
-        <span>Product Image</span>
+        <span>Product Images</span>
     </div>
 
     <div class="card-body">
@@ -14,17 +14,18 @@
             <!-- Image Upload -->
             <div class="col-md-4">
                 <label class="form-label fw-semibold">
-                    Product Image
+                    Product Images
                 </label>
 
                 <input type="file"
-                       name="image_url"
+                       name="gallery_images[]"
                        id="imageInput"
                        class="form-control"
-                       accept="image/*">
+                       accept="image/*"
+                       multiple>
 
                 <div class="form-text">
-                    JPG, PNG, WEBP • Max 2MB • Recommended square image
+                    JPG, PNG, WEBP • Max 2MB each • Recommended square images
                 </div>
             </div>
 
@@ -35,20 +36,29 @@
                 </label>
 
                 <div id="imagePreview"
-                     class="border rounded d-flex align-items-center justify-content-center bg-light"
-                     style="width:100%; height:220px; cursor:pointer;">
+                     class="border rounded bg-light p-2 d-flex flex-wrap gap-2 align-items-start"
+                     style="width:100%; min-height:220px; cursor:pointer;">
 
-                    @if(!empty($product?->image_url))
-                        {{-- EDIT MODE: show existing image --}}
+                    {{-- MULTIPLE IMAGES (new system) --}}
+                    @if(!empty($product?->gallery_images) && is_array($product->gallery_images))
+                        @foreach($product->gallery_images as $img)
+                            <img src="{{ asset('storage/'.$img) }}"
+                                 class="rounded border"
+                                 style="width:100px;height:100px;object-fit:cover;">
+                        @endforeach
+
+                    {{-- SINGLE IMAGE (old system – backward support) --}}
+                    @elseif(!empty($product?->image_url))
                         <img src="{{ asset('storage/'.$product->image_url) }}"
-                             class="img-fluid rounded"
-                             style="max-height:100%; object-fit:contain;">
+                             class="rounded border"
+                             style="width:100px;height:100px;object-fit:cover;">
+
+                    {{-- NO IMAGE --}}
                     @else
-                        {{-- CREATE MODE --}}
-                        <div class="text-center text-muted" id="imagePlaceholder">
+                        <div class="text-center text-muted w-100" id="imagePlaceholder">
                             <div class="fs-3">📷</div>
                             <div class="small">
-                                Click to upload image
+                                Click to upload images
                             </div>
                         </div>
                     @endif

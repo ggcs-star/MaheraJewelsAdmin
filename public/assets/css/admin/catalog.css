@@ -67,6 +67,7 @@
 
 /* WHITE FRAME – SAME AS PRODUCT PAGE FEEL */
 .image-preview-modal .modal-content {
+     position: relative; 
     background: #fff;
     padding: 12px;
     border-radius: 12px;
@@ -151,4 +152,45 @@
 
 .toggle-icon {
     pointer-events: none;
+}
+/* FORCE SHOW MODAL WHEN JS USES display:flex */
+.image-preview-modal {
+    display: none;
+}
+
+.image-preview-modal.show {
+    display: flex;
+    opacity: 1;
+    pointer-events: auto;
+}
+/* IMAGE PREVIEW NAV ARROWS */
+.image-preview-modal .modal-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    background: #ffffff;
+    color: #333;
+    border-radius: 50%;
+    font-size: 28px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,.35);
+    user-select: none;
+    z-index: 2;
+}
+
+.image-preview-modal .modal-nav:hover {
+    background: #f1f1f1;
+}
+.image-preview-modal .modal-nav.left {
+    left: 8px;     /* image ke bilkul paas */
+}
+
+.image-preview-modal .modal-nav.right {
+    right: 8px;
 }
