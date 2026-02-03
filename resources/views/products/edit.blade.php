@@ -61,3 +61,4 @@
     @include('products.scripts.categories-js')
     @include('products.scripts.supplier-js')
 @endsection
+

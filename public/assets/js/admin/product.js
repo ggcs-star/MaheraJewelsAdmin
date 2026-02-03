@@ -103,21 +103,64 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const modal = document.getElementById('imagePreviewModal')
     const modalImg = document.getElementById('imagePreviewModalImg')
+    const prevBtn = document.querySelector('.modal-nav.left')
+    const nextBtn = document.querySelector('.modal-nav.right')
+    const closeBtn = document.querySelector('.modal-close')
 
-    if (!modal || !modalImg) return
+    if (!modal || !modalImg || !prevBtn || !nextBtn || !closeBtn) return
+
+    let images = []
+    let currentIndex = 0
+
+    const updateImage = () => {
+        modalImg.src = images[currentIndex]
+    }
+
+    const toggleNav = () => {
+        const show = images.length > 1
+        prevBtn.style.display = show ? 'block' : 'none'
+        nextBtn.style.display = show ? 'block' : 'none'
+    }
 
     document.querySelectorAll('.product-image-preview').forEach(img => {
         img.addEventListener('click', function (e) {
             e.stopPropagation()
 
-            modalImg.src = this.dataset.image
-            modal.classList.add('active')
+            images = JSON.parse(this.dataset.images || '[]')
+            if (!images.length) return
+
+            currentIndex = 0
+            updateImage()
+            toggleNav()
+
+            modal.classList.add('show')
         })
     })
 
-    modal.addEventListener('click', () => {
-        modal.classList.remove('active')
+    prevBtn.addEventListener('click', e => {
+        e.stopPropagation()
+        currentIndex = (currentIndex - 1 + images.length) % images.length
+        updateImage()
+    })
+
+    nextBtn.addEventListener('click', e => {
+        e.stopPropagation()
+        currentIndex = (currentIndex + 1) % images.length
+        updateImage()
+    })
+
+    closeBtn.addEventListener('click', () => {
+        modal.classList.remove('show')
         modalImg.src = ''
     })
 
+    modal.addEventListener('click', e => {
+        if (e.target === modal) {
+            modal.classList.remove('show')
+            modalImg.src = ''
+        }
+    })
+
 })
+
+
