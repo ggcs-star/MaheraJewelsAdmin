@@ -19,33 +19,41 @@ class VariantController extends Controller
         ]);
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'name'       => 'required',
-            'slug'       => 'required|unique:variants,slug',
-            'input_type' => 'required',
-        ]);
+ public function store(Request $request)
+{
+    $request->validate([
+        'name'           => 'required',
+        'input_type'     => 'required',
+        'has_dimensions' => 'required|boolean',
+    ]);
 
-        Variant::create($request->only('name', 'slug', 'input_type'));
+    Variant::create([
+        'name'           => $request->name,
+        'input_type'     => $request->input_type,
+        'has_dimensions' => $request->has_dimensions,
+        'is_active'      => 1,
+    ]);
 
-        return back();
-    }
+    return back();
+}
 
-    public function update(Request $request, Variant $variant)
-    {
-        $request->validate([
-            'name'       => 'required',
-            'slug'       => 'required|unique:variants,slug,' . $variant->id,
-            'input_type' => 'required',
-        ]);
+public function update(Request $request, Variant $variant)
+{
+    $request->validate([
+        'name'           => 'required',
+        'input_type'     => 'required',
+        'has_dimensions' => 'required|boolean',
+    ]);
 
-        $variant->update(
-            $request->only('name', 'slug', 'input_type')
-        );
+    $variant->update([
+        'name'           => $request->name,
+        'input_type'     => $request->input_type,
+        'has_dimensions' => $request->has_dimensions,
+    ]);
 
-        return back();
-    }
+    return back();
+}
+
 
     public function destroy(Variant $variant)
     {
@@ -58,35 +66,58 @@ class VariantController extends Controller
     ======================== */
 
     public function storeValue(Request $request, Variant $variant)
-    {
-        $request->validate([
-            'value' => 'required',
-            'extra' => 'nullable',
-        ]);
+{
+    $rules = [
+        'value' => 'required',
+    ];
 
-        $variant->values()->create(
-            $request->only('value', 'extra')
-        );
-
-        return back();
+    // 🔥 agar variant has_dimensions = YES
+    if ($variant->has_dimensions) {
+        $rules['height'] = 'required|numeric';
+        $rules['width']  = 'required|numeric';
     }
 
-    public function updateValue(Request $request, VariantValue $value)
-    {
-        $request->validate([
-            'value' => 'required',
-            'extra' => 'nullable',
-        ]);
+    $request->validate($rules);
 
-        $value->update(
-            $request->only('value', 'extra')
-        );
+    $variant->values()->create([
+        'value'  => $request->value,
+        'color'  => $request->color ?? null,
+        'height' => $variant->has_dimensions ? $request->height : null,
+        'width'  => $variant->has_dimensions ? $request->width : null,
+        'is_active' => 1,
+    ]);
 
-        return back();
+    return back();
+}
+
+public function updateValue(Request $request, VariantValue $value)
+{
+    $variant = $value->variant;
+
+    $rules = [
+        'value' => 'required',
+    ];
+
+    if ($variant->has_dimensions) {
+        $rules['height'] = 'required|numeric';
+        $rules['width']  = 'required|numeric';
     }
+
+    $request->validate($rules);
+
+    $value->update([
+        'value'  => $request->value,
+        'color'  => $request->color ?? null,
+        'height' => $variant->has_dimensions ? $request->height : null,
+        'width'  => $variant->has_dimensions ? $request->width : null,
+    ]);
+
+    return back();
+}
 
     public function destroyValue(VariantValue $value)
     {
+    
         $value->delete();
         return back();
     }

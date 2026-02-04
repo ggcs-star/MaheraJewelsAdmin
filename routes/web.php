@@ -14,6 +14,8 @@ use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\VariantController;
 use App\Http\Controllers\ProductInvoiceController;
+use App\Http\Controllers\TaxController;
+
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -149,6 +151,24 @@ Route::get(
         Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
         Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
     });
+// 💰 GST & TAXES
+Route::get('/taxes', [\App\Http\Controllers\TaxController::class, 'index'])
+    ->name('taxes.index');
+
+Route::get('/taxes/create', [\App\Http\Controllers\TaxController::class, 'create'])
+    ->name('taxes.create');
+
+Route::post('/taxes', [\App\Http\Controllers\TaxController::class, 'store'])
+    ->name('taxes.store');
+
+Route::get('/taxes/{tax}/edit', [\App\Http\Controllers\TaxController::class, 'edit'])
+    ->name('taxes.edit');
+
+Route::put('/taxes/{tax}', [\App\Http\Controllers\TaxController::class, 'update'])
+    ->name('taxes.update');
+
+Route::delete('/taxes/{tax}', [\App\Http\Controllers\TaxController::class, 'destroy'])
+    ->name('taxes.destroy');
 
 
 // USER ROUTES - Prefix: /users
