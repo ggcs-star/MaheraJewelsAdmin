@@ -173,28 +173,28 @@
                                     {{ ucfirst($product->status) }}
                                 </span>
                             </td>
-                            <td onclick="event.stopPropagation()">
-                                
-
-                                <a href="{{ admin_route('products.edit', $product->id) }}"
-                                class="btn btn-sm btn-primary">Edit</a>
-
-                                 <a href="{{ admin_route('products.invoice.view', $product->id) }}"
-       class="btn btn-sm btn-success">
-        Invoice
+                           <td onclick="event.stopPropagation()">
+    <a href="{{ admin_route('products.edit', $product->id) }}"
+        class="btn btn-sm btn-primary">
+        <i class="fas fa-edit"></i>
     </a>
 
-                                <form action="{{ admin_route('products.destroy', $product->id) }}"
-                                    method="POST"
-                                    class="d-inline"
-                                    onsubmit="return confirm('Delete this product?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger">
-                                        Delete
-                                    </button>
-                                </form>
-                            </td>
+    <a href="{{ admin_route('products.invoice.view', $product->id) }}"
+        class="btn btn-sm btn-success">
+        <i class="fas fa-file-invoice"></i>
+    </a>
+
+    <form action="{{ admin_route('products.destroy', $product->id) }}"
+        method="POST"
+        class="d-inline"
+        onsubmit="return confirm('Delete this product?')">
+        @csrf
+        @method('DELETE')
+        <button type="submit" class="btn btn-sm btn-danger">
+            <i class="fas fa-trash"></i>
+        </button>
+    </form>
+</td>
 
                         </tr>
                     @empty
