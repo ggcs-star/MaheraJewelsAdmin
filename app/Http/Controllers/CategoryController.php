@@ -84,6 +84,11 @@ class CategoryController extends Controller
 )
         ->orderBy('sort_order')
         ->paginate(10);
+        $categories->getCollection()->transform(function ($category, $index) use ($categories) {
+    $category->serial = $categories->firstItem() + $index;
+    return $category;
+});
+
 
     $parents = Category::whereNull('parent_id')->get();
 
@@ -188,12 +193,16 @@ class CategoryController extends Controller
             ->orderBy('name')
             ->get();
     }
-    public function details(Category $category)
+public function details(Category $category, Request $request)
 {
     $category->load('parent', 'children');
 
-    return view('categories.details', compact('category'));
+    $serial = $request->serial;
+
+    return view('categories.details', compact('category', 'serial'));
 }
+
+
 public function bulkDelete(Request $request)
 {
     $ids = $request->input('ids', []);

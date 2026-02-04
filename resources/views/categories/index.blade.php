@@ -141,7 +141,7 @@
                                     </div>
                                 </td>
                                 <td class="px-4">
-                                    <span class="badge bg-light text-muted font-monospace border px-2">#{{ $category->id }}</span>
+                                    <span class="badge bg-light text-muted font-monospace border px-2">{{ $category->serial }}</span>
                                 </td>
                                 <td class="px-4">
                                     <div class="d-flex align-items-center gap-3">

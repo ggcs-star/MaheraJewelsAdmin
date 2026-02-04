@@ -5,10 +5,51 @@
      id="platformPricingCard_{{ $platform->id }}"
      style="display: none;">
 
-    <div class="card-header bg-white fw-semibold d-flex align-items-center gap-2">
-        <span class="fs-5">🌐</span>
-        <span>{{ ucfirst($platform->name) }} Pricing & Inventory</span>
+@php
+    $platformName = strtolower(trim($platform->name));
+@endphp
+
+<div class="card-header bg-white fw-semibold d-flex align-items-center gap-3">
+
+    <div class="w-16 h-10 flex items-center">
+
+        {{-- AMAZON --}}
+        @if(str_contains($platformName,'amazon'))
+            <svg viewBox="0 0 200 60" class="h-6 w-auto" preserveAspectRatio="xMidYMid meet">
+                <text x="0" y="42" font-size="38" font-weight="700" fill="#111" font-family="Arial, Helvetica, sans-serif">
+                    amazon
+                </text>
+                <path d="M10 50 C40 70, 120 70, 150 50"
+                      stroke="#FF9900" stroke-width="5"
+                      fill="none" stroke-linecap="round"/>
+            </svg>
+
+        {{-- FLIPKART --}}
+        @elseif(str_contains($platformName,'flipkart'))
+            <svg viewBox="0 0 64 64" class="h-8 w-auto" preserveAspectRatio="xMidYMid meet">
+                <rect width="64" height="64" rx="14" fill="#2874F0"/>
+                <text x="32" y="44" text-anchor="middle"
+                      font-size="40" font-weight="800"
+                      fill="#FFD700"
+                      font-family="Arial, Helvetica, sans-serif">F</text>
+            </svg>
+
+   {{-- WEBSITE --}}
+@elseif(str_contains($platformName,'website'))
+
+<span class="text-xl leading-none">🌐</span>
+
+{{-- DEFAULT --}}
+@else
+    <div class="w-8 h-8 bg-gray-200 rounded-full"></div>
+@endif
+
+
     </div>
+
+    <span>{{ ucfirst($platform->name) }} </span>
+</div>
+
 
     <div class="card-body">
       <div class="row g-3">
@@ -18,13 +59,14 @@
         <label class="form-label fw-semibold">
             Price (₹) <span class="text-danger">*</span>
         </label>
-        <input type="number"
-               step="0.01"
-               id="price_{{ $platform->id }}"
-               class="form-control platform-calc-input"
-               placeholder="0.00"
-               min="0"
-               value="0">
+      <input type="number"
+       step="0.01"
+       id="price_{{ $platform->id }}"
+       class="form-control platform-calc-input platform-price-input"
+       placeholder="0.00"
+       min="0"
+       value="0">
+
         <div class="form-text">
             Selling price on {{ ucfirst($platform->name) }}
         </div>
