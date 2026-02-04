@@ -14,6 +14,9 @@ use App\Models\PlatformPricing;
 
 use App\Models\PlatformProduct;
 use App\Models\Warehouse;
+use App\Models\Variant;
+use App\Models\VariantValue;
+
 
 class ProductController extends Controller
 {
@@ -31,6 +34,7 @@ class ProductController extends Controller
             'cost_price',
             'base_selling_price',
             'image_url',
+            'gallery_images',
             'status',
             'visibility'
         ])
@@ -144,10 +148,14 @@ class ProductController extends Controller
         ->orderBy('city')
         ->get();
 
-    return view('products.create', compact(
+         $variants = Variant::with('values')
+        ->where('is_active', 1)
+        ->get();
+        return view('products.create', compact(
         'categories',
         'suppliers',
-        'warehouses'
+        'warehouses',
+        'variants'
     ));
     }
     public function store(Request $request)
@@ -239,52 +247,73 @@ class ProductController extends Controller
 
         return Product::create($data);
     }
-    private function handleVariants(Request $request, Product $product): array
-    {
-        $totalPurchase = 0;
-        $totalSelling = 0;
 
-        if (!$request->has('variants') || !is_array($request->variants)) {
-            return compact('totalPurchase', 'totalSelling');
-        }
+private function handleVariants(Request $request, Product $product): array
+{
+    $totalPurchase = 0;
+    $totalSelling  = 0;
 
-        foreach ($request->variants as $variant) {
-
-            if (empty($variant['variant_value'])) {
-                continue;
-            }
-
-            $purchase = (float) ($variant['purchase_price'] ?? 0);
-            $selling = (float) ($variant['selling_price'] ?? 0);
-
-            $data = [
-                'variant_type' => $variant['variant_type'],
-                'variant_value' => $variant['variant_value'],
-                'quantity' => $variant['quantity'] ?? 0,
-                'purchase_price' => $purchase,
-                'total_price' => ($variant['quantity'] ?? 0) * ($variant['purchase_price'] ?? 0),
-                'selling_price' => $selling,
-                'sku_suffix' => $variant['sku_suffix'] ?? null,
-                'sort_order' => $variant['sort_order'] ?? 0,
-                'status' => $variant['status'] ?? 'active',
-            ];
-
-            if (
-                isset($variant['image_url']) &&
-                $variant['image_url'] instanceof \Illuminate\Http\UploadedFile
-            ) {
-                $data['image_url'] =
-                    $variant['image_url']->store('products/variants', 'public');
-            }
-
-            $product->variants()->create($data);
-
-            $totalPurchase += $purchase;
-            $totalSelling += $selling;
-        }
-
+    if (!$request->has('variants')) {
         return compact('totalPurchase', 'totalSelling');
     }
+
+    $seen = []; // 🔑 IMPORTANT
+
+    foreach ($request->variants as $variant) {
+
+        if (
+            empty($variant['variant_id']) ||
+            empty($variant['variant_value_id'])
+        ) {
+            continue;
+        }
+
+        $variantId = (int) $variant['variant_id'];
+        $valueId   = (int) $variant['variant_value_id'];
+
+        // 🔥 SAME VARIANT + SAME VALUE → SKIP
+        $key = $variantId . '-' . $valueId;
+        if (isset($seen[$key])) {
+            continue;
+        }
+        $seen[$key] = true;
+
+        $qty      = (int) ($variant['quantity'] ?? 0);
+        $purchase = (float) ($variant['purchase_price'] ?? 0);
+
+        if ($qty <= 0) continue;
+
+        $imagePath = null;
+        if (
+            isset($variant['image_url']) &&
+            $variant['image_url'] instanceof \Illuminate\Http\UploadedFile
+        ) {
+            $imagePath = $variant['image_url']
+                ->store('products/variants', 'public');
+        }
+
+        ProductVariant::create([
+            'product_id'       => $product->id,
+            'variant_id'       => $variantId,
+            'variant_value_id' => $valueId,
+            'quantity'         => $qty,
+            'purchase_price'   => $purchase,
+            'total_price'      => $qty * $purchase,
+            'sku_suffix'       => $variant['sku_suffix'] ?? null,
+            'sort_order'       => $variant['sort_order'] ?? 0,
+            'status'           => $variant['status'] ?? 'active',
+            'color'            => $variant['color'] ?? null,
+            'height'           => $variant['height'] ?? null,
+            'width'            => $variant['width'] ?? null,
+            'image_url'        => $imagePath,
+        ]);
+
+        $totalPurchase += $qty * $purchase;
+    }
+
+    return compact('totalPurchase', 'totalSelling');
+}
+
     private function updateProductPrices(Product $product, array $totals): void
     {
         $product->update([
@@ -307,16 +336,20 @@ class ProductController extends Controller
     $warehouses = Warehouse::where('status', 'active')
         ->orderBy('city')
         ->get();
+     $variants = Variant::with('values')
+        ->where('is_active', true)
+        ->orderBy('name')
+        ->get();
+
 
     return view('products.edit', compact(
         'product',
         'categories',
         'suppliers',
-        'warehouses'
+        'warehouses',
+        'variants'
     ));
 }
-
-
     public function update(Request $request, Product $product)
     {
         DB::transaction(function () use ($request, $product) {
@@ -389,15 +422,21 @@ class ProductController extends Controller
                 $request->file('image_url')->store('products', 'public');
         }
 
-        if ($request->hasFile('gallery_images')) {
-            $gallery = [];
+       if ($request->hasFile('gallery_images')) {
 
-            foreach ($request->file('gallery_images') as $img) {
-                $gallery[] = $img->store('products/gallery', 'public');
-            }
+    $existingImages = is_array($product->gallery_images)
+        ? $product->gallery_images
+        : [];
 
-            $data['gallery_images'] = $gallery;
-        }
+    $newImages = [];
+
+    foreach ($request->file('gallery_images') as $img) {
+        $newImages[] = $img->store('products/gallery', 'public');
+    }
+
+    $data['gallery_images'] = array_merge($existingImages, $newImages);
+}
+
 
         return $data;
     }
@@ -645,5 +684,12 @@ return back()->with('error', $e->getMessage());
 
         return redirect()->back()->with('success', 'Selected products deleted successfully');
     }
+    public function invoiceView(Product $product)
+{
+    $product->load(['variants', 'supplier', 'warehouse']);
+
+    return view('products.invoice', compact('product'));
+}
+
 
 }
