@@ -452,17 +452,14 @@ class ProductController extends Controller
         return view('products.show', compact('product'));
     }
 
-
 public function list()
 {
     $pushedProducts = PlatformProduct::with([
         'platform:id,display_name',
         'product.category:id,name',
         'product.supplier:id,name',
-        'pricing.variant:id,variant_type,variant_value',
-    ])
-    ->withSum('pricing as total_stock', 'quantity') // if you have qty column
-    ->paginate(10);
+        'pricing.variant'
+    ])->paginate(10);
 
     return view('products.list', compact('pushedProducts'));
 }
@@ -470,33 +467,54 @@ public function list()
 
 
 
+
+
+
+
+
 public function push()
 {
-    $products = Product::with([
-        'category:id,name,parent_id',
-        'category.parent:id,name',
-        'variants:id,product_id,variant_type,variant_value,sku_suffix,image_url,sort_order,status,quantity',
-        'variants.platformPricings.platformProduct'
-    ])
+$products = Product::with([
+    'category:id,name,parent_id',
+    'category.parent:id,name',
+    'variants:id,product_id,variant_type,variant_value,sku_suffix,image_url,sort_order,status,quantity,purchase_price,selling_price',
+    'variants.platformPricings.platformProduct'
+])
+
     ->where('status', 'active')
     ->orderBy('name')
     ->get()
-    ->map(function ($product) {
+->map(function ($product) {
 
-        $category = $product->category;
+    $category = $product->category;
 
-        if ($category) {
-            if ($category->parent) {
-                $product->display_category = $category->parent->name;
-                $product->display_subcategory = $category->name;
-            } else {
-                $product->display_category = $category->name;
-                $product->display_subcategory = null;
-            }
+    if ($category) {
+        if ($category->parent) {
+            $product->display_category = $category->parent->name;
+            $product->display_subcategory = $category->name;
+        } else {
+            $product->display_category = $category->name;
+            $product->display_subcategory = null;
         }
+    }
 
-        return $product;
-    });
+    // 👇 THIS IS IMPORTANT
+ $product->variant_payload = $product->variants->map(function ($v) {
+    return [
+        'id' => $v->id,
+        'variant_type' => $v->variant_type,
+        'variant_value' => $v->variant_value,
+        'sku_suffix' => $v->sku_suffix,
+        'quantity' => $v->quantity,
+        'purchase_price' => $v->purchase_price,
+        'selling_price'  => $v->selling_price,   // ⭐ NEW
+    ];
+});
+
+
+    return $product;
+});
+
 
     $existingConfig = [];
 
@@ -552,43 +570,57 @@ DB::transaction(function () use ($data) {
 
     foreach ($data as $variantId => $platforms) {
 
-        $variant = ProductVariant::where('id', $variantId)->lockForUpdate()->firstOrFail();
-
-        $totalRequested = collect($platforms)->sum('qty');
-
-        if ($variant->quantity < $totalRequested) {
-            throw new \Exception("Total quantity exceeds stock for variant {$variant->variant_value}");
-        }
-
-       foreach ($platforms as $platformId => $p) {
-
-    $platformProduct = PlatformProduct::firstOrCreate([
-        'platform_id' => $platformId,
-        'product_id'  => $variant->product_id,
-    ]);
-
-    $discountType = $p['discount_type'] === 'percent' ? 'percentage' : 'fixed';
-
-    PlatformPricing::updateOrCreate(
-    [
-        'platform_product_id' => $platformProduct->id,
-        'product_variant_id'  => $variantId,
-    ],
-    [
-        'price'          => $p['price'],
-        'discount_type'  => $discountType,
-        'discount_value' => $p['discount_value'],
-        'final_price'    => $p['final_total'] / max($p['qty'],1),
-        'quantity'       => $p['qty'],
-        'currency'       => 'INR',
-        'status'         => 'active',
-    ]);
-
-
-        }
-
-        $variant->decrement('quantity', $totalRequested);
+    if (!is_array($platforms) || empty($platforms)) {
+        continue; // skip empty variant
     }
+
+    $variant = ProductVariant::where('id', $variantId)->lockForUpdate()->firstOrFail();
+
+    $totalRequested = collect($platforms)
+        ->filter(fn($p) => isset($p['qty']) && $p['qty'] > 0)
+        ->sum('qty');
+
+    if ($totalRequested <= 0) {
+        continue;
+    }
+
+    if ($variant->quantity < $totalRequested) {
+        throw new \Exception("Stock exceeded for {$variant->variant_value}");
+    }
+
+    foreach ($platforms as $platformId => $p) {
+
+        if (!isset($p['qty']) || $p['qty'] <= 0) {
+            continue;
+        }
+
+        $platformProduct = PlatformProduct::firstOrCreate([
+            'platform_id' => $platformId,
+            'product_id'  => $variant->product_id,
+        ]);
+
+        $discountType = $p['discount_type'] === 'percent' ? 'percentage' : 'fixed';
+
+        PlatformPricing::updateOrCreate(
+            [
+                'platform_product_id' => $platformProduct->id,
+                'product_variant_id'  => $variantId,
+            ],
+            [
+                'price'          => $p['price'],
+                'discount_type'  => $discountType,
+                'discount_value' => $p['discount_value'],
+                'final_price'    => $p['final_total'] / max($p['qty'],1),
+                'quantity'       => $p['qty'],
+                'currency'       => 'INR',
+                'status'         => 'active',
+            ]
+        );
+    }
+
+    $variant->decrement('quantity', $totalRequested);
+}
+
 });
 
 return redirect()->route('admin.products.list')
@@ -596,7 +628,7 @@ return redirect()->route('admin.products.list')
 
 
     } catch (\Throwable $e) {
-        dd($e->getMessage(), $e->getLine()); 
+return back()->with('error', $e->getMessage());
         }
 }
 

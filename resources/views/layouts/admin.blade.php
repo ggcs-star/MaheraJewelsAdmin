@@ -26,8 +26,55 @@
 @else
     @include('layouts.admin.sidebar')
 @endif
+<!-- UI Toast Notification -->
+<div id="uiToast" class="ui-toast"></div>
 
-        
+<style>
+.ui-toast{
+    position: fixed;
+    right: 20px;   /* 🔥 change */
+    top: 20px;
+
+    background: #ef4444;
+    color: #fff;
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-weight: 600;
+    box-shadow: 0 15px 30px rgba(0,0,0,.2);
+    display: none;
+    z-index: 9999;
+    animation: slideIn .35s ease;
+}
+@keyframes slideIn{
+    from{transform: translateX(-30px); opacity:0}
+    to{transform: translateX(0); opacity:1}
+}
+</style>
+
+        <script>
+window.showToast = function(message, type="error") {
+
+    const toast = document.getElementById("uiToast");
+    if (!toast) return;
+
+    toast.innerText = message;
+
+    if(type==="success"){
+        toast.style.background="#16a34a";
+    } else if(type==="warning"){
+        toast.style.background="#f59e0b";
+    } else {
+        toast.style.background="#ef4444";
+    }
+
+    toast.style.display="block";
+
+    setTimeout(()=>{
+        toast.style.display="none";
+    },3500);
+}
+</script>
+
         <div 
             class="flex-1 flex flex-col transition-all duration-300"
             :class="sidebarOpen ? 'md:ml-[260px]' : 'ml-0'"

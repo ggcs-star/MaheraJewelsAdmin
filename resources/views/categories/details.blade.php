@@ -12,7 +12,7 @@
                 </ol>
             </nav>
             <h2 class="fw-bold mb-1">Category Details</h2>
-            <div class="text-muted">Category ID: #{{ str_pad($category->id, 6, '0', STR_PAD_LEFT) }}</div>
+<div class="text-muted">Serial No: {{ $serial }}</div>
         </div>
 
         <div class="d-flex gap-2">
