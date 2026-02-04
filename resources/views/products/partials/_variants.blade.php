@@ -1,3 +1,15 @@
+<style>
+.color-cell { position: relative; }
+.color-blocker {
+    position: absolute;
+    inset: 0;
+    background: transparent;
+    display: none;
+    cursor: not-allowed;
+    z-index: 10;
+}
+</style>
+
 <div class="card mb-4 shadow-sm">
     <div class="card-header bg-white d-flex justify-content-between align-items-center">
         <div class="fw-semibold fs-6">
@@ -15,6 +27,7 @@
                     <tr class="text-center align-middle">
                         <th>Type</th>
                         <th>Value</th>
+                       <th>Color</th>
                         <th>SKU</th>
                         <th>Height</th>
                         <th>Width</th>
@@ -34,16 +47,20 @@
                             <tr class="variant-row">
                                 <!-- Type -->
                               <td>
-   <select class="form-control variant-type">
+  <select
+    name="variants[{{ $i }}][variant_id]"
+    class="form-control variant-type">
 
         <option value="">Select</option>
 
        @foreach($variants as $masterVariant)
-   <option value="{{ $masterVariant->id }}"
+<option value="{{ $masterVariant->id }}"
         data-input-type="{{ $masterVariant->input_type }}"
-        {{ $variant->variant_type === $masterVariant->slug ? 'selected' : '' }}>
+        data-has-dimensions="{{ $masterVariant->has_dimensions }}"
+        {{ $variant->variant_id == $masterVariant->id ? 'selected' : '' }}>
     {{ $masterVariant->name }}
 </option>
+
 
 @endforeach
 
@@ -54,14 +71,21 @@
                                 <!-- Value -->
                               
 <td class="variant-value-cell">
-  <select name="variants[{{ $i }}][variant_value]"
-        class="form-control variant-value"
-        data-selected="{{ $variant->variant_value }}">
+<select
+    name="variants[{{ $i }}][variant_value_id]"
+    class="form-control variant-value"
+    data-selected-id="{{ $variant->variant_value_id }}"
+    required>
     <option value="">Select value</option>
 </select>
 
 </td>
-
+<td class="variant-color-cell">
+    <input type="color"
+           name="variants[{{ $i ?? '__INDEX__' }}][color]"
+           class="form-control form-control-color variant-color"
+           value="{{ $variant->color ?? '#000000' }}">
+</td>
 
 
                                 <!-- SKU -->
@@ -138,7 +162,7 @@
                         @endforeach
                     @else
                         <tr id="variantEmptyRow">
-                            <td colspan="12" class="text-center text-muted py-4">
+                            <td colspan="13" class="text-center text-muted py-4">
                                 No variants added yet
                             </td>
                         </tr>
@@ -200,14 +224,18 @@
 
     <!-- TYPE -->
     <td>
-        <select class="form-control variant-type">
+        <select
+    name="variants[__INDEX__][variant_id]"
+    class="form-control variant-type">
             <option value="">Select</option>
 
            @foreach($variants as $masterVariant)
     <option value="{{ $masterVariant->id }}"
-            data-input-type="{{ $masterVariant->input_type }}">
-        {{ $masterVariant->name }}
-    </option>
+        data-input-type="{{ $masterVariant->input_type }}"
+        data-has-dimensions="{{ $masterVariant->has_dimensions }}">
+    {{ $masterVariant->name }}
+</option>
+
 @endforeach
 
         </select>
@@ -215,11 +243,23 @@
 
     <!-- VALUE -->
     <td class="variant-value-cell">
-        <select name="variants[__INDEX__][variant_value]"
-        class="form-control variant-value">
-            <option value="">Select value</option>
-        </select>
+    <select
+    name="variants[__INDEX__][variant_value_id]"
+    class="form-control variant-value"
+    data-selected-id=""
+    required>
+    <option value="">Select value</option>
+</select>
+
+
     </td>
+<td class="variant-color-cell">
+    <input type="color"
+           name="variants[{{ $i ?? '__INDEX__' }}][color]"
+           class="form-control form-control-color variant-color"
+           value="{{ $variant->color ?? '#000000' }}">
+</td>
+
 
     <!-- SKU -->
     <td>

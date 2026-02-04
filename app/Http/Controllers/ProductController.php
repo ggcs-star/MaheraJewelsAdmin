@@ -247,54 +247,72 @@ class ProductController extends Controller
 
         return Product::create($data);
     }
-  private function handleVariants(Request $request, Product $product): array
+
+private function handleVariants(Request $request, Product $product): array
 {
     $totalPurchase = 0;
     $totalSelling  = 0;
 
-    if (!$request->has('variants') || !is_array($request->variants)) {
+    if (!$request->has('variants')) {
         return compact('totalPurchase', 'totalSelling');
     }
 
+    $seen = []; // 🔑 IMPORTANT
+
     foreach ($request->variants as $variant) {
 
-        // value must exist
-        if (empty($variant['variant_value'])) {
+        if (
+            empty($variant['variant_id']) ||
+            empty($variant['variant_value_id'])
+        ) {
             continue;
         }
+
+        $variantId = (int) $variant['variant_id'];
+        $valueId   = (int) $variant['variant_value_id'];
+
+        // 🔥 SAME VARIANT + SAME VALUE → SKIP
+        $key = $variantId . '-' . $valueId;
+        if (isset($seen[$key])) {
+            continue;
+        }
+        $seen[$key] = true;
 
         $qty      = (int) ($variant['quantity'] ?? 0);
         $purchase = (float) ($variant['purchase_price'] ?? 0);
 
-        $data = [
-            'variant_value'  => $variant['variant_value'], // 🔥 STRING ONLY
-            'height'         => $variant['height'] ?? null,
-            'width'          => $variant['width'] ?? null,
-            'quantity'       => $qty,
-            'purchase_price' => $purchase,
-            'total_price'    => $qty * $purchase,
-            'sku_suffix'     => $variant['sku_suffix'] ?? null,
-            'sort_order'     => $variant['sort_order'] ?? 0,
-            'status'         => $variant['status'] ?? 'active',
-        ];
+        if ($qty <= 0) continue;
 
+        $imagePath = null;
         if (
             isset($variant['image_url']) &&
             $variant['image_url'] instanceof \Illuminate\Http\UploadedFile
         ) {
-            $data['image_url'] =
-                $variant['image_url']->store('products/variants', 'public');
+            $imagePath = $variant['image_url']
+                ->store('products/variants', 'public');
         }
 
-        $product->variants()->create($data);
+        ProductVariant::create([
+            'product_id'       => $product->id,
+            'variant_id'       => $variantId,
+            'variant_value_id' => $valueId,
+            'quantity'         => $qty,
+            'purchase_price'   => $purchase,
+            'total_price'      => $qty * $purchase,
+            'sku_suffix'       => $variant['sku_suffix'] ?? null,
+            'sort_order'       => $variant['sort_order'] ?? 0,
+            'status'           => $variant['status'] ?? 'active',
+            'color'            => $variant['color'] ?? null,
+            'height'           => $variant['height'] ?? null,
+            'width'            => $variant['width'] ?? null,
+            'image_url'        => $imagePath,
+        ]);
 
-        $totalPurchase += $purchase;
+        $totalPurchase += $qty * $purchase;
     }
 
     return compact('totalPurchase', 'totalSelling');
 }
-
-
 
     private function updateProductPrices(Product $product, array $totals): void
     {
@@ -332,8 +350,6 @@ class ProductController extends Controller
         'variants'
     ));
 }
-
-
     public function update(Request $request, Product $product)
     {
         DB::transaction(function () use ($request, $product) {
@@ -586,7 +602,9 @@ DB::transaction(function () use ($data) {
         $totalRequested = collect($platforms)->sum('qty');
 
         if ($variant->quantity < $totalRequested) {
-            throw new \Exception("Total quantity exceeds stock for variant {$variant->variant_value}");
+throw new \Exception(
+    "Total quantity exceeds stock for variant {$variant->value->value}"
+);
         }
 
        foreach ($platforms as $platformId => $p) {

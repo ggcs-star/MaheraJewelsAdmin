@@ -6,10 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class Variant extends Model
 {
-    protected $fillable = ['name','slug','input_type','is_active'];
+    protected $fillable = [
+        'name',            
+        'input_type',      
+        'has_dimensions',  
+        'is_active'
+    ];
 
     public function values()
     {
         return $this->hasMany(VariantValue::class);
     }
 }
+

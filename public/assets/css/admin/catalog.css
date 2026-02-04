@@ -194,3 +194,16 @@
 .image-preview-modal .modal-nav.right {
     right: 8px;
 }
+/* 🔒 Disable color picker click (overlay blocker) */
+.color-cell {
+    position: relative;
+}
+
+.color-blocker {
+    position: absolute;
+    inset: 0;
+    background: transparent;
+    display: none;
+    cursor: not-allowed;
+    z-index: 10;
+}
