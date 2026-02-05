@@ -1,13 +1,23 @@
 <style>
-.color-cell { position: relative; }
+.color-cell {
+    position: relative;
+}
+
+.variant-color {
+    position: relative;
+    z-index: 1;
+}
+
 .color-blocker {
     position: absolute;
     inset: 0;
+    z-index: 9999;          /* 🔥 VERY IMPORTANT */
     background: transparent;
-    display: none;
     cursor: not-allowed;
-    z-index: 10;
+    display: none;
+    pointer-events: all;    /* 🔥 FORCE BLOCK */
 }
+
 </style>
 
 <div class="card mb-4 shadow-sm">
@@ -37,6 +47,7 @@
                         <th style="width:80px;text-align:center;">Qty</th>
 
                         <th>Purchase</th>
+                        <th>Selling</th>
                         <th>Total</th>
                         <th width="40"></th>
                     </tr>
@@ -71,20 +82,33 @@
                                 <!-- Value -->
                               
 <td class="variant-value-cell">
-<select
-    name="variants[{{ $i }}][variant_value_id]"
-    class="form-control variant-value"
-    data-selected-id="{{ $variant->variant_value_id }}"
-    required>
-    <option value="">Select value</option>
-</select>
+    <select
+        name="variants[{{ $i }}][variant_value_id]"
+        class="form-control variant-value">
 
+        <option value="">Select value</option>
+
+        @foreach($variants as $masterVariant)
+            @if($masterVariant->id == $variant->variant_id)
+                @foreach($masterVariant->values as $val)
+                    <option value="{{ $val->id }}"
+                        {{ $variant->variant_value_id == $val->id ? 'selected' : '' }}>
+                        {{ $val->value }}
+                    </option>
+                @endforeach
+            @endif
+        @endforeach
+
+    </select>
 </td>
-<td class="variant-color-cell">
+
+<td class="color-cell">
     <input type="color"
            name="variants[{{ $i ?? '__INDEX__' }}][color]"
            class="form-control form-control-color variant-color"
            value="{{ $variant->color ?? '#000000' }}">
+
+    <div class="color-blocker"></div>
 </td>
 
 
@@ -145,6 +169,15 @@
                                     <input type="number" step="0.01" name="variants[{{ $i }}][purchase_price]"
                                         class="form-control purchase" value="{{ $variant->purchase_price }}">
                                 </td>
+                                <!-- Selling -->
+<td>
+    <input type="number"
+           step="0.01"
+           name="variants[{{ $i }}][selling_price]"
+           class="form-control selling"
+           value="{{ $variant->selling_price ?? 0 }}">
+</td>
+
 
                                 <!-- Total -->
                                 <td>
@@ -253,12 +286,15 @@
 
 
     </td>
-<td class="variant-color-cell">
+<td class="color-cell">
     <input type="color"
            name="variants[{{ $i ?? '__INDEX__' }}][color]"
            class="form-control form-control-color variant-color"
            value="{{ $variant->color ?? '#000000' }}">
+
+    <div class="color-blocker"></div>
 </td>
+
 
 
     <!-- SKU -->
@@ -325,6 +361,15 @@
                class="form-control purchase"
                value="0">
     </td>
+    <!-- Selling -->
+<td>
+    <input type="number"
+           step="0.01"
+           name="variants[__INDEX__][selling_price]"
+           class="form-control selling"
+           value="0">
+</td>
+
 
     <!-- Total -->
     <td>

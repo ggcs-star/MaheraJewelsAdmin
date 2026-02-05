@@ -280,6 +280,8 @@ private function handleVariants(Request $request, Product $product): array
 
         $qty      = (int) ($variant['quantity'] ?? 0);
         $purchase = (float) ($variant['purchase_price'] ?? 0);
+        $selling = (float) ($variant['selling_price'] ?? 0);
+
 
         if ($qty <= 0) continue;
 
@@ -298,6 +300,7 @@ private function handleVariants(Request $request, Product $product): array
             'variant_value_id' => $valueId,
             'quantity'         => $qty,
             'purchase_price'   => $purchase,
+            'selling_price'    => $selling,        
             'total_price'      => $qty * $purchase,
             'sku_suffix'       => $variant['sku_suffix'] ?? null,
             'sort_order'       => $variant['sort_order'] ?? 0,

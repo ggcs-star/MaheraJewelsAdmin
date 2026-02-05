@@ -102,6 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tableBody.insertAdjacentHTML('beforeend', html);
             toggleEmptyRow();
             updateSummary();
+            updateColorCells();
         });
     }
 
@@ -114,6 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.target.closest('tr').remove();
         toggleEmptyRow();
         setTimeout(updateSummary, 50);
+        updateColorCells();
     });
 
     
@@ -300,6 +302,13 @@ document.addEventListener('DOMContentLoaded', function () {
             select.dispatchEvent(new Event('change'));
         }
     });
+    document.querySelectorAll('#variantTable tbody tr').forEach(row => {
+    const select = row.querySelector('.variant-type');
+    if (select && select.value) {
+        select.dispatchEvent(new Event('change'));
+    }
+});
+
 });
 </script>
 <script>
@@ -335,26 +344,9 @@ document.addEventListener('change', function (e) {
         }
     }
 
-    /* ===============================
-       2️⃣ COLOR (ONLY ENABLE / DISABLE)
-    =============================== */
-    const colorInput = row.querySelector('.variant-color');
-    const variantName = option.text.toLowerCase();
 
-    const allowColorFor = ['size', 'storage', 'color'];
 
-    const allowColor = allowColorFor.some(v =>
-        variantName.includes(v)
-    );
 
-    if (colorInput) {
-        if (allowColor) {
-            colorInput.disabled = false;
-        } else {
-            colorInput.value = '';
-            colorInput.disabled = true;
-        }
-    }
 
     /* ===============================
        3️⃣ LOAD VARIANT VALUES
@@ -370,22 +362,70 @@ document.addEventListener('change', function (e) {
         valueSelect.innerHTML = `<option value="">Select value</option>`;
         return;
     }
+fetch(`/admin/variants/${variantId}/values`)
+    .then(res => res.json())
+    .then(data => {
 
-    fetch(`/admin/variants/${variantId}/values`)
-        .then(res => res.json())
-        .then(data => {
-            let options = `<option value="">Select value</option>`;
-            data.forEach(v => {
-                const selected = selectedId && selectedId == v.id ? 'selected' : '';
-                options += `<option value="${v.id}" ${selected}>${v.value}</option>`;
-            });
-            valueSelect.innerHTML = options;
+        let options = `<option value="">Select value</option>`;
 
-            // auto select if only one value
-            if (!valueSelect.value && data.length === 1) {
-                valueSelect.value = data[0].id;
-            }
+        data.forEach(v => {
+            const isSelected = selectedId && String(selectedId) === String(v.id);
+            options += `<option value="${v.id}" ${isSelected ? 'selected' : ''}>
+                ${v.value}
+            </option>`;
         });
 
+        valueSelect.innerHTML = options;
+
+        // 🔥 FINAL GUARANTEE (EDIT MODE FIX)
+        if (selectedId) {
+            valueSelect.value = selectedId;
+        }
+
+        // Create mode auto select (only if 1 value)
+        if (!selectedId && data.length === 1) {
+            valueSelect.value = data[0].id;
+        }
+        updateColorCells();
+
+    });
+
+
 });
+</script>
+<script>
+function updateColorCells() {
+
+    document.querySelectorAll('.variant-row').forEach(row => {
+
+        const typeSelect = row.querySelector('.variant-type');
+        const blocker = row.querySelector('.color-blocker');
+        const input   = row.querySelector('.variant-color');
+
+        if (!typeSelect || !blocker || !input) return;
+
+        const typeName =
+            typeSelect.options[typeSelect.selectedIndex]?.text
+                .toLowerCase() || '';
+
+        // ✅ allowed types
+        const allowColorTypes = ['size', 'color', 'storage'];
+
+        const allowColor = allowColorTypes.some(t =>
+            typeName.includes(t)
+        );
+
+        if (allowColor) {
+            blocker.style.display = 'none';
+            input.classList.remove('bg-light');
+        } else {
+            blocker.style.display = 'block';
+            input.classList.add('bg-light');
+        }
+    });
+}
+
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', updateColorCells);
 </script>
