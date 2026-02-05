@@ -37,8 +37,8 @@ class ProductDetailTransformer
 
                 return [
                     'id' => $variant->id,
-                    'variant_type' => $variant->variant_type,
-                    'variant_value' => $variant->variant_value,
+                    'variant_type' => optional($variant->variant)->name,
+                    'variant_value' => optional($variant->value)->value,
                     'sku' => $variant->sku_suffix,
                     'price' => $pricing?->price,
                     'final_price' => $pricing?->final_price,
