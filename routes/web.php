@@ -150,6 +150,9 @@ Route::get(
         Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
         Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
         Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+        Route::get('/platform/{platform}/products', [ProductController::class, 'platformProducts'])
+    ->name('platform.products');
+
     });
 // 💰 GST & TAXES
 Route::get('/taxes', [\App\Http\Controllers\TaxController::class, 'index'])

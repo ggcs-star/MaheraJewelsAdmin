@@ -10,12 +10,16 @@
                     <th>Value</th>
                     <th>SKU</th>
                     <th>Qty</th>
+                    <th>Cost</th>
+                        <th>Selling Price</th>  <!-- NEW -->
+   <!-- NEW -->
+
                     <th>Status</th>
                 </tr>
             </thead>
            <tbody id="variantsTableBody">
     <tr>
-        <td colspan="6" class="text-center text-muted">
+<td colspan="8" class="text-center text-muted">
             Select product to view variants
         </td>
     </tr>
