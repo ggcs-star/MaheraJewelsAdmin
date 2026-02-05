@@ -490,12 +490,13 @@
                                         @foreach($product->variants as $index => $variant)
                                         <tr>
                                             <td class="text-center">{{ $index + 1 }}</td>
-                                            <td>
-                                                <span class="badge bg-primary bg-opacity-10 text-primary">
-                                                    {{ $variant->variant_type }}
-                                                </span>
-                                            </td>
-                                            <td class="fw-semibold">{{ $variant->variant_value }}</td>
+                                           <td>
+    <span class="badge bg-primary bg-opacity-10 text-primary">
+        {{ $variant->variant->name }}
+    </span>
+</td>
+<td class="fw-semibold">{{ $variant->value->value }}</td>
+
                                             <td>
                                                 <code class="small">{{ $variant->sku_suffix ?? '—' }}</code>
                                             </td>
