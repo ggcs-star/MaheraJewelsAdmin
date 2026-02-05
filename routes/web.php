@@ -103,7 +103,11 @@ Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:admin']
             '/products/{product}/invoice/image',
             [ProductInvoiceController::class, 'image']
         )->name('products.invoice.image');
-                
+        Route::delete(
+    'products/{product}/image/{index}',
+    [ProductController::class, 'deleteImage']
+)->name('products.image.delete');
+     
         Route::get('/warehouses', [WarehouseController::class, 'index'])->name('warehouses.index');
         Route::get('/warehouses/create', [WarehouseController::class, 'create'])->name('warehouses.create');
         Route::post('/warehouses', [WarehouseController::class, 'store'])->name('warehouses.store');

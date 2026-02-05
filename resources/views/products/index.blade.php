@@ -281,17 +281,24 @@
 <div id="imagePreviewModal" class="image-preview-modal">
     <span class="modal-close">✕</span>
 
-    <div class="modal-content">
-        <!-- LEFT ARROW -->
+    <div class="modal-content position-relative">
+
+        {{-- DELETE BUTTON --}}
+        <button
+            id="deleteModalImageBtn"
+            class="btn btn-danger btn-sm position-absolute"
+            style="top:10px; right:10px; z-index:10">
+            DELETE
+        </button>
+
         <span class="modal-nav left">‹</span>
 
-        <!-- IMAGE -->
         <img id="imagePreviewModalImg" src="" alt="Preview">
 
-        <!-- RIGHT ARROW -->
         <span class="modal-nav right">›</span>
     </div>
 </div>
+
 
 
 @endsection
