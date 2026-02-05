@@ -632,6 +632,8 @@ public function push()
 
 public function pushStore(Request $request)
 {
+    \Log::info('PUSH DATA', $request->all());
+
     try {
 
     
@@ -643,6 +645,7 @@ $request->validate([
     
 
         $data = json_decode($request->variant_platform_data, true);
+
 
         if (!$data || !is_array($data)) {
             return back()->with('error', 'No platform data found');
@@ -656,7 +659,10 @@ DB::transaction(function () use ($data) {
         continue; // skip empty variant
     }
 
-    $variant = ProductVariant::where('id', $variantId)->lockForUpdate()->firstOrFail();
+$variant = ProductVariant::with(['product','value'])
+    ->where('id', $variantId)
+    ->lockForUpdate()
+    ->firstOrFail();
 
     $totalRequested = collect($platforms)
         ->filter(fn($p) => isset($p['qty']) && $p['qty'] > 0)
@@ -665,60 +671,81 @@ DB::transaction(function () use ($data) {
     if ($totalRequested <= 0) {
         continue;
     }
+// OLD allocation BEFORE update
+$oldAllocated = PlatformPricing::where('product_variant_id', $variantId)->sum('quantity');
 
-    if ($variant->quantity < $totalRequested) {
-        throw new \Exception("Stock exceeded for {$variant->variant_value}");
-    }
 
-    foreach ($platforms as $platformId => $p) {
 
-        if (!isset($p['qty']) || $p['qty'] <= 0) {
-            continue;
-        }
-$platformProduct = PlatformProduct::firstOrCreate(
-    [
-        'platform_id' => $platformId,
-        'product_id'  => $variant->product_id,
-    ],
-    [
+
+foreach ($platforms as $platformId => $p) {
+
+    if (!isset($p['qty']) || $p['qty'] <= 0) continue;
+
+    $platformProduct = PlatformProduct::firstOrCreate(
+        [
+            'platform_id' => $platformId,
+            'product_id'  => $variant->product_id,
+        ],
+        [
+            'platform_sku'   => $variant->product->sku . ($variant->sku_suffix ?? ''),
+            'platform_price' => $p['price'],
+            'platform_stock' => 0,
+            'status'         => 'active',
+            'sync_status'    => 'pending',
+        ]
+    );
+
+    $platformProduct->update([
         'platform_sku'   => $variant->product->sku . ($variant->sku_suffix ?? ''),
         'platform_price' => $p['price'],
-        'platform_stock' => 0,
         'status'         => 'active',
-        'sync_status'    => 'pending',
+    ]);
+
+    $discountType = $p['discount_type'] === 'percent' ? 'percentage' : 'fixed';
+PlatformPricing::updateOrCreate(
+    [
+        'platform_product_id' => $platformProduct->id,
+        'product_variant_id'  => $variantId,
+    ],
+    [
+        'price'          => $p['price'],
+        'discount_type'  => $discountType,
+        'discount_value' => $p['discount_value'],
+        'final_price'    => $p['final_total'] / max($p['qty'],1),
+        'quantity'       => $p['qty'],
+        'currency'       => 'INR',
+        'status'         => 'active',
     ]
 );
 
-// Always update latest values
-$platformProduct->update([
-    'platform_sku'   => $variant->product->sku . ($variant->sku_suffix ?? ''),
-    'platform_price' => $p['price'],
-    'status'         => 'active',
-]);
+// ✅ ADD THIS
+$platformProduct->platform_stock = PlatformPricing::where('platform_product_id', $platformProduct->id)->sum('quantity');
+$platformProduct->save();
 
-// Add stock
-$platformProduct->increment('platform_stock', $p['qty']);
+}
+// NEW allocation AFTER update
+$newAllocated = PlatformPricing::where('product_variant_id', $variantId)->sum('quantity');
 
-        $discountType = $p['discount_type'] === 'percent' ? 'percentage' : 'fixed';
+$difference = $newAllocated - $oldAllocated;
 
-        PlatformPricing::updateOrCreate(
-            [
-                'platform_product_id' => $platformProduct->id,
-                'product_variant_id'  => $variantId,
-            ],
-            [
-                'price'          => $p['price'],
-                'discount_type'  => $discountType,
-                'discount_value' => $p['discount_value'],
-                'final_price'    => $p['final_total'] / max($p['qty'],1),
-                'quantity'       => $p['qty'],
-                'currency'       => 'INR',
-                'status'         => 'active',
-            ]
-        );
-    }
+// ❗ Safety check
+if ($difference > 0 && $difference > $variant->quantity) {
+    throw new \Exception(
+        "Not enough stock for " .
+        optional($variant->value)->value .
+        " (Available: {$variant->quantity}, Needed: {$difference})"
+    );
+}
 
-    $variant->decrement('quantity', $totalRequested);
+// ✅ Adjust stock
+if ($difference > 0) {
+    $variant->decrement('quantity', $difference);
+}
+
+if ($difference < 0) {
+    $variant->increment('quantity', abs($difference));
+}
+
 }
 
 });

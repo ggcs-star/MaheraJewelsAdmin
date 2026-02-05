@@ -25,17 +25,19 @@
 if (modalEl) {
     modalEl.addEventListener('hidden.bs.modal', function () {
 
-        if (activeVariantId && modalOpenedButNotSaved) {
+    // ❌ warning optional
+    // showToast("⚠ Configuration not saved!", "warning");
 
-            // Reset UI (unsaved changes clear)
-            document.querySelectorAll('.platform-checkbox').forEach(cb => cb.checked = false);
-            document.querySelectorAll('.platform-pricing-card').forEach(c => c.style.display = 'none');
+    modalOpenedButNotSaved = false;
+    activeVariantId = null;
 
-            showToast("⚠ Configuration not saved!", "warning");
-        }
+    document.querySelectorAll('.platform-checkbox')
+        .forEach(cb => cb.checked = false);
 
-        activeVariantId = null;
-    });
+    document.querySelectorAll('.platform-pricing-card')
+        .forEach(c => c.style.display = 'none');
+});
+
 }
 
 let activeVariantId = null;
@@ -59,12 +61,20 @@ let modalOpenedButNotSaved = false;
     }
 
 
-
+// 🔥 FORCE product_id on page load
+if (productSelect && productSelect.value) {
+    productSelect.name = "product_id";
+}
+    
 
         if (productSelect.value) {
         document.getElementById('selectedProductId').value = productSelect.value;
     }
 form.addEventListener('submit', function (e) {
+    console.log('Submitting product:', productSelect.value);
+console.log('modalOpenedButNotSaved:', modalOpenedButNotSaved);
+console.log('variantPlatformData:', variantPlatformData);
+
 
     // Clean empty objects
     Object.keys(variantPlatformData).forEach(vId => {
@@ -103,7 +113,8 @@ form.addEventListener('submit', function (e) {
 
             // ---------------- PRODUCT CHANGE ----------------
     productSelect.addEventListener('change', function () {
-        document.getElementById('selectedProductId').value = this.value;
+document.getElementById('selectedProductId').value = this.value;
+productSelect.name = "product_id"; // ensure submit
 
 
         const option = this.options[this.selectedIndex];
@@ -200,7 +211,7 @@ function bindConfigureButtons() {
         btn.addEventListener('click', function () {
 modalOpenedButNotSaved = true;  // 🔥 user opened config
 
-            activeVariantId = this.dataset.variantId;
+activeVariantId = parseInt(this.dataset.variantId);
             const row = this.closest('tr');
 
             // ⭐ Variant ka apna selling price
@@ -358,9 +369,8 @@ showToast("❌ Quantity exceeds available stock (" + master + ")");
     }
 
     // 🛑 SAFETY — object guarantee
-    if (!variantPlatformData[activeVariantId]) {
-        variantPlatformData[activeVariantId] = {};
-    }
+activeVariantId = parseInt(activeVariantId);
+variantPlatformData[activeVariantId] = {};
 
     let totalQty = 0;
 
@@ -522,7 +532,10 @@ showToast("⚠ No platform data configured!", "warning");
             });
 
             if (confirmBtn) {
+                
     confirmBtn.addEventListener('click', function () {
+        modalOpenedButNotSaved = false;
+
 
         let input = document.getElementById('variantPlatformDataInput');
 
@@ -539,7 +552,8 @@ showToast("⚠ No platform data configured!", "warning");
         previewModal.hide();
 
 
-        form.submit();
+modalOpenedButNotSaved = false;
+form.requestSubmit();
 
         setTimeout(() => {
             localStorage.removeItem('variantPlatformData');
