@@ -373,8 +373,17 @@ showToast("❌ Quantity exceeds available stock (" + master + ")");
 
         let calc = calculateFinalTotal(platformId);
 
-        // ✅ SAFE SET (object always exists now)
-        variantPlatformData[activeVariantId][platformId] = calc;
+// ⭐ Variant row se details nikaalo
+const row = document.querySelector(
+    `.configure-variant-btn[data-variant-id="${activeVariantId}"]`
+).closest('tr');
+
+calc.variant_type  = row.children[1].innerText;
+calc.variant_value = row.children[2].innerText;
+calc.variant_sku   = row.children[3].innerText;
+
+variantPlatformData[activeVariantId][platformId] = calc;
+
     });
 
     if (totalQty > window.variantOriginalStock) {
@@ -488,14 +497,18 @@ showToast("❌ Quantity exceeds available stock (" + master + ")");
                                 : '₹' + p.discount_value;
 
                         previewBody.insertAdjacentHTML('beforeend', `
-                            <tr>
-    <td>${window.platformMap && window.platformMap[platformId] ? window.platformMap[platformId] : 'Platform ' + platformId}</td>
-                                <td>${qty}</td>
-                                <td>₹${p.price}</td>
-                                <td>${discountText}</td>
-                                <td class="fw-bold text-success">₹${p.final_total.toFixed(2)}</td>
-                            </tr>
-                        `);
+<tr>
+    <td>${window.platformMap?.[platformId] ?? 'Platform ' + platformId}</td>
+    <td>${p.variant_type}</td>
+    <td>${p.variant_value}</td>
+    <td>${p.variant_sku}</td>
+    <td>${qty}</td>
+    <td>₹${p.price}</td>
+    <td>${discountText}</td>
+    <td class="fw-bold text-success">₹${p.final_total.toFixed(2)}</td>
+</tr>
+`);
+
 
                     });
                 });

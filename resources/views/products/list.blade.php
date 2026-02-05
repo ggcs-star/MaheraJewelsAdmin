@@ -351,14 +351,19 @@ $finalTotal = $preDiscountTotal - $discountAmount;
 <tr class="hover:bg-gray-50/60 transition">
 
     {{-- Variant --}}
-    <td class="py-3 px-4">
-        @if($pricing->variant)
-            <div class="font-medium text-gray-900">{{ $pricing->variant->variant_type }}</div>
-            <div class="text-xs text-gray-500">{{ $pricing->variant->variant_value }}</div>
-        @else
-            <div class="text-xs font-medium text-red-600">Variant Deleted</div>
-        @endif
-    </td>
+<td class="py-3 px-4">
+    @if($pricing->variant && $pricing->variant->variant && $pricing->variant->value)
+        <div class="font-medium text-gray-900">
+            {{ $pricing->variant->variant->name }}
+        </div>
+        <div class="text-xs text-gray-500">
+            {{ $pricing->variant->value->value }}
+        </div>
+    @else
+        <div class="text-xs font-medium text-red-600">Variant Missing</div>
+    @endif
+</td>
+
 
     {{-- Unit Price --}}
     <td class="py-3 px-4 font-medium text-gray-800">
