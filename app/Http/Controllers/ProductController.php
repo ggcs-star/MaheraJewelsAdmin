@@ -23,6 +23,10 @@ use Illuminate\Support\Str;
 class ProductController extends Controller
 {
 
+private function isUploadedFile($file): bool
+{
+    return $file instanceof \Illuminate\Http\UploadedFile;
+}
     public function index(Request $request)
     {
         $products = Product::select([
@@ -222,7 +226,7 @@ class ProductController extends Controller
 
  private function handleProductImages(Request $request, array $data): array
 {
-    $productSlug = Str::slug($request->slug ?? $request->name);
+$productSlug = Str::slug($request->name);
 
     // MAIN image
     if ($request->hasFile('image_url')) {
@@ -298,9 +302,8 @@ private function handleVariants(Request $request, Product $product): array
        $imagePath = null;
 
 if (
-    isset($variant['image_url']) &&
-    $variant['image_url'] instanceof \Illuminate\Http\UploadedFile
-) {
+    isset($variant['image_url'])
+    && $this->isUploadedFile($variant['image_url'])) {
     $productSlug = Str::slug($product->slug ?? $product->name);
 
     $variantSlug = Str::slug(
@@ -747,6 +750,29 @@ return back()->with('error', $e->getMessage());
     $product->load(['variants', 'supplier', 'warehouse']);
 
     return view('products.invoice', compact('product'));
+}
+public function deleteImage(Product $product, $index)
+{
+    $images = is_array($product->gallery_images)
+        ? $product->gallery_images
+        : [];
+
+    if (!isset($images[$index])) {
+        return response()->json(['success' => false]);
+    }
+
+    // delete from S3
+    Storage::disk('s3')->delete($images[$index]);
+
+    // remove from array
+    unset($images[$index]);
+    $images = array_values($images);
+
+    $product->update([
+        'gallery_images' => $images
+    ]);
+
+    return response()->json(['success' => true]);
 }
 
 

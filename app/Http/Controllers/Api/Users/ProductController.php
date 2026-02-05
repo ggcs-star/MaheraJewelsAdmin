@@ -61,14 +61,20 @@ class ProductController extends Controller
                 ->whereHas('platformListings', fn ($q) =>
                     $q->where('platform_id', $platform->id)->userVisible()
                 )
-                ->with([
-                    'category:id,name',
-                    'variants',
-                    'platformListings' => fn ($q) =>
-                        $q->where('platform_id', $platform->id)->userVisible(),
-                    'variants.platformPricings' => fn ($q) =>
-                        $q->where('status', 'active'),
-                ])
+          ->with([
+    'category:id,name',
+
+    // BASE VARIANT FIELDS
+    'variants:id,product_id,variant_id,variant_value_id,quantity,selling_price,image_url,sku_suffix,status',
+
+    // RELATIONS
+    'variants.variant:id,name',
+    'variants.value:id,value',
+
+    'variants.platformPricings' => fn ($q) =>
+        $q->where('status', 'active'),
+])
+
                 ->firstOrFail();
 
             return response()->json([

@@ -1,4 +1,5 @@
-
+    let currentProductId = null
+let currentImageIndex = 0
 const form = document.getElementById('productFilterForm')
 const search = document.getElementById('productSearch')
 const clear = document.getElementById('clearProductSearch')
@@ -101,6 +102,8 @@ document.getElementById('applyProductAdvancedFilter')
     })
 document.addEventListener('DOMContentLoaded', function () {
 
+
+
     const modal = document.getElementById('imagePreviewModal')
     const modalImg = document.getElementById('imagePreviewModalImg')
     const prevBtn = document.querySelector('.modal-nav.left')
@@ -123,31 +126,39 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     document.querySelectorAll('.product-image-preview').forEach(img => {
-        img.addEventListener('click', function (e) {
-            e.stopPropagation()
+    img.addEventListener('click', function (e) {
+        e.stopPropagation()
 
-            images = JSON.parse(this.dataset.images || '[]')
-            if (!images.length) return
+        images = JSON.parse(this.dataset.images || '[]')
+        if (!images.length) return
 
-            currentIndex = 0
-            updateImage()
-            toggleNav()
+        currentIndex = 0
+        currentImageIndex = 0
 
-            modal.classList.add('show')
-        })
+        // 👇 product id checkbox se uthao
+        const row = this.closest('tr')
+        currentProductId = row.querySelector('.product-row-checkbox')?.value
+
+        updateImage()
+        toggleNav()
+
+        modal.classList.add('show')
     })
+})
 
     prevBtn.addEventListener('click', e => {
-        e.stopPropagation()
-        currentIndex = (currentIndex - 1 + images.length) % images.length
-        updateImage()
-    })
+    e.stopPropagation()
+    currentIndex = (currentIndex - 1 + images.length) % images.length
+    currentImageIndex = currentIndex
+    updateImage()
+})
+nextBtn.addEventListener('click', e => {
+    e.stopPropagation()
+    currentIndex = (currentIndex + 1) % images.length
+    currentImageIndex = currentIndex
+    updateImage()
+})
 
-    nextBtn.addEventListener('click', e => {
-        e.stopPropagation()
-        currentIndex = (currentIndex + 1) % images.length
-        updateImage()
-    })
 
     closeBtn.addEventListener('click', () => {
         modal.classList.remove('show')
@@ -160,6 +171,37 @@ document.addEventListener('DOMContentLoaded', function () {
             modalImg.src = ''
         }
     })
+const deleteBtn = document.getElementById('deleteModalImageBtn')
+
+if (deleteBtn) {
+    deleteBtn.addEventListener('click', () => {
+
+        if (!currentProductId) return
+
+        if (!confirm('Delete this image?')) return
+
+        fetch(
+            `/admin/products/${currentProductId}/image/${currentImageIndex}`,
+            {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document
+                        .querySelector('meta[name="csrf-token"]')
+                        .getAttribute('content')
+                }
+            }
+        )
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Image deleted successfully')
+                location.reload()
+            } else {
+                alert('Unable to delete image')
+            }
+        })
+    })
+}
 
 })
 
