@@ -39,6 +39,8 @@ class ProductSeeder extends Seeder
                     'product_id'       => $product->id,
                     'variant_id'       => $row['variant']->id,
                     'variant_value_id' => $row['value']->id,
+                    'variant_type'     => strtolower($row['variant']->name),
+                    'variant_value'    => $row['value']->value,
                     'sku_suffix'       => $sku,
                     'quantity'         => $qty,
                     'purchase_price'   => $purchase,

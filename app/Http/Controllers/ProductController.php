@@ -317,21 +317,22 @@ if (
 }
 
         ProductVariant::create([
-            'product_id'       => $product->id,
-            'variant_id'       => $variantId,
-            'variant_value_id' => $valueId,
-            'quantity'         => $qty,
-            'purchase_price'   => $purchase,
-            'selling_price'    => $selling,        
-            'total_price'      => $qty * $purchase,
-            'sku_suffix'       => $variant['sku_suffix'] ?? null,
-            'sort_order'       => $variant['sort_order'] ?? 0,
-            'status'           => $variant['status'] ?? 'active',
-            'color'            => $variant['color'] ?? null,
-            'height'           => $variant['height'] ?? null,
-            'width'            => $variant['width'] ?? null,
-            'image_url'        => $imagePath,
-        ]);
+    'product_id'       => $product->id,
+    'variant_id'       => $variantId,
+    'variant_value_id' => $valueId,
+    'quantity'         => $qty,
+    'purchase_price'   => $purchase,
+    'selling_price'    => $selling,
+    'total_price'      => $qty * $purchase,
+    'sku_suffix'       => $variant['sku_suffix'] ?? null,
+    'sort_order'       => $variant['sort_order'] ?? 0,
+    'status'           => $variant['status'] ?? 'active',
+    'color'            => $variant['color'] ?? null,
+    'height'           => $variant['height'] ?? null,
+    'width'            => $variant['width'] ?? null,
+    'image_url'        => $imagePath,
+]);
+
 
         $totalPurchase += $qty * $purchase;
     }
@@ -513,35 +514,19 @@ if ($product->image_url && Storage::disk('s3')->exists($product->image_url)) {
     }
 
     public function show(Product $product)
-{
-    $product = Product::select(
-        'id',
-        'name',
-        'sku',
-        'slug',
-        'image_url',
-        'gallery_images',
-        'status',
-        'visibility',
-        'base_selling_price',
-        'cost_price',
-        'brand',
-        'category_id',
-        'supplier_id',
-        'warehouse_id',
-        'expected_delivery_date',
-        'payment_terms'
-    )
-    ->with([
-        'category:id,name,slug,parent_id',
-        'category.parent:id,name',
-        'supplier:id,name',
-        'warehouse:id,name,city',
-        'variants' => function ($q) {
-            $q->orderBy('sort_order')->orderBy('id');
-        }
-    ])
-    ->findOrFail($product->id);
+    {
+        $product->load([
+    'category:id,name,slug,parent_id',
+    'category.parent:id,name',
+    'supplier:id,name,company_name,phone,email,type,commission_type,commission_value',
+    'warehouse:id,name,city',
+'variants' => function ($query) {
+    $query->with(['variant:id,name', 'value:id,value'])
+          ->orderBy('sort_order')
+          ->orderBy('id');
+}
+
+]);
 
     return view('products.show', compact('product'));
 }
@@ -549,12 +534,14 @@ if ($product->image_url && Storage::disk('s3')->exists($product->image_url)) {
 
 public function list()
 {
-    $pushedProducts = PlatformProduct::with([
-        'platform:id,display_name',
-        'product.category:id,name',
-        'product.supplier:id,name',
-        'pricing.variant'
-    ])->paginate(10);
+$pushedProducts = PlatformProduct::with([
+    'platform:id,display_name',
+    'product.category:id,name',
+    'product.supplier:id,name',
+    'pricing.variant.variant:id,name',
+    'pricing.variant.value:id,value'
+])->paginate(10);
+
 
     return view('products.list', compact('pushedProducts'));
 }
@@ -565,51 +552,51 @@ public function list()
 
 
 
-
-
 public function push()
 {
-$products = Product::with([
-    'category:id,name,parent_id',
-    'category.parent:id,name',
-    'variants:id,product_id,variant_type,variant_value,sku_suffix,image_url,sort_order,status,quantity,purchase_price,selling_price',
-    'variants.platformPricings.platformProduct'
-])
+    $products = Product::with([
+        'category:id,name,parent_id',
+        'category.parent:id,name',
 
+        // ⭐ Load relations instead of columns
+        'variants:id,product_id,variant_id,variant_value_id,sku_suffix,image_url,sort_order,status,quantity,purchase_price,selling_price',
+        'variants.variant:id,name',
+        'variants.value:id,value',
+
+        'variants.platformPricings.platformProduct'
+    ])
     ->where('status', 'active')
     ->orderBy('name')
     ->get()
-->map(function ($product) {
+    ->map(function ($product) {
 
-    $category = $product->category;
+        $category = $product->category;
 
-    if ($category) {
-        if ($category->parent) {
-            $product->display_category = $category->parent->name;
-            $product->display_subcategory = $category->name;
-        } else {
-            $product->display_category = $category->name;
-            $product->display_subcategory = null;
+        if ($category) {
+            if ($category->parent) {
+                $product->display_category = $category->parent->name;
+                $product->display_subcategory = $category->name;
+            } else {
+                $product->display_category = $category->name;
+                $product->display_subcategory = null;
+            }
         }
-    }
 
-    // 👇 THIS IS IMPORTANT
- $product->variant_payload = $product->variants->map(function ($v) {
-    return [
-        'id' => $v->id,
-        'variant_type' => $v->variant_type,
-        'variant_value' => $v->variant_value,
-        'sku_suffix' => $v->sku_suffix,
-        'quantity' => $v->quantity,
-        'purchase_price' => $v->purchase_price,
-        'selling_price'  => $v->selling_price,   // ⭐ NEW
-    ];
-});
+        // ⭐ Variant payload using relations
+        $product->variant_payload = $product->variants->map(function ($v) {
+            return [
+                'id' => $v->id,
+                'variant_type'  => $v->variant->name,   // from variants table
+                'variant_value' => $v->value->value,    // from variant_values table
+                'sku_suffix' => $v->sku_suffix,
+                'quantity' => $v->quantity,
+                'purchase_price' => $v->purchase_price,
+                'selling_price'  => $v->selling_price,
+            ];
+        });
 
-
-    return $product;
-});
-
+        return $product;
+    });
 
     $existingConfig = [];
 
@@ -688,11 +675,29 @@ DB::transaction(function () use ($data) {
         if (!isset($p['qty']) || $p['qty'] <= 0) {
             continue;
         }
+$platformProduct = PlatformProduct::firstOrCreate(
+    [
+        'platform_id' => $platformId,
+        'product_id'  => $variant->product_id,
+    ],
+    [
+        'platform_sku'   => $variant->product->sku . ($variant->sku_suffix ?? ''),
+        'platform_price' => $p['price'],
+        'platform_stock' => 0,
+        'status'         => 'active',
+        'sync_status'    => 'pending',
+    ]
+);
 
-        $platformProduct = PlatformProduct::firstOrCreate([
-            'platform_id' => $platformId,
-            'product_id'  => $variant->product_id,
-        ]);
+// Always update latest values
+$platformProduct->update([
+    'platform_sku'   => $variant->product->sku . ($variant->sku_suffix ?? ''),
+    'platform_price' => $p['price'],
+    'status'         => 'active',
+]);
+
+// Add stock
+$platformProduct->increment('platform_stock', $p['qty']);
 
         $discountType = $p['discount_type'] === 'percent' ? 'percentage' : 'fixed';
 

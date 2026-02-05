@@ -44,15 +44,19 @@ window.existingVariantPlatformData = @json($existingVariantPlatformData ?? []);
 
             <div class="modal-body">
                 <table class="table table-bordered align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Platform</th>
-                            <th>Quantity</th>
-                            <th>Price</th>
-                            <th>Discount</th>
-                            <th>Final Total</th>
-                        </tr>
-                    </thead>
+                  <thead class="table-light">
+<tr>
+    <th>Platform</th>
+    <th>Type</th>
+    <th>Value</th>
+    <th>SKU</th>
+    <th>Quantity</th>
+    <th>Price</th>
+    <th>Discount</th>
+    <th>Final Total</th>
+</tr>
+</thead>
+
                     <tbody id="pushPreviewBody"></tbody>
                 </table>
             </div>
