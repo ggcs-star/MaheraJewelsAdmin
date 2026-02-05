@@ -103,24 +103,61 @@
                 </div>
                 <div class="card-body text-center pt-0">
 
-                    @if($product->image_url)
-                        <div class="mb-3 border rounded overflow-hidden" style="height: 200px;">
-                            <img src="{{ asset('storage/' . $product->image_url) }}"
-                                 class="img-fluid h-100 w-100 object-fit-cover"
-                                 alt="{{ $product->name }}">
-                        </div>
-                    @else
-                        <div class="position-relative d-inline-block mb-3">
-                            <div class="rounded-circle bg-gradient-primary text-white d-flex align-items-center justify-content-center mx-auto"
-                                 style="width: 120px; height: 120px; font-size: 48px; font-weight: 600;">
-                                {{ strtoupper(substr($product->name, 0, 1)) }}
-                            </div>
-                            <div class="position-absolute bottom-0 end-0 bg-white rounded-circle p-1 shadow-sm">
-                                <div class="rounded-circle bg-{{ $product->status === 'active' ? 'success' : 'secondary' }}"
-                                     style="width: 16px; height: 16px;"></div>
-                            </div>
-                        </div>
-                    @endif
+          @php
+    $mainImage = null;
+
+    if (!empty($product->image_url) && is_string($product->image_url)) {
+        $mainImage = $product->image_url;
+    } elseif (
+        !empty($product->gallery_images)
+        && is_array($product->gallery_images)
+        && isset($product->gallery_images[0])
+    ) {
+        $mainImage = $product->gallery_images[0];
+    }
+@endphp
+
+@if($mainImage)
+    <div class="mb-3 border rounded overflow-hidden" style="height:220px">
+        <img
+            id="mainProductImage"
+            src="{{ Storage::disk('s3')->url(ltrim($mainImage,'/')) }}"
+            class="w-100 h-100 object-fit-cover"
+            alt="{{ $product->name }}">
+    </div>
+
+@else
+    <div class="position-relative d-inline-block mb-3">
+        <div class="rounded-circle bg-gradient-primary text-white d-flex align-items-center justify-content-center mx-auto"
+             style="width: 120px; height: 120px; font-size: 48px; font-weight: 600;">
+            {{ strtoupper(substr($product->name, 0, 1)) }}
+        </div>
+        <div class="position-absolute bottom-0 end-0 bg-white rounded-circle p-1 shadow-sm">
+            <div class="rounded-circle bg-{{ $product->status === 'active' ? 'success' : 'secondary' }}"
+                 style="width: 16px; height: 16px;"></div>
+        </div>
+    </div>
+@endif
+@if(!empty($product->gallery_images) && is_array($product->gallery_images))
+    <div class="d-flex gap-2 flex-wrap justify-content-center mb-3">
+        @foreach($product->gallery_images as $img)
+
+            @if(is_string($img) && str_contains($img, '/'))
+
+                <img
+                    src="{{ Storage::disk('s3')->url(ltrim($img,'/')) }}"
+                    class="border rounded"
+                    style="width:70px;height:70px;object-fit:cover;cursor:pointer"
+                    onclick="changeMainImage(this.src)"
+                    alt="gallery image">
+
+            @endif
+
+        @endforeach
+    </div>
+@endif
+
+
 
                     <h4 class="fw-bold mb-1">{{ $product->name }}</h4>
 
@@ -501,11 +538,14 @@
                                                 <code class="small">{{ $variant->sku_suffix ?? '—' }}</code>
                                             </td>
                                             <td class="text-center">
-                                                @if($variant->image_url)
-                                                    <img src="{{ asset('storage/' . $variant->image_url) }}"
-                                                         width="50" height="50"
-                                                         class="img-thumbnail rounded"
-                                                         alt="{{ $variant->variant_value }}">
+                                               @if($variant->image_url)
+    <img
+        src="{{ Storage::disk('s3')->url($variant->image_url) }}"
+        width="50" height="50"
+        class="img-thumbnail rounded"
+        alt="{{ $variant->variant_value }}">
+
+
                                                 @else
                                                     <div class="bg-light rounded d-inline-flex align-items-center justify-content-center"
                                                          style="width: 50px; height: 50px;">
@@ -585,4 +625,13 @@
     object-fit: cover;
 }
 </style>
+<script>
+    function changeMainImage(src) {
+        const mainImg = document.getElementById('mainProductImage');
+        if (mainImg) {
+            mainImg.src = src;
+        }
+    }
+</script>
+
 @endsection

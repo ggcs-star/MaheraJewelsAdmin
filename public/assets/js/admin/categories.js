@@ -56,12 +56,12 @@ document.addEventListener('DOMContentLoaded', () => {
             img.addEventListener('click', (e) => {
                 e.stopPropagation();
                 previewImg.src = img.dataset.full;
-                modal.classList.add('active');
+                modal.classList.add('show');
             });
         });
 
         modal.addEventListener('click', () => {
-            modal.classList.remove('active');
+            modal.classList.remove('show');
             previewImg.src = '';
         });
     }

@@ -16,6 +16,8 @@ use App\Models\PlatformProduct;
 use App\Models\Warehouse;
 use App\Models\Variant;
 use App\Models\VariantValue;
+use Illuminate\Support\Str;
+
 
 
 class ProductController extends Controller
@@ -218,25 +220,33 @@ class ProductController extends Controller
         return $data;
     }
 
-    private function handleProductImages(Request $request, array $data): array
-    {
-        if ($request->hasFile('image_url')) {
-            $data['image_url'] =
-                $request->file('image_url')->store('products', 'public');
-        }
+ private function handleProductImages(Request $request, array $data): array
+{
+    $productSlug = Str::slug($request->slug ?? $request->name);
 
-        if ($request->hasFile('gallery_images')) {
-            $gallery = [];
-
-            foreach ($request->file('gallery_images') as $img) {
-                $gallery[] = $img->store('products/gallery', 'public');
-            }
-
-            $data['gallery_images'] = $gallery;
-        }
-
-        return $data;
+    // MAIN image
+    if ($request->hasFile('image_url')) {
+        $data['image_url'] = $request->file('image_url')
+            ->store("admin/product/{$productSlug}", 's3');
     }
+
+    // MULTIPLE images
+    if ($request->hasFile('gallery_images')) {
+        $gallery = [];
+
+        foreach ($request->file('gallery_images') as $img) {
+            $gallery[] = $img->store(
+                "admin/product/{$productSlug}",
+                's3'
+            );
+        }
+
+        $data['gallery_images'] = $gallery;
+    }
+
+    return $data;
+}
+
     private function createProduct(Request $request, array $data): Product
     {
         $data['cost_price'] = 0;
@@ -285,14 +295,23 @@ private function handleVariants(Request $request, Product $product): array
 
         if ($qty <= 0) continue;
 
-        $imagePath = null;
-        if (
-            isset($variant['image_url']) &&
-            $variant['image_url'] instanceof \Illuminate\Http\UploadedFile
-        ) {
-            $imagePath = $variant['image_url']
-                ->store('products/variants', 'public');
-        }
+       $imagePath = null;
+
+if (
+    isset($variant['image_url']) &&
+    $variant['image_url'] instanceof \Illuminate\Http\UploadedFile
+) {
+    $productSlug = Str::slug($product->slug ?? $product->name);
+
+    $variantSlug = Str::slug(
+        ($variant['sku_suffix'] ?? 'variant') . '-' . ($variant['variant_value_id'] ?? uniqid())
+    );
+
+    $imagePath = $variant['image_url']->store(
+        "admin/product/{$productSlug}/variant/{$variantSlug}",
+        's3'
+    );
+}
 
         ProductVariant::create([
     'product_id'       => $product->id,
@@ -415,35 +434,41 @@ private function handleVariants(Request $request, Product $product): array
         return $data;
     }
 
-    private function handleProductImagesForUpdate(
-        Request $request,
-        Product $product,
-        array $data
-    ): array {
+private function handleProductImagesForUpdate(
+    Request $request,
+    Product $product,
+    array $data
+): array {
 
-        if ($request->hasFile('image_url')) {
-            $data['image_url'] =
-                $request->file('image_url')->store('products', 'public');
+    $productSlug = Str::slug($product->slug ?? $product->name);
+
+    // Replace main image
+    if ($request->hasFile('image_url')) {
+        $data['image_url'] = $request->file('image_url')
+            ->store("admin/product/{$productSlug}", 's3');
+    }
+
+    // Merge gallery images
+    if ($request->hasFile('gallery_images')) {
+
+        $existingImages = is_array($product->gallery_images)
+            ? $product->gallery_images
+            : [];
+
+        $newImages = [];
+
+        foreach ($request->file('gallery_images') as $img) {
+            $newImages[] = $img->store(
+                "admin/product/{$productSlug}",
+                's3'
+            );
         }
 
-       if ($request->hasFile('gallery_images')) {
-
-    $existingImages = is_array($product->gallery_images)
-        ? $product->gallery_images
-        : [];
-
-    $newImages = [];
-
-    foreach ($request->file('gallery_images') as $img) {
-        $newImages[] = $img->store('products/gallery', 'public');
+        $data['gallery_images'] = array_merge($existingImages, $newImages);
     }
 
-    $data['gallery_images'] = array_merge($existingImages, $newImages);
+    return $data;
 }
-
-
-        return $data;
-    }
 
 
     public function destroy(Product $product)
@@ -452,23 +477,28 @@ private function handleVariants(Request $request, Product $product): array
 
             foreach ($product->variants as $variant) {
 
-                if ($variant->image_url && Storage::disk('public')->exists($variant->image_url)) {
-                    Storage::disk('public')->delete($variant->image_url);
+                if ($variant->image_url && Storage::disk('s3')->exists($variant->image_url)) {
+                    Storage::disk('s3')->delete($variant->image_url);
                 }
             }
 
 
-            if ($product->image_url && Storage::disk('public')->exists($product->image_url)) {
-                Storage::disk('public')->delete($product->image_url);
+            if ($product->image_url && Storage::disk('s3')->exists($product->image_url)) {
+                Storage::disk('s3')->delete($product->image_url);
             }
 
             if (is_array($product->gallery_images)) {
-                foreach ($product->gallery_images as $img) {
-                    if (Storage::disk('public')->exists($img)) {
-                        Storage::disk('public')->delete($img);
-                    }
-                }
-            }
+    foreach ($product->gallery_images as $img) {
+        if (Storage::disk('s3')->exists($img)) {
+            Storage::disk('s3')->delete($img);
+        }
+    }
+}
+
+if ($product->image_url && Storage::disk('s3')->exists($product->image_url)) {
+    Storage::disk('s3')->delete($product->image_url);
+}
+
 
             $product->variants()->delete();
 
@@ -495,8 +525,9 @@ private function handleVariants(Request $request, Product $product): array
 
 ]);
 
-        return view('products.show', compact('product'));
-    }
+    return view('products.show', compact('product'));
+}
+
 
 public function list()
 {
