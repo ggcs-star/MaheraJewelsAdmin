@@ -40,28 +40,32 @@
                      style="width:100%; min-height:220px; cursor:pointer;">
 
                     {{-- MULTIPLE IMAGES (new system) --}}
-                    @if(!empty($product?->gallery_images) && is_array($product->gallery_images))
-                        @foreach($product->gallery_images as $img)
-                            <img src="{{ asset('storage/'.$img) }}"
-                                 class="rounded border"
-                                 style="width:100px;height:100px;object-fit:cover;">
-                        @endforeach
+                 {{-- MULTIPLE IMAGES (AWS) --}}
+@if(!empty($product?->gallery_images) && is_array($product->gallery_images))
+    @foreach($product->gallery_images as $img)
+        <img
+            src="{{ Storage::disk('s3')->url($img) }}"
+            class="rounded border"
+            style="width:100px;height:100px;object-fit:cover;">
+    @endforeach
 
-                    {{-- SINGLE IMAGE (old system – backward support) --}}
-                    @elseif(!empty($product?->image_url))
-                        <img src="{{ asset('storage/'.$product->image_url) }}"
-                             class="rounded border"
-                             style="width:100px;height:100px;object-fit:cover;">
+{{-- SINGLE IMAGE (AWS – backward support) --}}
+@elseif(!empty($product?->image_url))
+    <img
+        src="{{ Storage::disk('s3')->url($product->image_url) }}"
+        class="rounded border"
+        style="width:100px;height:100px;object-fit:cover;">
 
-                    {{-- NO IMAGE --}}
-                    @else
-                        <div class="text-center text-muted w-100" id="imagePlaceholder">
-                            <div class="fs-3">📷</div>
-                            <div class="small">
-                                Click to upload images
-                            </div>
-                        </div>
-                    @endif
+{{-- NO IMAGE --}}
+@else
+    <div class="text-center text-muted w-100" id="imagePlaceholder">
+        <div class="fs-3">📷</div>
+        <div class="small">
+            Click to upload images
+        </div>
+    </div>
+@endif
+
 
                 </div>
             </div>
