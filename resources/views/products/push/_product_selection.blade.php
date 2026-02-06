@@ -4,7 +4,7 @@
 
         <label class="fw-semibold">Product Name *</label>
 
-<select id="productSelect" class="form-select">
+<select id="productSelect" name="product_id" class="form-select" required>
     <option value="">Select product</option>
 
     @foreach ($products as $product)
