@@ -15,6 +15,8 @@ use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\VariantController;
 use App\Http\Controllers\ProductInvoiceController;
 use App\Http\Controllers\TaxController;
+use App\Http\Controllers\BankController;
+use App\Http\Controllers\CouponController;
 
 
 Route::get('/', function () {
@@ -156,7 +158,25 @@ Route::get(
         Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
         Route::get('/platform/{platform}/products', [ProductController::class, 'platformProducts'])
     ->name('platform.products');
+    // Bulk delete banks
+Route::post('/banks/bulk-delete',[BankController::class, 'bulkDelete'])->name('banks.bulk-delete');
 
+ Route::get('/banks', [BankController::class, 'index'])->name('banks.index');
+Route::get('/banks/create', [BankController::class, 'create'])->name('banks.create');
+Route::post('/banks', [BankController::class, 'store'])->name('banks.store');
+Route::get('/banks/{bank}/edit', [BankController::class, 'edit'])->name('banks.edit');
+Route::put('/banks/{bank}', [BankController::class, 'update'])->name('banks.update');
+Route::delete('/banks/{bank}', [BankController::class, 'destroy'])->name('banks.destroy');
+ Route::get('/coupons', [CouponController::class, 'index'])->name('coupons.index');
+        Route::post('/coupons', [CouponController::class, 'store'])->name('coupons.store');
+Route::get('/coupons/push', [CouponController::class, 'create'])
+    ->name('coupons.push');
+Route::post('/coupons/bulk-delete',[CouponController::class, 'bulkDelete'])->name('coupons.bulk-delete');
+
+        Route::get('/coupons/{coupon}', [CouponController::class, 'show'])->name('coupons.show');
+        Route::get('/coupons/{coupon}/edit', [CouponController::class, 'edit'])->name('coupons.edit');
+        Route::put('/coupons/{coupon}', [CouponController::class, 'update'])->name('coupons.update');
+        Route::delete('/coupons/{coupon}', [CouponController::class, 'destroy'])->name('coupons.destroy');
     });
 // 💰 GST & TAXES
 Route::get('/taxes', [\App\Http\Controllers\TaxController::class, 'index'])

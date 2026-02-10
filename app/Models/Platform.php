@@ -50,5 +50,10 @@ class Platform extends Model
             ->first();
     }
 
+public function coupons()
+{
+    return $this->belongsToMany(Coupon::class)
+        ->withTimestamps();
+}
 
 }
