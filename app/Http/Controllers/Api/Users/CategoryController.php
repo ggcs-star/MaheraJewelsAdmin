@@ -55,4 +55,37 @@ class CategoryController extends Controller
             ], 500);
         }
     }
+    public function show(int $category_id): JsonResponse
+{
+    try {
+        $category = Category::query()
+            ->where('id', $category_id)
+            ->where('visibility', 'public')
+            ->where('status', 'active')
+            ->firstOrFail();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $category->id,
+                'name' => $category->name,
+                'slug' => $category->slug,
+                'image_url' => $category->image_url,
+            ],
+        ]);
+
+    } catch (Throwable $e) {
+
+        Log::error('Category Detail API Error', [
+            'message' => $e->getMessage(),
+            'category_id' => $category_id,
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Category not found',
+        ], 404);
+    }
+}
+
 }

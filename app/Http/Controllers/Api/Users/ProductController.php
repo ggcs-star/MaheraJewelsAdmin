@@ -86,4 +86,66 @@ class ProductController extends Controller
             return response()->json(['success' => false, 'message' => 'Product not found'], 404);
         }
     }
+  public function showById(int $product_id): JsonResponse
+{
+    try {
+        $product = Product::with([
+            'category:id,name',
+            'variants:id,product_id,variant_id,variant_value_id,quantity,selling_price,image_url,sku_suffix,status',
+            'variants.variant:id,name',
+            'variants.value:id,value',
+            'variants.platformPricings' => fn ($q) =>
+                $q->where('status', 'active'),
+        ])->findOrFail($product_id);
+
+        return response()->json([
+            'success' => true,
+            'data' => ProductDetailTransformer::transform($product),
+        ]);
+
+    } catch (Throwable $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Product not found',
+        ], 404);
+    }
+}
+public function topSelling(): JsonResponse
+{
+    try {
+        $products = Product::query()
+            ->where('is_top_selling', 1)
+            ->where('status', 'active')
+            ->where('visibility', 'public')
+            ->with([
+                'category:id,name',
+                'variants:id,product_id,variant_id,variant_value_id,quantity,selling_price,image_url,sku_suffix,status',
+                'variants.variant:id,name',
+                'variants.value:id,value',
+            ])
+            ->orderBy('sort_order')
+            ->limit(10)
+            ->get()
+            ->map(fn ($p) => ProductListTransformer::transform($p));
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'products' => $products
+            ],
+        ]);
+
+    } catch (\Throwable $e) {
+        \Log::error('Top Selling API Error', [
+            'error' => $e->getMessage()
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Something went wrong',
+        ], 500);
+    }
+}
+
+
 }

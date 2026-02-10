@@ -65,20 +65,14 @@
             </svg>
             <span>Product</span>
         </a>
-
-        <a href="{{ admin_route('banks.index') }}"
+<a href="{{ admin_route('banks.index') }}"
    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
    {{ request()->routeIs('banks.*')
         ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 font-medium'
         : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100' }}">
-
-    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 8c-3.866 0-7 1.343-7 3v2c0 1.657 3.134 3 7 3s7-1.343 7-3v-2c0-1.657-3.134-3-7-3z"/>
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M5 11V9c0-1.657 3.134-3 7-3s7 1.343 7 3v2"/>
-    </svg>
-
+    
+    <i class="fas fa-university w-5 h-5 text-center"></i>
+    
     <span>Bank</span>
 </a>
 <a href="{{ admin_route('coupons.index') }}"

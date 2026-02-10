@@ -64,22 +64,25 @@ class CouponController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'coupon_name'        => 'required|string|max:255',
-            'coupon_description' => 'nullable|string',
-            'code'               => 'required|string|max:50|unique:coupons,code',
-            'coupon_type'        => 'required|in:NORMAL,BANK',
-            'discount_type'      => 'required|in:FLAT,PERCENT',
-            'value'              => 'required|numeric|min:0',
-            'min_order_amount'   => 'nullable|numeric|min:0',
-            'max_discount'       => 'nullable|numeric|min:0',
-            'usage_limit'        => 'nullable|integer|min:1',
-            'starts_at'          => 'nullable|date',
-            'expires_at'         => 'nullable|date|after_or_equal:starts_at',
-            'is_active'          => 'required|boolean',
-            'bank_id'            => 'nullable|exists:banks,id',
-            'card_type'          => 'nullable|in:credit,debit,both',
-        ]);
+       $data = $request->validate([
+    'coupon_name'        => 'required|string|max:255',
+    'coupon_description' => 'nullable|string',
+    'code'               => 'required|string|max:50|unique:coupons,code',
+    'coupon_type'        => 'required|in:NORMAL,BANK',
+    'discount_type'      => 'required|in:FLAT,PERCENT',
+    'value'              => 'required|numeric|min:0',
+    'min_order_amount'   => 'required|numeric|min:0',
+    'usage_limit'        => 'required|integer|min:1',
+    'starts_at'          => 'required|date',
+    'expires_at'         => 'required|date|after_or_equal:starts_at',
+    'max_discount'       => 'nullable|numeric|min:0',
+    'is_active'          => 'required|boolean',
+    'bank_id'            => 'required_if:coupon_type,BANK|exists:banks,id',
+    'card_type'          => 'required_if:coupon_type,BANK|in:credit,debit,both',
+    'platform_ids'       => 'required|array|min:1',
+    'platform_ids.*'     => 'exists:platforms,id',
+]);
+
 
         DB::transaction(function () use ($data, $request) {
             $coupon = Coupon::create([
