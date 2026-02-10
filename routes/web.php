@@ -172,6 +172,9 @@ Route::delete('/banks/{bank}', [BankController::class, 'destroy'])->name('banks.
 Route::get('/coupons/push', [CouponController::class, 'create'])
     ->name('coupons.push');
 Route::post('/coupons/bulk-delete',[CouponController::class, 'bulkDelete'])->name('coupons.bulk-delete');
+// routes/admin.php
+Route::get('coupons/{coupon}', [CouponController::class, 'show'])
+    ->name('coupons.show');
 
         Route::get('/coupons/{coupon}', [CouponController::class, 'show'])->name('coupons.show');
         Route::get('/coupons/{coupon}/edit', [CouponController::class, 'edit'])->name('coupons.edit');

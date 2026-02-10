@@ -154,19 +154,28 @@
                                 <span class="badge bg-light text-dark">{{ $coupon->id }}</span>
                             </td>
 
-                            <td>
+                            <td class="coupon-clickable"
+                                data-url="{{ route('admin.coupons.show', $coupon) }}">
+
                                 <div class="d-flex flex-column">
-                                    <strong class="mb-1">{{ $coupon->name }}</strong>
+                                    <span class="fw-semibold text-dark mb-1">
+                                        {{ $coupon->name }}
+                                    </span>
+
                                     @if($coupon->description)
-                                        <small class="text-muted">{{ Str::limit($coupon->description, 50) }}</small>
+                                        <small class="text-muted">
+                                            {{ Str::limit($coupon->description, 50) }}
+                                        </small>
                                     @endif
+
                                     <small class="text-muted mt-1">
                                         <i class="fas fa-calendar-alt me-1"></i>
-                                        {{ optional($coupon->starts_at)->format('M d, Y') }} - 
+                                        {{ optional($coupon->starts_at)->format('M d, Y') }} -
                                         {{ optional($coupon->expires_at)->format('M d, Y') }}
                                     </small>
                                 </div>
                             </td>
+
 
                             <td>
                                 <span class="badge bg-dark bg-opacity-10 text-dark border px-3 py-1 rounded-pill">
@@ -184,7 +193,7 @@
                             <td>
                                 <div class="d-flex flex-wrap gap-1" style="max-width: 200px;">
                                     @foreach($coupon->platforms as $platform)
-                                        <span class="badge bg-light text-dark border px-2 py-1">
+                                        <span class="badge bg-light text-dark border px-2 py-1 platform-badge">
                                             <i class="fas fa-store me-1"></i>{{ $platform->name }}
                                         </span>
                                     @endforeach
@@ -198,7 +207,7 @@
                                 </span>
                             </td>
 
-                            <td class="text-end pe-4">
+                            <td class="text-end pe-4 actions">
                                 <div class="d-flex justify-content-end gap-2">
                                     <a href="{{ route('admin.coupons.edit', $coupon->id) }}"
                                        class="btn btn-sm btn-outline-primary px-3">
