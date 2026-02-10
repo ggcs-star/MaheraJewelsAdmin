@@ -280,3 +280,16 @@ hr {
 .form-select-sm {
     padding: 0.25rem 0.5rem;
 }
+.coupon-clickable {
+    cursor: pointer;
+}
+
+.coupon-clickable:hover {
+    background-color: #f8f9fa;
+}
+.coupon-clickable {
+    cursor: pointer;
+}
+.coupon-clickable:hover {
+    background-color: #f8f9fa;
+}
