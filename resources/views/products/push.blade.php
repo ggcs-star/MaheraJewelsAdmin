@@ -7,7 +7,6 @@
     </div>
 @endif
 
-
 @section('content')
 <div class="container">
 
