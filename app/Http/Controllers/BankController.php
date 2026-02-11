@@ -7,31 +7,50 @@ use Illuminate\Http\Request;
 
 class BankController extends Controller
 {
-  public function index(Request $request)
+public function index(Request $request)
 {
     $banks = Bank::query()
-
-        // 🔍 Search (name OR code safely)
         ->when($request->filled('search'), function ($q) use ($request) {
             $q->where(function ($qq) use ($request) {
                 $qq->where('name', 'like', '%' . $request->search . '%')
                    ->orWhere('code', 'like', '%' . $request->search . '%');
             });
         })
-
-        // 🔽 Status filter (Coupons jaisa)
         ->when($request->filled('status'), function ($q) use ($request) {
             $q->where('status', $request->status);
         })
+        ->when(
+            $request->adv_field && $request->adv_condition && $request->adv_value,
+            function ($q) use ($request) {
+
+                $allowed = ['name', 'code', 'status'];
+
+                if (!in_array($request->adv_field, $allowed)) {
+                    return;
+                }
+
+                if ($request->adv_condition === 'like') {
+                    $q->where(
+                        $request->adv_field,
+                        'like',
+                        '%' . $request->adv_value . '%'
+                    );
+                } else {
+                    $q->where(
+                        $request->adv_field,
+                        $request->adv_condition,
+                        $request->adv_value
+                    );
+                }
+            }
+        )
 
         ->orderBy('name')
         ->paginate(10)
-        ->appends($request->query()); // ⭐ filter retain
+        ->appends($request->query());
 
     return view('banks.index', compact('banks'));
 }
-
-
     public function create()
     {
         return view('banks.create');

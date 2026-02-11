@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
             PlatformProductSeeder::class,
             PlatformPricingSeeder::class,
             WarehouseSeeder::class,
+            BankSeeder::class,
+            CouponSeeder::class
 
 
         ]);

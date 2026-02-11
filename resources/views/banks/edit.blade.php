@@ -16,45 +16,61 @@
                 @csrf
                 @method('PUT')
 
-                {{-- Bank Name --}}
-                <div class="mb-3">
-                    <label class="form-label">Bank Name</label>
+               <div class="mb-3 position-relative">
+                    <label class="form-label">
+                        Bank Name <span class="text-danger">*</span>
+                    </label>
+
                     <input type="text"
-                           name="name"
-                           class="form-control @error('name') is-invalid @enderror"
-                           value="{{ old('name', $bank->name) }}">
+                        name="name"
+                        value="{{ old('name', $bank->name) }}"
+                        class="form-control @error('name') is-invalid @enderror">
+
                     @error('name')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
                     @enderror
                 </div>
+                <div class="mb-3 position-relative">
+                    <label class="form-label">
+                        Bank Code <span class="text-danger">*</span>
+                    </label>
 
-                {{-- Bank Code --}}
-                <div class="mb-3">
-                    <label class="form-label">Bank Code</label>
                     <input type="text"
-                           name="code"
-                           class="form-control @error('code') is-invalid @enderror"
-                           value="{{ old('code', $bank->code) }}">
+                        name="code"
+                        value="{{ old('code', $bank->code) }}"
+                        class="form-control @error('code') is-invalid @enderror">
+
                     @error('code')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
                     @enderror
                 </div>
 
-                {{-- Status --}}
-                <div class="mb-4">
-                    <label class="form-label">Status</label>
+                <div class="mb-4 position-relative">
+                    <label class="form-label">
+                        Status <span class="text-danger">*</span>
+                    </label>
+
                     <select name="status"
                             class="form-select @error('status') is-invalid @enderror">
-                       <option value="1" {{ old('status') === '1' ? 'selected' : '' }}>
-    Active
-</option>
-<option value="0" {{ old('status') === '0' ? 'selected' : '' }}>
-    Inactive
-</option>
-
+                        <option value="">Select status</option>
+                        <option value="1"
+                            {{ old('status', (string)$bank->status) === '1' ? 'selected' : '' }}>
+                            Active
+                        </option>
+                        <option value="0"
+                            {{ old('status', (string)$bank->status) === '0' ? 'selected' : '' }}>
+                            Inactive
+                        </option>
                     </select>
+
                     @error('status')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
                     @enderror
                 </div>
 
