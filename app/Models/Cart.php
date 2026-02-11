@@ -31,4 +31,5 @@ class Cart extends Model
     {
         return (int) $this->items()->sum('quantity');
     }
+    
 }

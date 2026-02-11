@@ -8,6 +8,11 @@ use App\Http\Controllers\Api\Users\AuthController;
 use App\Http\Controllers\Api\Users\CartController;
 use App\Http\Controllers\Api\Users\AddressController;
 use App\Http\Controllers\Api\Users\ProfileController;
+use App\Http\Controllers\Api\Users\CouponController;
+use App\Http\Controllers\Api\Users\CheckoutController;
+use App\Http\Controllers\Api\Users\OrderController;
+
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -53,7 +58,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/cart', [CartController::class, 'index']);
     Route::put('/cart/update/{cart_item}', [CartController::class, 'update']);
     Route::delete('/cart/remove/{cart_item}', [CartController::class, 'remove']);
-
+        Route::prefix('coupons')->group(function () {
+        Route::get('/', [CouponController::class, 'index']);
+        Route::post('/apply', [CouponController::class, 'apply']);
+        Route::post('/remove', [CouponController::class, 'remove']);
+        
+  
+    });
+    
+    Route::get('/orders', [OrderController::class, 'index']);
+    Route::get('/orders/{id}', [OrderController::class, 'show']);
+    Route::post('/orders/{id}/cancel', [OrderController::class, 'cancel']);
+    Route::get('/orders/{id}/track', [OrderController::class, 'track']);
+  Route::get('/checkout/summary', [CheckoutController::class, 'summary']);
+    Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder']);
     Route::get('/user/addresses', [AddressController::class, 'index']);
     Route::post('/user/addresses', [AddressController::class, 'store']);
     Route::put('/user/addresses/{id}', [AddressController::class, 'update']);
