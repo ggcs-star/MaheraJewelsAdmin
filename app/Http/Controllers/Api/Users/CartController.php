@@ -40,55 +40,70 @@ class CartController extends Controller
     }
 
     
-    public function add(Request $request): JsonResponse
-    {
-        $request->validate([
-            'product_id' => 'required|integer',
-            'variant_id' => 'required|integer',
-            'quantity'   => 'required|integer|min:1',
-        ]);
+public function add(Request $request): JsonResponse
+{
+    $request->validate([
+        'items' => 'required|array|min:1',
+        'items.*.product_id' => 'required|integer',
+        'items.*.variant_id' => 'required|integer',
+        'items.*.quantity' => 'required|integer|min:1',
+    ]);
 
-        try {
-            DB::beginTransaction();
+    try {
+        DB::beginTransaction();
 
-            $platformProduct = $this->getPlatformProduct($request->product_id);
+        $cart = $this->getOrCreateCart();
+
+        foreach ($request->items as $itemData) {
+
+            $platformProduct = $this->getPlatformProduct($itemData['product_id']);
+
             $pricing = $this->getPricing(
                 $platformProduct->id,
-                $request->variant_id,
-                $request->quantity
+                $itemData['variant_id'],
+                $itemData['quantity']
             );
-
-            $cart = $this->getOrCreateCart();
 
             $cartItem = CartItem::firstOrNew([
                 'cart_id' => $cart->id,
-                'product_id' => $request->product_id,
-                'product_variant_id' => $request->variant_id,
+                'product_id' => $itemData['product_id'],
+                'product_variant_id' => $itemData['variant_id'],
                 'platform_id' => $platformProduct->platform_id,
             ]);
 
             $unitPrice = $pricing->final_price ?? $pricing->price;
 
+            $existingQty = $cartItem->exists ? $cartItem->quantity : 0;
+            $newQty = $existingQty + $itemData['quantity'];
+
+            if ($pricing->quantity < $newQty) {
+                abort(422, "Only {$pricing->quantity} items available in stock");
+            }
+
             $cartItem->price = $unitPrice;
-            $cartItem->quantity = ($cartItem->exists ? $cartItem->quantity : 0) + $request->quantity;
-            $cartItem->subtotal = $cartItem->quantity * $unitPrice;
+            $cartItem->quantity = $newQty;
+            $cartItem->subtotal = $newQty * $unitPrice;
             $cartItem->save();
-
-            $cart->refresh();
-
-            DB::commit();
-
-            return $this->successCartResponse(
-                'Item added to cart successfully',
-                $cartItem,
-                $cart
-            );
-
-        } catch (Throwable $e) {
-            DB::rollBack();
-            return $this->errorResponse('Add to Cart API Error', $e);
         }
+
+        $cart->refresh();
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Items added to cart successfully',
+            'data' => [
+                'cart_total' => $this->cartTotal($cart),
+                'items_count' => $this->cartItemsCount($cart),
+            ]
+        ]);
+
+    } catch (Throwable $e) {
+        DB::rollBack();
+        return $this->errorResponse('Add to Cart API Error', $e);
     }
+}
 
   
     public function update(Request $request, int $cartItemId): JsonResponse
@@ -166,16 +181,20 @@ class CartController extends Controller
         }
     }
 
+private function getUserCart(bool $withRelations = false): ?Cart
+{
+    return Cart::where('user_id', auth()->id())
+        ->when($withRelations, fn ($q) =>
+    $q->with([
+    'items.product:id,name,image_url',
+    'items.variant.variant',
+    'items.variant.value'
+])
 
+        )
+        ->first();
+}
 
-    private function getUserCart(bool $withRelations = false): ?Cart
-    {
-        return Cart::where('user_id', auth()->id())
-            ->when($withRelations, fn ($q) =>
-                $q->with(['items.product:id,name,image_url', 'items.variant'])
-            )
-            ->first();
-    }
 
     private function getOrCreateCart(): Cart
     {
@@ -222,24 +241,26 @@ class CartController extends Controller
         return (int) $cart->items->sum('quantity');
     }
 
-    private function formatCartItem(CartItem $item): array
-    {
-        return [
-            'id' => $item->id,
-            'product_id' => $item->product_id,
-            'variant_id' => $item->product_variant_id,
-            'platform_id' => $item->platform_id,
-            'product_name' => $item->product?->name,
-            'variant' => [
-                'type' => $item->variant?->variant_type,
-                'value' => $item->variant?->variant_value,
-            ],
-            'price' => $item->price,
-            'quantity' => $item->quantity,
-            'subtotal' => $item->subtotal,
-            'image_url' => $item->product?->image_url,
-        ];
-    }
+private function formatCartItem(CartItem $item): array
+{
+    return [
+        'id' => $item->id,
+        'product_id' => $item->product_id,
+        'variant_id' => $item->product_variant_id,
+        'platform_id' => $item->platform_id,
+        'product_name' => $item->product?->name,
+'variant' => [
+    'type' => $item->variant?->variant?->name,
+    'value' => $item->variant?->value?->value,
+],
+
+        'price' => $item->price,
+        'quantity' => $item->quantity,
+        'subtotal' => $item->subtotal,
+        'image_url' => $item->product?->image_url,
+    ];
+}
+
 
     private function emptyCartResponse(): JsonResponse
     {
@@ -255,19 +276,15 @@ class CartController extends Controller
     }
 
     private function errorResponse(string $context, Throwable $e): JsonResponse
-    {
-        Log::error($context, [
-            'message' => $e->getMessage(),
-            'file' => $e->getFile(),
-            'line' => $e->getLine(),
-            'user_id' => auth()->id(),
-        ]);
+{
+    return response()->json([
+        'success' => false,
+        'error' => $e->getMessage(),
+        'file' => $e->getFile(),
+        'line' => $e->getLine(),
+    ], 500);
+}
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Something went wrong. Please try again later.'
-        ], 500);
-    }
 
     private function successCartResponse(string $msg, CartItem $item, Cart $cart): JsonResponse
     {
