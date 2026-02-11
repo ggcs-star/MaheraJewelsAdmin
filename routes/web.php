@@ -17,6 +17,7 @@ use App\Http\Controllers\ProductInvoiceController;
 use App\Http\Controllers\TaxController;
 use App\Http\Controllers\BankController;
 use App\Http\Controllers\CouponController;
+use App\Http\Controllers\OrganizationController;
 
 
 Route::get('/', function () {
@@ -180,6 +181,30 @@ Route::get('coupons/{coupon}', [CouponController::class, 'show'])
         Route::get('/coupons/{coupon}/edit', [CouponController::class, 'edit'])->name('coupons.edit');
         Route::put('/coupons/{coupon}', [CouponController::class, 'update'])->name('coupons.update');
         Route::delete('/coupons/{coupon}', [CouponController::class, 'destroy'])->name('coupons.destroy');
+       Route::get('/organizations', [OrganizationController::class, 'index'])
+    ->name('organizations.index');
+
+Route::get('/organizations/create', [OrganizationController::class, 'create'])
+    ->name('organizations.create');
+Route::get('/organizations/{organization}', 
+    [OrganizationController::class, 'show']
+)->name('organizations.show');
+
+Route::post('/organizations', [OrganizationController::class, 'store'])
+    ->name('organizations.store');
+
+Route::get('/organizations/{organization}/edit', [OrganizationController::class, 'edit'])
+    ->name('organizations.edit');
+
+Route::put('/organizations/{organization}', [OrganizationController::class, 'update'])
+    ->name('organizations.update');
+
+Route::delete('/organizations/{organization}', [OrganizationController::class, 'destroy'])
+    ->name('organizations.destroy');
+
+Route::post('/organizations/bulk-delete', [OrganizationController::class, 'bulkDelete'])
+    ->name('organizations.bulk-delete');
+
     });
 // 💰 GST & TAXES
 Route::get('/taxes', [\App\Http\Controllers\TaxController::class, 'index'])
