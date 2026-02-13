@@ -224,32 +224,29 @@ private function isUploadedFile($file): bool
         return $data;
     }
 
- private function handleProductImages(Request $request, array $data): array
-{
-$productSlug = Str::slug($request->name);
+        private function handleProductImages(Request $request, array $data): array
+        {
+        $productSlug = Str::slug($request->name);
 
-    // MAIN image
-    if ($request->hasFile('image_url')) {
-        $data['image_url'] = $request->file('image_url')
-            ->store("admin/product/{$productSlug}", 's3');
-    }
+            if ($request->hasFile('image_url')) {
+                $data['image_url'] = $request->file('image_url')
+                    ->store("admin/product/{$productSlug}", 's3');
+            }
+            if ($request->hasFile('gallery_images')) {
+                $gallery = [];
 
-    // MULTIPLE images
-    if ($request->hasFile('gallery_images')) {
-        $gallery = [];
+                foreach ($request->file('gallery_images') as $img) {
+                    $gallery[] = $img->store(
+                        "admin/product/{$productSlug}",
+                        's3'
+                    );
+                }
 
-        foreach ($request->file('gallery_images') as $img) {
-            $gallery[] = $img->store(
-                "admin/product/{$productSlug}",
-                's3'
-            );
+                $data['gallery_images'] = $gallery;
+            }
+
+            return $data;
         }
-
-        $data['gallery_images'] = $gallery;
-    }
-
-    return $data;
-}
 
     private function createProduct(Request $request, array $data): Product
     {
@@ -257,7 +254,7 @@ $productSlug = Str::slug($request->name);
         $data['base_selling_price'] = 0;
 
           $data['expected_delivery_date'] = $request->expected_delivery_date;
-    $data['payment_terms'] = $request->payment_terms;
+          $data['payment_terms'] = $request->payment_terms;
 
         return Product::create($data);
     }
@@ -271,7 +268,7 @@ private function handleVariants(Request $request, Product $product): array
         return compact('totalPurchase', 'totalSelling');
     }
 
-    $seen = []; // 🔑 IMPORTANT
+    $seen = []; 
 
     foreach ($request->variants as $variant) {
 
@@ -285,7 +282,6 @@ private function handleVariants(Request $request, Product $product): array
         $variantId = (int) $variant['variant_id'];
         $valueId   = (int) $variant['variant_value_id'];
 
-        // 🔥 SAME VARIANT + SAME VALUE → SKIP
         $key = $variantId . '-' . $valueId;
         if (isset($seen[$key])) {
             continue;
@@ -301,37 +297,37 @@ private function handleVariants(Request $request, Product $product): array
 
        $imagePath = null;
 
-if (
-    isset($variant['image_url'])
-    && $this->isUploadedFile($variant['image_url'])) {
-    $productSlug = Str::slug($product->slug ?? $product->name);
+        if (
+            isset($variant['image_url'])
+            && $this->isUploadedFile($variant['image_url'])) {
+            $productSlug = Str::slug($product->slug ?? $product->name);
 
-    $variantSlug = Str::slug(
-        ($variant['sku_suffix'] ?? 'variant') . '-' . ($variant['variant_value_id'] ?? uniqid())
-    );
+            $variantSlug = Str::slug(
+                ($variant['sku_suffix'] ?? 'variant') . '-' . ($variant['variant_value_id'] ?? uniqid())
+            );
 
-    $imagePath = $variant['image_url']->store(
-        "admin/product/{$productSlug}/variant/{$variantSlug}",
-        's3'
-    );
-}
+            $imagePath = $variant['image_url']->store(
+                "admin/product/{$productSlug}/variant/{$variantSlug}",
+                's3'
+            );
+        }
 
         ProductVariant::create([
-    'product_id'       => $product->id,
-    'variant_id'       => $variantId,
-    'variant_value_id' => $valueId,
-    'quantity'         => $qty,
-    'purchase_price'   => $purchase,
-    'selling_price'    => $selling,
-    'total_price'      => $qty * $purchase,
-    'sku_suffix'       => $variant['sku_suffix'] ?? null,
-    'sort_order'       => $variant['sort_order'] ?? 0,
-    'status'           => $variant['status'] ?? 'active',
-    'color'            => $variant['color'] ?? null,
-    'height'           => $variant['height'] ?? null,
-    'width'            => $variant['width'] ?? null,
-    'image_url'        => $imagePath,
-]);
+            'product_id'       => $product->id,
+            'variant_id'       => $variantId,
+            'variant_value_id' => $valueId,
+            'quantity'         => $qty,
+            'purchase_price'   => $purchase,
+            'selling_price'    => $selling,
+            'total_price'      => $qty * $purchase,
+            'sku_suffix'       => $variant['sku_suffix'] ?? null,
+            'sort_order'       => $variant['sort_order'] ?? 0,
+            'status'           => $variant['status'] ?? 'active',
+            'color'            => $variant['color'] ?? null,
+            'height'           => $variant['height'] ?? null,
+            'width'            => $variant['width'] ?? null,
+            'image_url'        => $imagePath,
+        ]);
 
 
         $totalPurchase += $qty * $purchase;
@@ -348,7 +344,7 @@ if (
         ]);
     }
     public function edit(Product $product)
-{
+    {
     $product->load('variants');
 
     $categories = Category::select('id', 'name', 'parent_id')
@@ -437,41 +433,39 @@ if (
         return $data;
     }
 
-private function handleProductImagesForUpdate(
-    Request $request,
-    Product $product,
-    array $data
-): array {
+        private function handleProductImagesForUpdate(
+            Request $request,
+            Product $product,
+            array $data
+        ): array {
 
-    $productSlug = Str::slug($product->slug ?? $product->name);
+            $productSlug = Str::slug($product->slug ?? $product->name);
 
-    // Replace main image
-    if ($request->hasFile('image_url')) {
-        $data['image_url'] = $request->file('image_url')
-            ->store("admin/product/{$productSlug}", 's3');
-    }
+            if ($request->hasFile('image_url')) {
+                $data['image_url'] = $request->file('image_url')
+                    ->store("admin/product/{$productSlug}", 's3');
+            }
 
-    // Merge gallery images
-    if ($request->hasFile('gallery_images')) {
+            if ($request->hasFile('gallery_images')) {
 
-        $existingImages = is_array($product->gallery_images)
-            ? $product->gallery_images
-            : [];
+                $existingImages = is_array($product->gallery_images)
+                    ? $product->gallery_images
+                    : [];
 
-        $newImages = [];
+                $newImages = [];
 
-        foreach ($request->file('gallery_images') as $img) {
-            $newImages[] = $img->store(
-                "admin/product/{$productSlug}",
-                's3'
-            );
+                foreach ($request->file('gallery_images') as $img) {
+                    $newImages[] = $img->store(
+                        "admin/product/{$productSlug}",
+                        's3'
+                    );
+                }
+
+                $data['gallery_images'] = array_merge($existingImages, $newImages);
+            }
+
+            return $data;
         }
-
-        $data['gallery_images'] = array_merge($existingImages, $newImages);
-    }
-
-    return $data;
-}
 
 
     public function destroy(Product $product)
@@ -491,16 +485,16 @@ private function handleProductImagesForUpdate(
             }
 
             if (is_array($product->gallery_images)) {
-    foreach ($product->gallery_images as $img) {
-        if (Storage::disk('s3')->exists($img)) {
-            Storage::disk('s3')->delete($img);
+        foreach ($product->gallery_images as $img) {
+            if (Storage::disk('s3')->exists($img)) {
+                Storage::disk('s3')->delete($img);
+            }
         }
     }
-}
 
-if ($product->image_url && Storage::disk('s3')->exists($product->image_url)) {
-    Storage::disk('s3')->delete($product->image_url);
-}
+        if ($product->image_url && Storage::disk('s3')->exists($product->image_url)) {
+            Storage::disk('s3')->delete($product->image_url);
+        }
 
 
             $product->variants()->delete();
@@ -532,275 +526,270 @@ if ($product->image_url && Storage::disk('s3')->exists($product->image_url)) {
 }
 
 
-public function list()
-{
-$pushedProducts = PlatformProduct::with([
-    'platform:id,display_name',
-    'product.category:id,name',
-    'product.supplier:id,name',
-    'pricing.variant.variant:id,name',
-    'pricing.variant.value:id,value'
-])->paginate(10);
+        public function list()
+        {
+        $pushedProducts = PlatformProduct::with([
+            'platform:id,display_name',
+            'product.category:id,name',
+            'product.supplier:id,name',
+            'pricing.variant.variant:id,name',
+            'pricing.variant.value:id,value'
+        ])->paginate(10);
 
 
-    return view('products.list', compact('pushedProducts'));
-}
-
-
-
-
-
-
-
-public function push()
-{
-    $products = Product::with([
-        'category:id,name,parent_id',
-        'category.parent:id,name',
-
-        // ⭐ Load relations instead of columns
-        'variants:id,product_id,variant_id,variant_value_id,sku_suffix,image_url,sort_order,status,quantity,purchase_price,selling_price',
-        'variants.variant:id,name',
-        'variants.value:id,value',
-
-        'variants.platformPricings.platformProduct'
-    ])
-    ->where('status', 'active')
-    ->orderBy('name')
-    ->get()
-    ->map(function ($product) {
-
-        $category = $product->category;
-
-        if ($category) {
-            if ($category->parent) {
-                $product->display_category = $category->parent->name;
-                $product->display_subcategory = $category->name;
-            } else {
-                $product->display_category = $category->name;
-                $product->display_subcategory = null;
-            }
+            return view('products.list', compact('pushedProducts'));
         }
 
-        // ⭐ Variant payload using relations
-        $product->variant_payload = $product->variants->map(function ($v) {
-            return [
-                'id' => $v->id,
-                'variant_type'  => $v->variant->name,   // from variants table
-                'variant_value' => $v->value->value,    // from variant_values table
-                'sku_suffix' => $v->sku_suffix,
-                'quantity' => $v->quantity,
-                'purchase_price' => $v->purchase_price,
-                'selling_price'  => $v->selling_price,
-            ];
+
+        public function push()
+        {
+            $products = Product::with([
+                'category:id,name,parent_id',
+                'category.parent:id,name',
+
+                // ⭐ Load relations instead of columns
+                'variants:id,product_id,variant_id,variant_value_id,sku_suffix,image_url,sort_order,status,quantity,purchase_price,selling_price',
+                'variants.variant:id,name',
+                'variants.value:id,value',
+
+                'variants.platformPricings.platformProduct'
+            ])
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get()
+            ->map(function ($product) {
+
+                $category = $product->category;
+
+                if ($category) {
+                    if ($category->parent) {
+                        $product->display_category = $category->parent->name;
+                        $product->display_subcategory = $category->name;
+                    } else {
+                        $product->display_category = $category->name;
+                        $product->display_subcategory = null;
+                    }
+                }
+
+                // ⭐ Variant payload using relations
+                $product->variant_payload = $product->variants->map(function ($v) {
+                    return [
+                        'id' => $v->id,
+                        'variant_type'  => $v->variant->name,   // from variants table
+                        'variant_value' => $v->value->value,    // from variant_values table
+                        'sku_suffix' => $v->sku_suffix,
+                        'quantity' => $v->quantity,
+                        'purchase_price' => $v->purchase_price,
+                        'selling_price'  => $v->selling_price,
+                    ];
+                });
+
+                return $product;
+            });
+
+            $existingConfig = [];
+
+            foreach ($products as $product) {
+                foreach ($product->variants as $variant) {
+
+                    foreach ($variant->platformPricings as $pricing) {
+
+                        $platformId = $pricing->platformProduct->platform_id;
+
+                        $existingConfig[$variant->id][$platformId] = [
+                            'price' => $pricing->price,
+                            'qty'   => $pricing->quantity,
+                            'discount_value' => $pricing->discount_value,
+                            'discount_type'  => $pricing->discount_type === 'percentage' ? 'percent' : 'amount',
+                            'final_total'    => $pricing->quantity * $pricing->final_price
+                        ];
+                    }
+                }
+            }
+
+            $platforms = Platform::select('id', 'name')
+                ->where('is_enabled', true)
+                ->get();
+
+            return view('products.push', [
+                'products' => $products,
+                'platforms' => $platforms,
+                'existingVariantPlatformData' => $existingConfig
+            ]);
+        }
+
+
+        public function pushStore(Request $request)
+        {
+            \Log::info('PUSH DATA', $request->all());
+
+            try {
+
+            
+        $request->validate([
+            'variant_platform_data' => 'required'
+        ]);
+
+
+            
+
+                $data = json_decode($request->variant_platform_data, true);
+
+
+                if (!$data || !is_array($data)) {
+                    return back()->with('error', 'No platform data found');
+                }
+
+        DB::transaction(function () use ($data) {
+
+            foreach ($data as $variantId => $platforms) {
+
+            if (!is_array($platforms) || empty($platforms)) {
+                continue; // skip empty variant
+            }
+
+        $variant = ProductVariant::with(['product','value'])
+            ->where('id', $variantId)
+            ->lockForUpdate()
+            ->firstOrFail();
+
+            $totalRequested = collect($platforms)
+                ->filter(fn($p) => isset($p['qty']) && $p['qty'] > 0)
+                ->sum('qty');
+
+            if ($totalRequested <= 0) {
+                continue;
+            }
+        // OLD allocation BEFORE update
+        $oldAllocated = PlatformPricing::where('product_variant_id', $variantId)->sum('quantity');
+
+
+
+
+        foreach ($platforms as $platformId => $p) {
+
+            if (!isset($p['qty']) || $p['qty'] <= 0) continue;
+
+            $platformProduct = PlatformProduct::firstOrCreate(
+                [
+                    'platform_id' => $platformId,
+                    'product_id'  => $variant->product_id,
+                ],
+                [
+                    'platform_sku'   => $variant->product->sku . ($variant->sku_suffix ?? ''),
+                    'platform_price' => $p['price'],
+                    'platform_stock' => 0,
+                    'status'         => 'active',
+                    'sync_status'    => 'pending',
+                ]
+            );
+
+            $platformProduct->update([
+                'platform_sku'   => $variant->product->sku . ($variant->sku_suffix ?? ''),
+                'platform_price' => $p['price'],
+                'status'         => 'active',
+            ]);
+
+            $discountType = $p['discount_type'] === 'percent' ? 'percentage' : 'fixed';
+        PlatformPricing::updateOrCreate(
+            [
+                'platform_product_id' => $platformProduct->id,
+                'product_variant_id'  => $variantId,
+            ],
+            [
+                'price'          => $p['price'],
+                'discount_type'  => $discountType,
+                'discount_value' => $p['discount_value'],
+                'final_price'    => $p['final_total'] / max($p['qty'],1),
+                'quantity'       => $p['qty'],
+                'currency'       => 'INR',
+                'status'         => 'active',
+            ]
+        );
+
+        // ✅ ADD THIS
+        $platformProduct->platform_stock = PlatformPricing::where('platform_product_id', $platformProduct->id)->sum('quantity');
+        $platformProduct->save();
+
+        }
+        // NEW allocation AFTER update
+        $newAllocated = PlatformPricing::where('product_variant_id', $variantId)->sum('quantity');
+
+        $difference = $newAllocated - $oldAllocated;
+
+        // ❗ Safety check
+        if ($difference > 0 && $difference > $variant->quantity) {
+            throw new \Exception(
+                "Not enough stock for " .
+                optional($variant->value)->value .
+                " (Available: {$variant->quantity}, Needed: {$difference})"
+            );
+        }
+
+        // ✅ Adjust stock
+        if ($difference > 0) {
+            $variant->decrement('quantity', $difference);
+        }
+
+        if ($difference < 0) {
+            $variant->increment('quantity', abs($difference));
+        }
+
+        }
+
         });
 
-        return $product;
-    });
+        return redirect()->route('admin.products.list')
+            ->with('success', 'Product pushed to marketplace successfully!');
 
-    $existingConfig = [];
 
-    foreach ($products as $product) {
-        foreach ($product->variants as $variant) {
+            } catch (\Throwable $e) {
+        return back()->with('error', $e->getMessage());
+                }
+        }
 
-            foreach ($variant->platformPricings as $pricing) {
 
-                $platformId = $pricing->platformProduct->platform_id;
+        public function bulkDelete(Request $request)
+        {
+            $ids = $request->ids;
 
-                $existingConfig[$variant->id][$platformId] = [
-                    'price' => $pricing->price,
-                    'qty'   => $pricing->quantity,
-                    'discount_value' => $pricing->discount_value,
-                    'discount_type'  => $pricing->discount_type === 'percentage' ? 'percent' : 'amount',
-                    'final_total'    => $pricing->quantity * $pricing->final_price
-                ];
+            if (!$ids || !is_array($ids)) {
+                return redirect()->back();
             }
+
+            Product::whereIn('id', $ids)->delete();
+
+            return redirect()->back()->with('success', 'Selected products deleted successfully');
         }
-    }
-
-    $platforms = Platform::select('id', 'name')
-        ->where('is_enabled', true)
-        ->get();
-
-    return view('products.push', [
-        'products' => $products,
-        'platforms' => $platforms,
-        'existingVariantPlatformData' => $existingConfig
-    ]);
-}
-
-
-public function pushStore(Request $request)
-{
-    \Log::info('PUSH DATA', $request->all());
-
-    try {
-
-    
-$request->validate([
-    'variant_platform_data' => 'required'
-]);
-
-
-    
-
-        $data = json_decode($request->variant_platform_data, true);
-
-
-        if (!$data || !is_array($data)) {
-            return back()->with('error', 'No platform data found');
-        }
-
-DB::transaction(function () use ($data) {
-
-    foreach ($data as $variantId => $platforms) {
-
-    if (!is_array($platforms) || empty($platforms)) {
-        continue; // skip empty variant
-    }
-
-$variant = ProductVariant::with(['product','value'])
-    ->where('id', $variantId)
-    ->lockForUpdate()
-    ->firstOrFail();
-
-    $totalRequested = collect($platforms)
-        ->filter(fn($p) => isset($p['qty']) && $p['qty'] > 0)
-        ->sum('qty');
-
-    if ($totalRequested <= 0) {
-        continue;
-    }
-// OLD allocation BEFORE update
-$oldAllocated = PlatformPricing::where('product_variant_id', $variantId)->sum('quantity');
-
-
-
-
-foreach ($platforms as $platformId => $p) {
-
-    if (!isset($p['qty']) || $p['qty'] <= 0) continue;
-
-    $platformProduct = PlatformProduct::firstOrCreate(
-        [
-            'platform_id' => $platformId,
-            'product_id'  => $variant->product_id,
-        ],
-        [
-            'platform_sku'   => $variant->product->sku . ($variant->sku_suffix ?? ''),
-            'platform_price' => $p['price'],
-            'platform_stock' => 0,
-            'status'         => 'active',
-            'sync_status'    => 'pending',
-        ]
-    );
-
-    $platformProduct->update([
-        'platform_sku'   => $variant->product->sku . ($variant->sku_suffix ?? ''),
-        'platform_price' => $p['price'],
-        'status'         => 'active',
-    ]);
-
-    $discountType = $p['discount_type'] === 'percent' ? 'percentage' : 'fixed';
-PlatformPricing::updateOrCreate(
-    [
-        'platform_product_id' => $platformProduct->id,
-        'product_variant_id'  => $variantId,
-    ],
-    [
-        'price'          => $p['price'],
-        'discount_type'  => $discountType,
-        'discount_value' => $p['discount_value'],
-        'final_price'    => $p['final_total'] / max($p['qty'],1),
-        'quantity'       => $p['qty'],
-        'currency'       => 'INR',
-        'status'         => 'active',
-    ]
-);
-
-// ✅ ADD THIS
-$platformProduct->platform_stock = PlatformPricing::where('platform_product_id', $platformProduct->id)->sum('quantity');
-$platformProduct->save();
-
-}
-// NEW allocation AFTER update
-$newAllocated = PlatformPricing::where('product_variant_id', $variantId)->sum('quantity');
-
-$difference = $newAllocated - $oldAllocated;
-
-// ❗ Safety check
-if ($difference > 0 && $difference > $variant->quantity) {
-    throw new \Exception(
-        "Not enough stock for " .
-        optional($variant->value)->value .
-        " (Available: {$variant->quantity}, Needed: {$difference})"
-    );
-}
-
-// ✅ Adjust stock
-if ($difference > 0) {
-    $variant->decrement('quantity', $difference);
-}
-
-if ($difference < 0) {
-    $variant->increment('quantity', abs($difference));
-}
-
-}
-
-});
-
-return redirect()->route('admin.products.list')
-    ->with('success', 'Product pushed to marketplace successfully!');
-
-
-    } catch (\Throwable $e) {
-return back()->with('error', $e->getMessage());
-        }
-}
-
-
-    public function bulkDelete(Request $request)
+        public function invoiceView(Product $product)
     {
-        $ids = $request->ids;
+        $product->load(['variants', 'supplier', 'warehouse']);
 
-        if (!$ids || !is_array($ids)) {
-            return redirect()->back();
+        return view('products.invoice', compact('product'));
+    }
+        public function deleteImage(Product $product, $index)
+        {
+            $images = is_array($product->gallery_images)
+                ? $product->gallery_images
+                : [];
+
+            if (!isset($images[$index])) {
+                return response()->json(['success' => false]);
+            }
+
+            // delete from S3
+            Storage::disk('s3')->delete($images[$index]);
+
+            // remove from array
+            unset($images[$index]);
+            $images = array_values($images);
+
+            $product->update([
+                'gallery_images' => $images
+            ]);
+
+            return response()->json(['success' => true]);
         }
-
-        Product::whereIn('id', $ids)->delete();
-
-        return redirect()->back()->with('success', 'Selected products deleted successfully');
-    }
-    public function invoiceView(Product $product)
-{
-    $product->load(['variants', 'supplier', 'warehouse']);
-
-    return view('products.invoice', compact('product'));
-}
-public function deleteImage(Product $product, $index)
-{
-    $images = is_array($product->gallery_images)
-        ? $product->gallery_images
-        : [];
-
-    if (!isset($images[$index])) {
-        return response()->json(['success' => false]);
-    }
-
-    // delete from S3
-    Storage::disk('s3')->delete($images[$index]);
-
-    // remove from array
-    unset($images[$index]);
-    $images = array_values($images);
-
-    $product->update([
-        'gallery_images' => $images
-    ]);
-
-    return response()->json(['success' => true]);
-}
 
 
 }

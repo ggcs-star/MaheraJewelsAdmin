@@ -21,7 +21,6 @@ class Coupon extends Model
     'starts_at',
     'expires_at',
 
-    // ✅ NEW
     'bank_id',
     'card_type',
 ];

@@ -73,18 +73,22 @@
                     </div>
                 </div>
 
-                {{-- ADVANCED FILTER BUTTON --}}
-                <div class="col-lg-3">
-                    <label class="form-label fw-semibold small mb-2 d-block">&nbsp;</label>
-                    <button type="button" id="openAdvancedFilter" class="btn btn-outline-primary w-100">
-                        <i class="fas fa-filter me-1"></i> Advanced Filter
-                    </button>
-                </div>
+                <div class="filter-header border-bottom d-flex justify-content-between align-items-center p-3">
+    <h6 class="fw-bold mb-0">
+        <i class="fas fa-filter me-2"></i>Advanced Filters
+    </h6>
+
+    <button type="button"
+        class="btn-close"
+        id="closeAdvancedFilter"
+        aria-label="Close">
+    </button>
+</div>
+
             </form>
         </div>
     </div>
 
-    {{-- ================= ORGANIZATIONS TABLE ================= --}}
     <div class="card border-0 shadow">
         <div class="card-header bg-white border-bottom py-3 px-4">
             <div class="d-flex justify-content-between align-items-center">

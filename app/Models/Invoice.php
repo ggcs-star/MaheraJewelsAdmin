@@ -13,20 +13,14 @@ class Invoice extends Model
          'organization_id',
         'invoice_number',
         'invoice_date',
-
-        // customer
         'customer_id',
         'customer_name',
         'customer_mobile',
         'customer_address',
-
-        // amount
         'sub_total',
         'discount',
         'tax_amount',
         'grand_total',
-
-        // payment
         'payment_type',
         'paid_amount',
         'due_amount',
@@ -43,8 +37,6 @@ class Invoice extends Model
         'paid_amount'  => 'decimal:2',
         'due_amount'   => 'decimal:2',
     ];
-
-    /* ================= RELATIONS ================= */
 
     public function organization()
     {

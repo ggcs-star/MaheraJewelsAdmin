@@ -8,9 +8,6 @@ use Illuminate\Http\Request;
 
 class VariantController extends Controller
 {
-    /* =======================
-       VARIANT MASTER
-    ======================== */
 
     public function index()
     {
@@ -19,59 +16,54 @@ class VariantController extends Controller
         ]);
     }
 
- public function store(Request $request)
-{
-    $request->validate([
-        'name'           => 'required',
-        'input_type'     => 'required',
-        'has_dimensions' => 'required|boolean',
-    ]);
-
-    Variant::create([
-        'name'           => $request->name,
-        'input_type'     => $request->input_type,
-        'has_dimensions' => $request->has_dimensions,
-        'is_active'      => 1,
-    ]);
-
-    return back();
-}
-
-public function update(Request $request, Variant $variant)
-{
-    $request->validate([
-        'name'           => 'required',
-        'input_type'     => 'required',
-        'has_dimensions' => 'required|boolean',
-    ]);
-
-    $variant->update([
-        'name'           => $request->name,
-        'input_type'     => $request->input_type,
-        'has_dimensions' => $request->has_dimensions,
-    ]);
-
-    return back();
-}
-
-
-    public function destroy(Variant $variant)
+    public function store(Request $request)
     {
-        $variant->delete(); // values auto delete (cascade)
+        $request->validate([
+            'name'           => 'required',
+            'input_type'     => 'required',
+            'has_dimensions' => 'required|boolean',
+        ]);
+
+        Variant::create([
+            'name'           => $request->name,
+            'input_type'     => $request->input_type,
+            'has_dimensions' => $request->has_dimensions,
+            'is_active'      => 1,
+        ]);
+
         return back();
     }
 
-    /* =======================
-       VARIANT VALUES
-    ======================== */
+    public function update(Request $request, Variant $variant)
+    {
+        $request->validate([
+            'name'           => 'required',
+            'input_type'     => 'required',
+            'has_dimensions' => 'required|boolean',
+        ]);
+
+        $variant->update([
+            'name'           => $request->name,
+            'input_type'     => $request->input_type,
+            'has_dimensions' => $request->has_dimensions,
+        ]);
+
+        return back();
+    }
+
+    public function destroy(Variant $variant)
+    {
+        $variant->delete(); 
+        return back();
+    }
 
     public function storeValue(Request $request, Variant $variant)
-{
+    {
     $rules = [
         'value' => 'required',
     ];
 
-    // 🔥 agar variant has_dimensions = YES
+    
     if ($variant->has_dimensions) {
         $rules['height'] = 'required|numeric';
         $rules['width']  = 'required|numeric';
@@ -90,42 +82,41 @@ public function update(Request $request, Variant $variant)
     return back();
 }
 
-public function updateValue(Request $request, VariantValue $value)
-{
-    $variant = $value->variant;
+    public function updateValue(Request $request, VariantValue $value)
+    {
+        $variant = $value->variant;
 
-    $rules = [
-        'value' => 'required',
-    ];
+        $rules = [
+            'value' => 'required',
+        ];
 
-    if ($variant->has_dimensions) {
-        $rules['height'] = 'required|numeric';
-        $rules['width']  = 'required|numeric';
+        if ($variant->has_dimensions) {
+            $rules['height'] = 'required|numeric';
+            $rules['width']  = 'required|numeric';
+        }
+
+        $request->validate($rules);
+
+        $value->update([
+            'value'  => $request->value,
+            'color'  => $request->color ?? null,
+            'height' => $variant->has_dimensions ? $request->height : null,
+            'width'  => $variant->has_dimensions ? $request->width : null,
+        ]);
+
+        return back();
     }
-
-    $request->validate($rules);
-
-    $value->update([
-        'value'  => $request->value,
-        'color'  => $request->color ?? null,
-        'height' => $variant->has_dimensions ? $request->height : null,
-        'width'  => $variant->has_dimensions ? $request->width : null,
-    ]);
-
-    return back();
-}
-
     public function destroyValue(VariantValue $value)
     {
     
         $value->delete();
         return back();
     }
-    public function getValues(\App\Models\Variant $variant)
-{
-    return response()->json(
-        $variant->values()->select('id', 'value')->get()
-    );
-}
+    public function getValues(Variant $variant)
+    {
+        return response()->json(
+            $variant->values()->select('id', 'value')->get()
+        );
+    }
 
 }

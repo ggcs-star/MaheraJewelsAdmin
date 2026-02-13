@@ -204,5 +204,29 @@ if (deleteBtn) {
 }
 
 })
+document.addEventListener('DOMContentLoaded', function () {
+
+    const clearBtn = document.getElementById('clearProductAdvancedFilter');
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function () {
+
+            // 1️⃣ Reset advanced filter inputs
+            document.getElementById('productAdvField').selectedIndex = 0;
+            document.getElementById('productAdvCondition').selectedIndex = 0;
+            document.getElementById('productAdvValue').value = '';
+
+            // 2️⃣ Remove advanced filter params from URL
+            const params = new URLSearchParams(window.location.search);
+            params.delete('adv_field');
+            params.delete('adv_condition');
+            params.delete('adv_value');
+
+            // 3️⃣ Reload page without advanced filters
+            window.location = `?${params.toString()}`;
+        });
+    }
+
+});
 
 

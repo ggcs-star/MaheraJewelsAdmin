@@ -15,9 +15,6 @@ use Throwable;
 
 class CheckoutController extends Controller
 {
-    /**
-     * 4.1 Checkout Summary
-     */
     public function summary(Request $request): JsonResponse
     {
         try {
@@ -36,7 +33,6 @@ class CheckoutController extends Controller
             $tax = round($subtotal * 0.18, 2);
             $shipping = 50;
 
-            // Coupon logic
             $discount = $this->calculateDiscount($request->coupon_code, $subtotal);
 
             $rawTotal = $subtotal + $tax + $shipping - $discount;
@@ -85,9 +81,6 @@ class CheckoutController extends Controller
         }
     }
 
-    /**
-     * 4.5 Place Order
-     */
     public function placeOrder(Request $request): JsonResponse
     {
         $request->validate([
@@ -113,8 +106,6 @@ class CheckoutController extends Controller
             $subtotal = $cart->items->sum('subtotal');
             $tax = round($subtotal * 0.18, 2);
             $shipping = 50;
-
-            // Coupon logic
             $discount = $this->calculateDiscount($request->coupon_code, $subtotal);
             $total = max(round($subtotal + $tax + $shipping - $discount, 2), 0);
 
@@ -133,8 +124,6 @@ class CheckoutController extends Controller
                 'billing_address_id' => $request->billing_address_id,
                 'payment_method_id' => $request->payment_method_id,
             ]);
-
-            // Create order items
             foreach ($cart->items as $item) {
                 OrderItem::create([
                     'order_id' => $order->id,
@@ -147,7 +136,7 @@ class CheckoutController extends Controller
                 ]);
             }
 
-            // Clear cart
+            
             $cart->items()->delete();
 
             DB::commit();
@@ -176,10 +165,6 @@ class CheckoutController extends Controller
             ], 500);
         }
     }
-
-    /**
-     * Coupon discount calculator
-     */
     private function calculateDiscount(?string $couponCode, float $subtotal): float
     {
         if (!$couponCode) {
@@ -208,7 +193,6 @@ class CheckoutController extends Controller
             $discount = $coupon->value;
         }
 
-        // Discount cannot exceed subtotal
         $discount = min($discount, $subtotal);
 
         return round($discount, 2);

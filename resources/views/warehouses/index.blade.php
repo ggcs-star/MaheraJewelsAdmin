@@ -218,6 +218,12 @@
                     class="btn btn-primary w-100">
                 Apply Filter
             </button>
+            <button type="button"
+        id="clearWarehouseAdvancedFilter"
+        class="btn btn-outline-secondary w-100 mt-2">
+    Clear Filter
+</button>
+
         </div>
     </div>
 

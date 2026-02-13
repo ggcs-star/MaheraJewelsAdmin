@@ -71,7 +71,6 @@ class WarehouseController extends Controller
         ->latest()
         ->paginate(10);
 
-    // 🌍 CITIES
     $cities = Warehouse::whereNotNull('city')
         ->distinct()
         ->pluck('city');

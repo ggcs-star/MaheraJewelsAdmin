@@ -12,38 +12,28 @@ document.addEventListener('DOMContentLoaded', () => {
         clearTimeout(debounce);
         debounce = setTimeout(() => form.submit(), 400);
     }
-
-    // 🔍 AUTO SEARCH
     search?.addEventListener('input', () => {
         if (clearBtn) {
             clearBtn.style.display = search.value ? 'block' : 'none';
         }
         autoSubmit();
     });
-
-    // ⛔ PREVENT ENTER
     search?.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
         }
     });
-
-    // 🏙️ CITY FILTER
     city?.addEventListener('change', autoSubmit);
 
-    // ❌ CLEAR SEARCH
     clearBtn?.addEventListener('click', () => {
         search.value = '';
         clearBtn.style.display = 'none';
         form.submit();
     });
-
-    // ✅ SHOW CLEAR ICON ON LOAD
     if (search && search.value.trim() !== '') {
         clearBtn.style.display = 'block';
     }
 
-    // 🧠 ADVANCED FILTER
     document.getElementById('applyWarehouseAdvancedFilter')
         ?.addEventListener('click', () => {
 
@@ -55,24 +45,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         window.location.search = params.toString();
     });
-
-    // 🔽 OPEN FILTER SIDEBAR
     document.getElementById('openWarehouseFilterSidebar')
         ?.addEventListener('click', () => {
             document.getElementById('warehouseFilterSidebar')
                 ?.classList.add('open');
         });
-
-    // ❌ CLOSE FILTER SIDEBAR
     document.getElementById('closeWarehouseFilterSidebar')
         ?.addEventListener('click', () => {
             document.getElementById('warehouseFilterSidebar')
                 ?.classList.remove('open');
         });
 
-    // ================================
-    // ✅ SELECT ALL / DESELECT ALL
-    // ================================
     const selectAll = document.getElementById('selectAllWarehouses');
     const rowCheckboxes = document.querySelectorAll('.warehouse-row-checkbox');
 
@@ -89,9 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
             selectAll.indeterminate = !allChecked && anyChecked;
         });
     });
-    // ================================
-// BULK DELETE SUBMIT
-// ================================
+
 const bulkDeleteBtn = document.getElementById('bulkDeleteWarehouseBtn');
 const bulkDeleteForm = document.getElementById('warehouseBulkDeleteForm');
 
@@ -108,9 +89,6 @@ bulkDeleteBtn?.addEventListener('click', () => {
         bulkDeleteForm.submit();
     }
 });
-// ================================
-// AUTO HIDE FLASH MESSAGE
-// ================================
 const flashMessage = document.getElementById('flashMessage');
 
 if (flashMessage) {
@@ -122,5 +100,29 @@ if (flashMessage) {
     }, 3000); // 3 seconds
 }
 
+
+});
+document.addEventListener('DOMContentLoaded', function () {
+
+    const clearBtn = document.getElementById('clearWarehouseAdvancedFilter');
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function () {
+
+            // 1️⃣ Reset advanced filter inputs
+            document.getElementById('advField').selectedIndex = 0;
+            document.getElementById('advCondition').selectedIndex = 0;
+            document.getElementById('advValue').value = '';
+
+            // 2️⃣ URL se advanced filter params remove
+            const params = new URLSearchParams(window.location.search);
+            params.delete('adv_field');
+            params.delete('adv_condition');
+            params.delete('adv_value');
+
+            // 3️⃣ Reload page without advanced filters
+            window.location = `?${params.toString()}`;
+        });
+    }
 
 });
