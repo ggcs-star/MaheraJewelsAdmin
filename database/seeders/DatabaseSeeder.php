@@ -20,7 +20,8 @@ class DatabaseSeeder extends Seeder
             PlatformPricingSeeder::class,
             WarehouseSeeder::class,
             BankSeeder::class,
-            CouponSeeder::class
+            CouponSeeder::class,
+            CustomerSeeder::class,
 
 
         ]);

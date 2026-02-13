@@ -293,3 +293,96 @@ hr {
 .coupon-clickable:hover {
     background-color: #f8f9fa;
 }
+/* ================= ADVANCED FILTER SIDEBAR (GLOBAL) ================= */
+
+.filter-sidebar {
+    position: fixed;
+    top: 0;
+    right: -380px;              /* hidden */
+    width: 380px;
+    height: 100vh;
+    background: #fff;
+    box-shadow: -12px 0 30px rgba(0,0,0,0.2);
+    z-index: 1060;
+    transition: right .3s ease;
+    overflow-y: auto;
+}
+
+.filter-sidebar.show {
+    right: 0;
+}
+
+.filter-header {
+    padding: 16px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* OVERLAY */
+.filter-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 1055;
+    display: none;
+}
+
+.filter-overlay.show {
+    display: block;
+}
+/* ================= INVOICE PRINT ONLY ================= */
+@media print {
+
+    /* hide everything */
+    body * {
+        visibility: hidden !important;
+    }
+
+    /* show only invoice */
+    .invoice-wrapper,
+    .invoice-wrapper * {
+        visibility: visible !important;
+    }
+
+    .invoice-wrapper {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: #fff;
+        padding: 20px;
+    }
+
+    /* hide buttons */
+    .no-print {
+        display: none !important;
+    }
+
+    /* remove admin layout spacing */
+    body {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    @media print {
+    body {
+        background: #fff !important;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    .sidebar,
+    .navbar {
+        display: none !important;
+    }
+
+    .container {
+        width: 100% !important;
+        margin: 0 !important;
+    }
+}
+
+}
