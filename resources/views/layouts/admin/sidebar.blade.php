@@ -88,6 +88,29 @@
 
     <span>Coupons</span>
 </a>
+<a href="{{ admin_route('customers.index') }}"
+   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+   {{ request()->routeIs('customers.*')
+        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 font-medium'
+        : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100' }}">
+
+    <i class="fas fa-user-friends w-5 h-5 text-center"></i>
+
+    <span>Customers</span>
+</a>
+
+<a href="{{ admin_route('invoices.index') }}"
+   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+   {{ request()->routeIs('invoices.*')
+        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 font-medium'
+        : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100' }}">
+
+    <i class="fas fa-file-invoice w-5 h-5 text-center"></i>
+
+    <span>Invoice</span>
+</a>
+
+
         <a href="#"
            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-slate-100">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,14 +133,6 @@
                 <path d="M6.012 18H21V8a2 2 0 0 0-2-2h-8L9 4H3a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h1.012a3 3 0 1 0 6 0m5 0h4.976a3 3 0 1 0 6 0H11z"/>
             </svg>
             <span>Marketplace</span>
-        </a>
-
-        <a href="#"
-           class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-slate-100">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A4 4 0 0112 14a4 4 0 016.879 3.804" />
-            </svg>
-            <span>Users</span>
         </a>
 
         <a href="#"

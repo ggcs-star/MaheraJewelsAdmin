@@ -18,6 +18,8 @@ use App\Http\Controllers\TaxController;
 use App\Http\Controllers\BankController;
 use App\Http\Controllers\CouponController;
 use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\InvoiceController;
 
 
 Route::get('/', function () {
@@ -204,6 +206,61 @@ Route::delete('/organizations/{organization}', [OrganizationController::class, '
 
 Route::post('/organizations/bulk-delete', [OrganizationController::class, 'bulkDelete'])
     ->name('organizations.bulk-delete');
+// Customers CRUD
+Route::get('/customers', [CustomerController::class, 'index'])
+    ->name('customers.index');
+
+Route::get('/customers/create', [CustomerController::class, 'create'])
+    ->name('customers.create');
+
+Route::post('/customers', [CustomerController::class, 'store'])
+    ->name('customers.store');
+
+Route::get('/customers/{customer}', [CustomerController::class, 'show'])
+    ->name('customers.show');
+
+Route::get('/customers/{customer}/edit', [CustomerController::class, 'edit'])
+    ->name('customers.edit');
+
+Route::put('/customers/{customer}', [CustomerController::class, 'update'])
+    ->name('customers.update');
+
+Route::delete('/customers/{customer}', [CustomerController::class, 'destroy'])
+    ->name('customers.destroy');
+
+Route::post('/customers/bulk-delete', [CustomerController::class, 'bulkDelete'])
+    ->name('customers.bulk-delete');
+// Invoice
+Route::get('/invoices/create', [InvoiceController::class, 'create'])
+    ->name('invoices.create');
+
+Route::post('/invoices', [InvoiceController::class, 'store'])
+    ->name('invoices.store');
+
+    Route::get('/invoices', [InvoiceController::class, 'index'])
+        ->name('invoices.index');
+         Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])
+        ->name('invoices.show');
+
+    // Print / Download invoice
+    Route::get('/invoices/{invoice}/print', [InvoiceController::class, 'print'])
+        ->name('invoices.print');
+         Route::get('/invoices/{invoice}/edit', [InvoiceController::class, 'edit'])
+        ->name('invoices.edit');
+    Route::put('/invoices/{invoice}', [InvoiceController::class, 'update'])
+        ->name('invoices.update');
+        Route::delete('/invoices/{invoice}', [InvoiceController::class, 'destroy'])
+    ->name('invoices.destroy');
+Route::get(
+    '/products/{product}/variants',
+    [InvoiceController::class, 'productVariants']
+)->name('products.variants');
+
+// Customer ajax
+Route::post(
+    '/customers/ajax-store',
+    [CustomerController::class, 'ajaxStore']
+)->name('customers.ajax.store');
 
     });
 // 💰 GST & TAXES
