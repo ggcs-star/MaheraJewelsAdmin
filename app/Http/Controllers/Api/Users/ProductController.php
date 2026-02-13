@@ -64,10 +64,9 @@ class ProductController extends Controller
           ->with([
     'category:id,name',
 
-    // BASE VARIANT FIELDS
+    
     'variants:id,product_id,variant_id,variant_value_id,quantity,selling_price,image_url,sku_suffix,status',
 
-    // RELATIONS
     'variants.variant:id,name',
     'variants.value:id,value',
 

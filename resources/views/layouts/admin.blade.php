@@ -98,5 +98,29 @@ window.showToast = function(message, type="error") {
         </div>
     </div>
     @stack('scripts')
+    @if(session('error'))
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        showToast(@json(session('error')), 'error');
+    });
+</script>
+@endif
+
+@if(session('success'))
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        showToast(@json(session('success')), 'success');
+    });
+</script>
+@endif
+
+@if(session('warning'))
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        showToast(@json(session('warning')), 'warning');
+    });
+</script>
+@endif
+
 </body>
 </html>

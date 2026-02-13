@@ -48,7 +48,7 @@ class ProfileController extends Controller
 
     public function update(Request $request): JsonResponse
     {
-        // dd($request->all());
+        
         $data = $request->validate([
             'name' => 'nullable|string|max:255',
             'mobile' => 'nullable|string|max:20',

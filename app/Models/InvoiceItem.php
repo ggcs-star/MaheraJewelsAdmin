@@ -32,8 +32,6 @@ class InvoiceItem extends Model
         'total'    => 'decimal:2',
     ];
 
-    /* ================= RELATIONS ================= */
-
     public function invoice()
     {
         return $this->belongsTo(Invoice::class);

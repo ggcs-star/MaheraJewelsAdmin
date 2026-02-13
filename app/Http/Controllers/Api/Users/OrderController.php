@@ -12,9 +12,6 @@ use Throwable;
 
 class OrderController extends Controller
 {
-    /**
-     * 5.1 Get User Orders
-     */
    public function index(Request $request): JsonResponse
 {
     try {
@@ -37,12 +34,6 @@ class OrderController extends Controller
         ], 500);
     }
 }
-
-  
-
-    /**
-     * 5.2 Get Order Details
-     */
     public function show($orderId): JsonResponse
     {
         try {
@@ -67,9 +58,6 @@ class OrderController extends Controller
         }
     }
 
-    /**
-     * 5.3 Cancel Order
-     */
     public function cancel(Request $request, $orderId): JsonResponse
     {
         try {
@@ -115,9 +103,6 @@ class OrderController extends Controller
         }
     }
 
-    /**
-     * 5.4 Track Order
-     */
     public function track($orderId): JsonResponse
     {
         try {

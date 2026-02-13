@@ -84,10 +84,10 @@ class OrganizationController extends Controller
     {
         return view('organizations.create');
     }
-public function show(Organization $organization)
-{
-    return view('organizations.show', compact('organization'));
-}
+    public function show(Organization $organization)
+    {
+        return view('organizations.show', compact('organization'));
+    }
     public function store(Request $request)
     {
         $data = $this->validated($request);

@@ -193,4 +193,59 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
+document.addEventListener('DOMContentLoaded', function () {
+    const selectAll = document.getElementById('selectAll');
+    const form = document.getElementById('bulkDeleteForm');
+
+    // 1️⃣ Select All toggle
+    if (selectAll) {
+        selectAll.addEventListener('change', function () {
+            document.querySelectorAll('.row-checkbox').forEach(cb => {
+                cb.checked = selectAll.checked;
+            });
+        });
+    }
+
+    // 2️⃣ Prevent submit if nothing selected
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            const checked = document.querySelectorAll('.row-checkbox:checked');
+
+            if (checked.length === 0) {
+                e.preventDefault();
+                alert('Please select at least one category to delete.');
+                return false;
+            }
+
+            const methodField = form.querySelector('input[name="_method"]');
+            if (methodField) {
+                methodField.remove();
+            }
+
+            return confirm(`Are you sure you want to delete ${checked.length} category(ies)?`);
+        });
+    }
+
+    // ✅ CLEAR ADVANCED FILTER (Categories page)
+    const clearAdvancedBtn = document.getElementById('clearAdvancedFilter');
+
+    if (clearAdvancedBtn) {
+        clearAdvancedBtn.addEventListener('click', () => {
+
+            // inputs reset
+            document.getElementById('advField').selectedIndex = 0;
+            document.getElementById('advCondition').selectedIndex = 0;
+            document.getElementById('advValue').value = '';
+
+            // URL se advanced params hatao
+            const params = new URLSearchParams(window.location.search);
+            params.delete('adv_field');
+            params.delete('adv_condition');
+            params.delete('adv_value');
+
+            // reload page
+            window.location = `?${params.toString()}`;
+        });
+    }
+});
 

@@ -332,7 +332,7 @@
         <h5 class="mb-0 fw-bold">
             <i class="fas fa-filter me-2 text-primary"></i>Advanced Filter
         </h5>
-        <button type="button" id="closeFilterSidebar">✕
+        <button type="button" id="closeFilterSidebar">
             <i class="fas fa-times"></i>
         </button>
     </div>
@@ -363,6 +363,13 @@
         <button type="button" id="applyAdvancedFilter" class="btn btn-primary w-100 py-3 rounded-3 shadow fw-bold">
             <i class="fas fa-check-circle me-2"></i>Apply Changes
         </button>
+        <button
+    type="button"
+    id="clearAdvancedFilter"
+    class="btn btn-outline-secondary w-100 mt-3 py-2 rounded-3 fw-medium">
+    <i class="fas fa-times-circle me-2"></i>Clear Filter
+</button>
+
     </div>
 </div>
 

@@ -18,8 +18,6 @@ class InvoiceController extends Controller
         $query = Invoice::where('organization_id', activeOrganization()->id)
     ->orderByDesc('invoice_date');
 
-
-        // Date filter
         if ($request->filled('start_date')) {
             $query->whereDate('invoice_date', '>=', $request->start_date);
         }
@@ -27,8 +25,6 @@ class InvoiceController extends Controller
         if ($request->filled('end_date')) {
             $query->whereDate('invoice_date', '<=', $request->end_date);
         }
-
-        // Search
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('invoice_number', 'like', "%{$request->search}%")
@@ -41,8 +37,6 @@ class InvoiceController extends Controller
 
         return view('invoices.index', compact('invoices', 'totalAmount'));
     }
-
-    /* ===================== CREATE ===================== */
     public function create()
     {
         $customers = Customer::where('organization_id', activeOrganization()->id)
@@ -53,8 +47,6 @@ class InvoiceController extends Controller
 
         return view('invoices.create', compact('customers', 'products'));
     }
-
-    /* ===================== PRODUCT VARIANTS (AJAX) ===================== */
     public function productVariants(Product $product)
     {
         return response()->json(
@@ -83,7 +75,6 @@ public function store(Request $request)
 
     DB::transaction(function () use ($request, $org) {
 
-        /* ---------- CUSTOMER SNAPSHOT ---------- */
         $customerId = $customerName = $customerMobile = $customerAddress = null;
 
         if ($request->filled('customer_id')) {
@@ -94,7 +85,6 @@ public function store(Request $request)
             $customerAddress = $customer->address_line_1;
         }
 
-        /* ---------- TOTALS ---------- */
         $subTotal = 0;
         $totalDiscount = 0;
         $grandTotal = 0;
@@ -106,7 +96,6 @@ public function store(Request $request)
 
             $discountValue = (float) ($item['discount'] ?? 0);
 
-            // 🔒 HARD SAFE
             $discountType = in_array($item['discount_type'] ?? '', ['percent','flat'])
                 ? $item['discount_type']
                 : 'percent';
@@ -123,8 +112,6 @@ public function store(Request $request)
 
         $paid = (float) ($request->paid_amount ?? 0);
         $due  = max($grandTotal - $paid, 0);
-
-        /* ---------- INVOICE ---------- */
         $invoice = Invoice::create([
             'organization_id' => $org->id,
             'invoice_number'  => 'INV-' . str_pad((Invoice::max('id') + 1), 5, '0', STR_PAD_LEFT),
@@ -145,7 +132,6 @@ public function store(Request $request)
             'status'      => 'completed',
         ]);
 
-        /* ---------- ITEMS ---------- */
         foreach ($request->items as $item) {
 
             $product = Product::findOrFail($item['product_id']);
@@ -215,7 +201,6 @@ public function update(Request $request, Invoice $invoice)
 
     DB::transaction(function () use ($request, $invoice) {
 
-        /* ---------- CUSTOMER ---------- */
         $customerId = $customerName = $customerMobile = $customerAddress = null;
 
         if ($request->filled('customer_id')) {
@@ -226,7 +211,6 @@ public function update(Request $request, Invoice $invoice)
             $customerAddress = $customer->address_line_1;
         }
 
-        /* ---------- TOTALS ---------- */
         $subTotal = 0;
         $totalDiscount = 0;
         $grandTotal = 0;
@@ -255,7 +239,6 @@ public function update(Request $request, Invoice $invoice)
         $paid = (float) ($request->paid_amount ?? 0);
         $due  = max($grandTotal - $paid, 0);
 
-        /* ---------- UPDATE INVOICE ---------- */
         $invoice->update([
             'customer_id'      => $customerId,
             'customer_name'    => $customerName,
@@ -271,7 +254,6 @@ public function update(Request $request, Invoice $invoice)
             'grand_total' => $grandTotal,
         ]);
 
-        /* ---------- RESET ITEMS ---------- */
         $invoice->items()->delete();
 
         foreach ($request->items as $item) {
