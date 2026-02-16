@@ -98,7 +98,7 @@ class CategoryController extends Controller
 }
    public function create()
     {
-        return view('categories.create', [
+        return view('catego.create', [
             'parents' => $this->parentCategories()
         ]);
     }   

@@ -273,6 +273,11 @@
             class="btn btn-primary w-100">
             Apply Filter
         </button>
+        <button type="button"
+            id="clearProductAdvancedFilter"
+            class="btn btn-outline-secondary w-100 mt-2">
+            Clear Filter
+        </button>
 
     </div>
 </div>
@@ -283,13 +288,14 @@
 
     <div class="modal-content position-relative">
 
-        {{-- DELETE BUTTON --}}
-        <button
-            id="deleteModalImageBtn"
-            class="btn btn-danger btn-sm position-absolute"
-            style="top:10px; right:10px; z-index:10">
-            DELETE
-        </button>
+       <button
+    id="deleteModalImageBtn"
+    class="btn btn-danger btn-sm position-absolute"
+    style="top:10px; right:10px; z-index:10"
+    title="Delete">
+    <i class="fas fa-trash"></i>
+</button>
+
 
         <span class="modal-nav left">‹</span>
 

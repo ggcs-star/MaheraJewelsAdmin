@@ -1,5 +1,5 @@
 <?php
-
+use App\Models\Organization;
 if (!function_exists('admin_route')) {
     /**
      * Generate a route URL for admin routes.
@@ -20,4 +20,9 @@ if (!function_exists('admin_route')) {
         // Otherwise, prepend 'admin.' prefix
         return route('admin.' . $name, $parameters, $absolute);
     }
+    function activeOrganization()
+{
+    return Organization::where('is_active', true)->first();
+}
+
 }

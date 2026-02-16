@@ -23,44 +23,44 @@ class SupplierController extends Controller
                     ->orWhere('phone', 'like', "%{$search}%");
             });
         }) 
-  ->when(
-    $request->filled('adv_field') && $request->filled('adv_value'),
-    function ($q) use ($request) {
+        ->when(
+        $request->filled('adv_field') && $request->filled('adv_value'),
+        function ($q) use ($request) {
 
-        $allowedFields = [
-            'name',
-            'company_name',
-            'email',
-            'phone',
-            'type',
-            'status',
-        ];
+            $allowedFields = [
+                'name',
+                'company_name',
+                'email',
+                'phone',
+                'type',
+                'status',
+            ];
 
-        $field = $request->adv_field;
-        $condition = $request->adv_condition;
-        $value = $request->adv_value;
+            $field = $request->adv_field;
+            $condition = $request->adv_condition;
+            $value = $request->adv_value;
 
-        if (!in_array($field, $allowedFields)) {
-            return;
+            if (!in_array($field, $allowedFields)) {
+                return;
+            }
+
+            if ($condition === 'like') {
+
+                $q->where($field, 'LIKE', "%{$value}%");
+
+            } elseif ($condition === 'starts_with') {
+
+                $q->where($field, 'LIKE', "{$value}%");
+
+            } elseif ($condition === 'ends_with') {
+
+                $q->where($field, 'LIKE', "%{$value}");
+
+            } else {
+                $q->where($field, $condition, $value);
+            }
         }
-
-        if ($condition === 'like') {
-
-            $q->where($field, 'LIKE', "%{$value}%");
-
-        } elseif ($condition === 'starts_with') {
-
-            $q->where($field, 'LIKE', "{$value}%");
-
-        } elseif ($condition === 'ends_with') {
-
-            $q->where($field, 'LIKE', "%{$value}");
-
-        } else {
-            $q->where($field, $condition, $value);
-        }
-    }
-)
+    )
 
     ->latest()->paginate(10);
 
@@ -139,22 +139,22 @@ class SupplierController extends Controller
             'notes' => 'nullable|string',
         ]);
     }
-    public function details(Supplier $supplier)
-{
-    return view('suppliers.details', compact('supplier'));
-}
-public function bulkDelete(Request $request)
-{
-    $ids = $request->input('ids', []);
-    
-    if (empty($ids)) {
-        return back()->with('error', 'No suppliers selected.');
+        public function details(Supplier $supplier)
+    {
+        return view('suppliers.details', compact('supplier'));
     }
-    
-    Supplier::whereIn('id', $ids)->delete();
-    
-    return redirect()
-        ->to(admin_route('suppliers.index'))
-        ->with('success', 'Selected suppliers deleted successfully.');
-}
+        public function bulkDelete(Request $request)
+        {
+            $ids = $request->input('ids', []);
+            
+            if (empty($ids)) {
+                return back()->with('error', 'No suppliers selected.');
+            }
+            
+            Supplier::whereIn('id', $ids)->delete();
+            
+            return redirect()
+                ->to(admin_route('suppliers.index'))
+                ->with('success', 'Selected suppliers deleted successfully.');
+        }
 }

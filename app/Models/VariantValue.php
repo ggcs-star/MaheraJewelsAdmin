@@ -8,10 +8,10 @@ class VariantValue extends Model
 {
     protected $fillable = [
         'variant_id',
-        'value',        // Red / XL / 100kg
-        'color',        // optional
-        'height',       // optional
-        'width',        // optional
+        'value',        
+        'color',        
+        'height',       
+        'width',        
         'is_active'
     ];
 

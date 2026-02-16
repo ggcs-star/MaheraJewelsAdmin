@@ -12,7 +12,6 @@ use Throwable;
 
 class CouponController extends Controller
 {
-    // 1. Available coupons list
 public function index(): JsonResponse
 {
     $now = Carbon::now();
@@ -100,19 +99,14 @@ public function apply(Request $request): JsonResponse
                 'message' => 'Minimum order amount not met'
             ], 422);
         }
-
-        // BANK coupon validation
      if ($coupon->coupon_type === 'BANK') {
 
-    // card type required
     if (!$request->card_type) {
         return response()->json([
             'success' => false,
             'message' => 'Card type required for this coupon'
         ], 422);
     }
-
-    // bank check only if coupon has bank
     if ($coupon->bank_id) {
         if (!$request->bank_id || $coupon->bank_id != $request->bank_id) {
             return response()->json([
@@ -122,7 +116,6 @@ public function apply(Request $request): JsonResponse
         }
     }
 
-    // card type validation
     if (
         $coupon->card_type !== 'both' &&
         $coupon->card_type !== $request->card_type
@@ -134,7 +127,6 @@ public function apply(Request $request): JsonResponse
     }
 }
 
-        // discount calculation
         if ($coupon->discount_type === 'PERCENT') {
             $discount = ($cartTotal * $coupon->value) / 100;
 
@@ -168,8 +160,6 @@ public function apply(Request $request): JsonResponse
     }
 }
 
-
-    // 3. Remove coupon
     public function remove(): JsonResponse
     {
         return response()->json([
