@@ -12,6 +12,28 @@ use App\Http\Controllers\Api\Users\CouponController;
 use App\Http\Controllers\Api\Users\CheckoutController;
 use App\Http\Controllers\Api\Users\OrderController;
 
+Route::get('/test', function () {
+    return response()->json([
+        'status' => true,
+        'message' => 'API working from mobile'
+    ]);
+});
+Route::get('/mail-test', function () {
+    \Mail::raw('Test Email from Laravel', function ($message) {
+        $message->to('your_other_email@gmail.com')
+                ->subject('Test Email');
+    });
+
+    return 'Mail sent';
+});
+Route::any('/debug-url', function (Request $request) {
+    return response()->json([
+        'full_url' => $request->fullUrl(),
+        'ip' => $request->ip(),
+        'method' => $request->method(),
+        'data' => $request->all(),
+    ]);
+});
 
 /*
 |--------------------------------------------------------------------------

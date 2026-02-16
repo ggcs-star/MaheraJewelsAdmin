@@ -25,6 +25,8 @@ class AuthController extends Controller
 
     private function sendEmailOtp(string $email, OtpService $otpService): void
     {
+            Log::info('OTP function triggered for: ' . $email);
+
         $otp = $otpService->generate($email, 'email_verification');
         Mail::to($email)->send(new OtpMail($otp->code));
     }
@@ -33,6 +35,18 @@ class AuthController extends Controller
 
     public function register(Request $request, OtpService $otpService)
     {
+
+Log::info('MOBILE HIT REGISTER', [
+    'url' => request()->fullUrl(),
+    'ip' => request()->ip(),
+    'data' => request()->all()
+]);
+Log::info('RAW INPUT', [
+    'raw' => file_get_contents('php://input'),
+    'all' => request()->all(),
+    'headers' => request()->headers->all()
+]);
+
         $data = $request->validate(
             [
                 'name' => 'required|string|max:255',
