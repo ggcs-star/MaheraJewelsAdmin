@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Email | INVENTORYMANAGEMENT</title>
+    <title>Verify Email | RAPID RETAIL</title>
     <style>
               .logo span {
             margin-left: 8px;
