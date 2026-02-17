@@ -32,7 +32,7 @@
 
 
     {{-- ================= INVOICE WRAPPER ================= --}}
-    <div class="invoice-wrapper bg-white p-4 shadow-sm">
+    <div class="invoice-wrapper invoice-print bg-white p-4 shadow-sm">
 
         {{-- HEADER --}}
         <div class="row align-items-center mb-4">
@@ -175,6 +175,26 @@ function downloadPDF() {
 @endpush
 <style>
 @media print {
+
+    body * {
+        visibility: hidden;
+    }
+
+    .invoice-print,
+    .invoice-print * {
+        visibility: visible;
+    }
+
+    .invoice-print {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+
+    .sidebar,
+    .navbar,
+    aside,
     .no-print {
         display: none !important;
     }
@@ -182,11 +202,6 @@ function downloadPDF() {
     body {
         background: white !important;
     }
-
-    .invoice-wrapper {
-        box-shadow: none !important;
-        margin: 0;
-        padding: 0;
-    }
 }
 </style>
+
