@@ -9,6 +9,8 @@ use App\Transformers\ProductListTransformer;
 use App\Transformers\ProductDetailTransformer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+
 use Throwable;
 
 class ProductController extends Controller
@@ -31,6 +33,15 @@ class ProductController extends Controller
                 ])
                 ->latest()
                 ->paginate(12);
+                $products->getCollection()->transform(function ($product) {
+    if ($product->image_url) {
+        $product->image_url = Storage::disk('s3')->url(
+            str_replace('\\', '/', $product->image_url)
+        );
+    }
+    return $product;
+});
+
 
             return response()->json([
                 'success' => true,
