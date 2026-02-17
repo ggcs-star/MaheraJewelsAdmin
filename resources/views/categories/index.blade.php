@@ -10,7 +10,7 @@
             <p class="text-muted small mb-0 mt-1">Manage your catalog hierarchy and visibility settings.</p>
         </div>
         <a href="{{ admin_route('categories.create') }}" class="btn btn-primary px-4 shadow-sm fw-medium">
-            <i class="fas fa-plus me-2"></i> + Add Category
+            + Add Category
         </a>
     </div>
 
