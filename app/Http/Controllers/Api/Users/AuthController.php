@@ -234,6 +234,116 @@ Log::info('RAW INPUT', [
             ]
         ]);
     }
+public function verifyResetOtp(Request $request, OtpService $otpService)
+{
+    $data = $request->validate([
+        'email' => 'required|email',
+        'otp' => 'required|string'
+    ]);
+
+    try {
+
+        $email = $this->normalizeEmail($data['email']);
+
+        $otp = $otpService->verify($email, $data['otp'], 'password_reset');
+
+        if (!$otp) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid or expired OTP'
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'OTP verified successfully'
+        ]);
+
+    } catch (Throwable $e) {
+
+        Log::error('Verify Reset OTP Error', [
+            'message' => $e->getMessage(),
+            'email' => $data['email'],
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'message' => 'OTP verification failed'
+        ], 500);
+    }
+}
+public function resetPassword(Request $request, OtpService $otpService)
+{
+    $data = $request->validate([
+        'email' => 'required|email',
+        'otp' => 'required|string',
+        'password' => [
+            'required',
+            'confirmed',
+            'min:8',
+            'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&]).+$/'
+        ],
+    ], [
+        'password.regex' =>
+            'Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special symbol.',
+    ]);
+
+    try {
+
+        $email = $this->normalizeEmail($data['email']);
+
+        $otp = $otpService->verify($email, $data['otp'], 'password_reset');
+
+        if (!$otp) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid or expired OTP'
+            ], 422);
+        }
+
+        DB::beginTransaction();
+
+        $user = User::where('email', $email)->first();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        $user->update([
+            'password' => Hash::make($data['password'])
+        ]);
+
+        // 🔥 Important for wallet / MLM apps
+        // Revoke all active tokens after password change
+$user->tokens()->where('name', 'user-token')->delete();
+
+        $otp->delete();
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password reset successfully'
+        ]);
+
+    } catch (Throwable $e) {
+
+        DB::rollBack();
+
+        Log::error('Reset Password API Error', [
+            'message' => $e->getMessage(),
+            'email' => $data['email'],
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Password reset failed. Try again.'
+        ], 500);
+    }
+}
 
     public function resendEmailOtp(Request $request, OtpService $otpService)
     {
@@ -287,6 +397,51 @@ Log::info('RAW INPUT', [
         }
     }
 
+private function sendResetOtp(string $email, OtpService $otpService): void
+{
+    Log::info('Password Reset OTP triggered for: ' . $email);
+
+    $otp = $otpService->generate($email, 'password_reset');
+
+    Mail::to($email)->send(new OtpMail($otp->code));
+}
+public function forgotPassword(Request $request, OtpService $otpService)
+{
+    $data = $request->validate([
+        'email' => 'required|email'
+    ]);
+
+    try {
+
+        $email = $this->normalizeEmail($data['email']);
+$user = User::where('email', $email)->first();
+
+if ($user) {
+    $this->sendResetOtp($email, $otpService);
+}
+
+return response()->json([
+    'success' => true,
+    'message' => 'If the email exists, a reset OTP has been sent.',
+    'data' => [
+        'expires_in' => 600
+    ]
+]);
+    
+
+    } catch (Throwable $e) {
+
+        Log::error('Forgot Password API Error', [
+            'message' => $e->getMessage(),
+            'email' => $data['email'] ?? null,
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Unable to process request. Try again later.'
+        ], 500);
+    }
+}
 
     public function logout(Request $request)
     {

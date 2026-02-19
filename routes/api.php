@@ -64,6 +64,15 @@ Route::prefix('user')->group(function () {
 
     Route::post('/resend-email-otp', [AuthController::class, 'resendEmailOtp'])
         ->middleware('throttle:3,1');
+
+            Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])
+        ->middleware('throttle:3,1');
+
+    Route::post('/verify-reset-otp', [AuthController::class, 'verifyResetOtp'])
+        ->middleware('throttle:5,1');
+
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])
+        ->middleware('throttle:3,1');
 });
 
 
