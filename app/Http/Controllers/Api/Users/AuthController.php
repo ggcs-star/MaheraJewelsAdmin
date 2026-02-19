@@ -31,21 +31,19 @@ class AuthController extends Controller
         Mail::to($email)->send(new OtpMail($otp->code));
     }
 
-
-
     public function register(Request $request, OtpService $otpService)
     {
 
-Log::info('MOBILE HIT REGISTER', [
-    'url' => request()->fullUrl(),
-    'ip' => request()->ip(),
-    'data' => request()->all()
-]);
-Log::info('RAW INPUT', [
-    'raw' => file_get_contents('php://input'),
-    'all' => request()->all(),
-    'headers' => request()->headers->all()
-]);
+        Log::info('MOBILE HIT REGISTER', [
+            'url' => request()->fullUrl(),
+            'ip' => request()->ip(),
+            'data' => request()->all()
+        ]);
+        Log::info('RAW INPUT', [
+            'raw' => file_get_contents('php://input'),
+            'all' => request()->all(),
+            'headers' => request()->headers->all()
+        ]);
 
         $data = $request->validate(
             [

@@ -7,6 +7,9 @@ use App\Models\Category;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Throwable;
+use App\Models\Platform;
+use App\Transformers\ProductListTransformer;
+
 
 class CategoryController extends Controller
 {
@@ -87,5 +90,38 @@ class CategoryController extends Controller
         ], 404);
     }
 }
+public function products(Category $category): JsonResponse
+{
+    $platform = Platform::getOwnWebsite();
+
+    $products = $category->products()
+        ->whereHas('platformListings', fn ($q) =>
+            $q->where('platform_id', $platform->id)->userVisible()
+        )
+        ->with([
+            'category:id,name',
+            'variants.platformPricings' => fn ($q) =>
+                $q->where('status', 'active'),
+        ])
+        ->latest()
+        ->paginate(12);
+
+    return response()->json([
+        'success' => true,
+        'data' => [
+            'category' => [
+                'id' => $category->id,
+                'name' => $category->name,
+            ],
+            'products' => $products->getCollection()
+                ->map(fn ($p) => ProductListTransformer::transform($p)),
+            'pagination' => [
+                'current_page' => $products->currentPage(),
+                'total' => $products->total(),
+            ],
+        ],
+    ]);
+}
+
 
 }
