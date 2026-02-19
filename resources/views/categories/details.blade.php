@@ -102,7 +102,7 @@
                   @if($category->image_url)
     <div class="mb-3 border rounded overflow-hidden" style="height: 140px;">
         <img
-    src="{{ Storage::disk('s3')->url($category->image_url) }}"
+src="{{ $category->image_url }}"
     class="img-fluid h-100 w-100 object-fit-cover"
     alt="{{ $category->name }}"
 >

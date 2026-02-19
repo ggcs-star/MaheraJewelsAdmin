@@ -52,17 +52,21 @@
                     </select>
                 </div>
 
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Category Image</label>
+              <div class="col-md-6 mb-3">
+    <label class="form-label">Category Image</label>
 
-                    @if ($category->image_url)
-                        <div class="mb-2">
-                            <img src="{{ asset('storage/' . $category->image_url) }}" width="80" class="img-thumbnail">
-                        </div>
-                    @endif
+    @if ($category->image_url)
+        <div class="mb-2">
+            <img 
+                src="{{ $category->image_url }}"
+                width="80"
+                class="img-thumbnail"
+            >
+        </div>
+    @endif
 
-                    <input type="file" name="image_url" class="form-control">
-                </div>
+    <input type="file" name="image_url" class="form-control">
+</div>
 
             </div>
     </div>

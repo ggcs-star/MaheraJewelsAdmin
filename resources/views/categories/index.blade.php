@@ -152,15 +152,16 @@
                                         @endif
                                         @if($category->image_url)
                                             <div class="position-relative">
-                                                 <img 
-        src="{{ Storage::disk('s3')->url($category->image_url) }}"
-        data-full="{{ Storage::disk('s3')->url($category->image_url) }}"
-        width="40"
-        height="40"
-        class="rounded border shadow-sm category-image object-fit-cover"
-        onclick="event.stopPropagation()"
-        style="cursor: zoom-in;"
-    >
+                                                <img 
+                                                    src="{{ $category->image_url }}"
+                                                    data-full="{{ $category->image_url }}"
+                                                    width="40"
+                                                    height="40"
+                                                    class="rounded border shadow-sm category-image object-fit-cover"
+                                                    onclick="event.stopPropagation()"
+                                                    style="cursor: zoom-in;"
+                                                >
+
                                             </div>
                                         @endif
                                         <div class="d-flex flex-column">
@@ -228,14 +229,15 @@
                                     <td class="px-4">
                                         <div class="d-flex align-items-center gap-2 ps-5 py-1">
                                             @if($child->image_url)
-                                                <img src="{{ Storage::disk('s3')->url($child->image_url) }}"
+                                                <img 
+    src="{{ $child->image_url }}"
+    data-full="{{ $child->image_url }}"
+    width="32"
+    height="32"
+    class="rounded border shadow-xs category-image object-fit-cover"
+    onclick="event.stopPropagation()"
+>
 
-                                                    width="32"
-                                                    height="32"
-                                                    class="rounded border shadow-xs category-image object-fit-cover"
-                                                    data-full="{{ Storage::disk('s3')->url($child->image_url) }}"
-                                                    onclick="event.stopPropagation()"
-                                                >
                                             @endif
                                             <div class="d-flex flex-column">
                                                 <a href="{{ route('admin.categories.details', $child->id) }}"
