@@ -4,6 +4,7 @@ namespace App\Transformers;
 
 use App\Models\Product;
 use App\Services\ProductPricingService;
+use Illuminate\Support\Facades\Storage;
 
 class ProductListTransformer
 {
@@ -11,12 +12,26 @@ class ProductListTransformer
     {
         $bestPricing = ProductPricingService::getBestPricing($product);
 
+        // ✅ PRODUCT IMAGE = gallery_images ka first image
+        $imageUrl = null;
+
+        if (
+            is_array($product->gallery_images) &&
+            count($product->gallery_images) > 0
+        ) {
+            $imageUrl = Storage::disk('s3')->url(
+                str_replace('\\', '/', $product->gallery_images[0])
+            );
+        }
+
         return [
             'id' => $product->id,
             'name' => $product->name,
             'slug' => $product->slug,
-            'image_url' => $product->image_url,
             'brand' => $product->brand,
+
+            // ⭐ YAHI MAIN CHEEZ HAI
+            'image_url' => $imageUrl,
 
             'price' => $bestPricing?->price,
             'final_price' => $bestPricing?->final_price,

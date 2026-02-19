@@ -11,19 +11,19 @@
     :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
 >
     {{-- HEADER (EXACT SAME HEIGHT & STYLE) --}}
-    <div class="h-[64px] flex items-center px-6 bg-[#0f172a]/50">
-        <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M12 6V4m0 16v-2m8-6h-2M6 12H4" />
-                </svg>
-            </div>
-            <span class="font-bold text-lg tracking-tight uppercase">
-                SETTINGS
-            </span>
-        </div>
+   <div class="h-[64px] flex items-center px-6 bg-[#0f172a]/50">
+    <div class="flex items-center gap-3">
+        <img
+            src="https://www.ggconsultancy.services/assets/rapid-e140fd75.svg"
+            alt="Rapid Retail Logo"
+            class="h-10 w-10 object-contain"
+        >
+
+        <span class="font-bold text-lg tracking-tight uppercase">
+            SETTINGS
+        </span>
     </div>
+</div>
 
 <nav class="mt-8 px-4 space-y-1">
 

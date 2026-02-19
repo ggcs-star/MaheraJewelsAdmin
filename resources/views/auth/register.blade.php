@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register | INVENTORYMANAGEMENT</title>
+    <title>Register | </title>
     <style>
         .logo span {
   margin-left: 8px;
@@ -320,7 +320,7 @@
         
         <div class="register-section">
             <div class="register-container">
-                <div class="logo">INVENTORY<span>MANAGEMENT</span></div>
+                <div class="logo">RAPID <span>RETAIL</span></div>
                 
                 <div class="register-header">
                     <h2>Create Account</h2>

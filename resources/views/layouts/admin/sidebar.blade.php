@@ -9,14 +9,18 @@
     :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
 >
     <div class="h-[64px] flex items-center px-6 bg-[#0f172a]/50">
-        <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" />
-                </svg>
-            </div>
-            <span class="font-bold text-lg tracking-tight uppercase">INVENTORY <span class="text-indigo-400">PRO</span></span>
-        </div>
+       <div class="flex items-center gap-3">
+    <img
+        src="https://www.ggconsultancy.services/assets/rapid-e140fd75.svg"
+        alt="Rapid Retail Logo"
+        class="h-10 w-10 object-contain"
+    >
+
+    <span class="font-bold text-lg tracking-tight uppercase">
+        RAPID <span class="text-indigo-400">RETAIL</span>
+    </span>
+</div>
+
     </div>
 
     <nav class="mt-8 px-4 space-y-1">

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 
 class Product extends Model
@@ -89,5 +90,29 @@ protected static function booted()
             }
         });
     }
+// ✅ USER SIDE ONLY (safe)
+public function getImageUrlPublicAttribute()
+{
+    if (!$this->image_url) return null;
+
+    return Storage::disk('s3')->url(
+        str_replace('\\', '/', $this->image_url)
+    );
+}
+
+public function getGalleryImagesPublicAttribute()
+{
+    if (!$this->gallery_images) return [];
+
+    $images = is_array($this->gallery_images)
+        ? $this->gallery_images
+        : json_decode($this->gallery_images, true);
+
+    return collect($images)->map(function ($path) {
+        return Storage::disk('s3')->url(
+            str_replace('\\', '/', $path)
+        );
+    })->toArray();
+}
 
 }
