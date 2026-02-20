@@ -331,6 +331,7 @@ private function handleVariants(Request $request, Product $product): array
 
 
         $totalPurchase += $qty * $purchase;
+        $totalSelling  += $qty * $selling;
     }
 
     return compact('totalPurchase', 'totalSelling');
