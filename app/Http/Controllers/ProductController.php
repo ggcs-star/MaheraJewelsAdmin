@@ -216,6 +216,8 @@ private function isUploadedFile($file): bool
             'payment_terms' => 'nullable|string|max:50',
 
 
+            
+
         ]);
 
         $data['is_featured'] = $request->boolean('is_featured');
@@ -262,58 +264,79 @@ private function isUploadedFile($file): bool
 private function handleVariants(Request $request, Product $product): array
 {
     $totalPurchase = 0;
-    $existingIds = [];
+    $totalSelling  = 0;
 
     if (!$request->has('variants')) {
-        return compact('totalPurchase');
+        return compact('totalPurchase', 'totalSelling');
     }
 
-    foreach ($request->variants as $variantData) {
+    $seen = []; 
 
-        if (empty($variantData['variant_id']) || empty($variantData['variant_value_id'])) {
+    foreach ($request->variants as $variant) {
+
+        if (
+            empty($variant['variant_id']) ||
+            empty($variant['variant_value_id'])
+        ) {
             continue;
         }
 
-        $data = [
-            'variant_id'       => $variantData['variant_id'],
-            'variant_value_id' => $variantData['variant_value_id'],
-            'quantity'         => (int)($variantData['quantity'] ?? 0),
-            'purchase_price'   => (float)($variantData['purchase_price'] ?? 0),
-            'selling_price'    => (float)($variantData['selling_price'] ?? 0),
-            'total_price'      => ((int)($variantData['quantity'] ?? 0)) * ((float)($variantData['purchase_price'] ?? 0)),
-            'sku_suffix'       => $variantData['sku_suffix'] ?? null,
-            'sort_order'       => $variantData['sort_order'] ?? 0,
-            'status'           => $variantData['status'] ?? 'active',
-            'color'            => $variantData['color'] ?? null,
-            'height'           => $variantData['height'] ?? null,
-            'width'            => $variantData['width'] ?? null,
-        ];
+        $variantId = (int) $variant['variant_id'];
+        $valueId   = (int) $variant['variant_value_id'];
 
-        if (!empty($variantData['id'])) {
+        $key = $variantId . '-' . $valueId;
+        if (isset($seen[$key])) {
+            continue;
+        }
+        $seen[$key] = true;
 
-            // UPDATE EXISTING
-            $variant = ProductVariant::find($variantData['id']);
-            if ($variant) {
-                $variant->update($data);
-                $existingIds[] = $variant->id;
-            }
+        $qty      = (int) ($variant['quantity'] ?? 0);
+        $purchase = (float) ($variant['purchase_price'] ?? 0);
+        $selling = (float) ($variant['selling_price'] ?? 0);
 
-        } else {
 
-            // CREATE NEW
-            $variant = $product->variants()->create($data);
-            $existingIds[] = $variant->id;
+        if ($qty <= 0) continue;
+
+       $imagePath = null;
+
+        if (
+            isset($variant['image_url'])
+            && $this->isUploadedFile($variant['image_url'])) {
+            $productSlug = Str::slug($product->slug ?? $product->name);
+
+            $variantSlug = Str::slug(
+                ($variant['sku_suffix'] ?? 'variant') . '-' . ($variant['variant_value_id'] ?? uniqid())
+            );
+
+            $imagePath = $variant['image_url']->store(
+                "admin/product/{$productSlug}/variant/{$variantSlug}",
+                's3'
+            );
         }
 
-        $totalPurchase += $data['total_price'];
+        ProductVariant::create([
+            'product_id'       => $product->id,
+            'variant_id'       => $variantId,
+            'variant_value_id' => $valueId,
+            'quantity'         => $qty,
+            'purchase_price'   => $purchase,
+            'selling_price'    => $selling,
+            'total_price'      => $qty * $purchase,
+            'sku_suffix'       => $variant['sku_suffix'] ?? null,
+            'sort_order'       => $variant['sort_order'] ?? 0,
+            'status'           => $variant['status'] ?? 'active',
+            'color'            => $variant['color'] ?? null,
+            'height'           => $variant['height'] ?? null,
+            'width'            => $variant['width'] ?? null,
+            'image_url'        => $imagePath,
+        ]);
+
+
+        $totalPurchase += $qty * $purchase;
+        $totalSelling  += $qty * $selling;
     }
 
-    // DELETE removed variants
-    $product->variants()
-        ->whereNotIn('id', $existingIds)
-        ->delete();
-
-    return compact('totalPurchase');
+    return compact('totalPurchase', 'totalSelling');
 }
 
     private function updateProductPrices(Product $product, array $totals): void
@@ -361,6 +384,7 @@ private function handleVariants(Request $request, Product $product): array
 
             $product->update($productData);
 
+            $product->variants()->delete();
 
             $totals = $this->handleVariants($request, $product);
 
