@@ -216,6 +216,8 @@ private function isUploadedFile($file): bool
             'payment_terms' => 'nullable|string|max:50',
 
 
+            
+
         ]);
 
         $data['is_featured'] = $request->boolean('is_featured');
