@@ -74,7 +74,13 @@ Route::prefix('user')->group(function () {
     Route::post('/reset-password', [AuthController::class, 'resetPassword'])
         ->middleware('throttle:3,1');
 });
-
+ Route::prefix('coupons')->group(function () {
+        Route::get('/', [CouponController::class, 'index']);
+        Route::post('/apply', [CouponController::class, 'apply']);
+        Route::post('/remove', [CouponController::class, 'remove']);
+        
+  
+    });
 
 Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -89,13 +95,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/cart', [CartController::class, 'index']);
     Route::put('/cart/update/{cart_item}', [CartController::class, 'update']);
     Route::delete('/cart/remove/{cart_item}', [CartController::class, 'remove']);
-        Route::prefix('coupons')->group(function () {
-        Route::get('/', [CouponController::class, 'index']);
-        Route::post('/apply', [CouponController::class, 'apply']);
-        Route::post('/remove', [CouponController::class, 'remove']);
-        
-  
-    });
+       
     
     Route::get('/orders', [OrderController::class, 'index']);
     Route::get('/orders/{id}', [OrderController::class, 'show']);
