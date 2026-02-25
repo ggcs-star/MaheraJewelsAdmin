@@ -20,6 +20,7 @@ use App\Http\Controllers\CouponController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\BannerController;
 
 
 Route::get('/', function () {
@@ -87,7 +88,27 @@ Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:admin']
         Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
         Route::get('/categories/{category}/details', [CategoryController::class, 'details'])->name('categories.details');
         Route::post('/categories/bulk-delete', [CategoryController::class, 'bulkDelete'])->name('categories.bulk-delete');
+// =====================
+// BANNERS (AJIO STYLE)
+// =====================
+Route::get('/banners', [BannerController::class, 'index'])
+    ->name('banners.index');
 
+Route::get('/banners/create', [BannerController::class, 'create'])
+    ->name('banners.create');
+
+Route::post('/banners', [BannerController::class, 'store'])
+    ->name('banners.store');
+
+Route::get('/banners/{banner}/edit', [BannerController::class, 'edit'])
+    ->name('banners.edit');
+
+Route::put('/banners/{banner}', [BannerController::class, 'update'])
+    ->name('banners.update');
+Route::get('/banners/{banner}', [BannerController::class, 'show'])
+    ->name('banners.show');
+Route::delete('/banners/{banner}', [BannerController::class, 'destroy'])
+    ->name('banners.destroy');
         Route::get(
             '/products/{product}/invoice',
             [ProductInvoiceController::class, 'view']

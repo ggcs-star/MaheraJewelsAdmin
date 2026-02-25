@@ -114,7 +114,20 @@
     <span>Invoice</span>
 </a>
 
+<a href="{{ admin_route('banners.index') }}"
+   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+   {{ request()->routeIs('banners.*')
+        ? 'bg-pink-600 text-white shadow-lg shadow-pink-600/20 font-medium'
+        : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100' }}">
 
+    <!-- Banner / Promotion Icon -->
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M7 8h10M7 12h6m-6 4h10M5 4h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/>
+    </svg>
+
+    <span>Banners</span>
+</a>
         <a href="#"
            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-slate-100">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
