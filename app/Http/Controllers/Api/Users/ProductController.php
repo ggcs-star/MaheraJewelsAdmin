@@ -65,7 +65,7 @@ class ProductController extends Controller
     'category:id,name',
 
     
-    'variants:id,product_id,variant_id,variant_value_id,quantity,selling_price,image_url,sku_suffix,status',
+    'variants:id,product_id,variant_id,variant_value_id,quantity,selling_price,image_url,sku_suffix,status,color',
 
     'variants.variant:id,name',
     'variants.value:id,value',
@@ -90,7 +90,7 @@ class ProductController extends Controller
     try {
         $product = Product::with([
             'category:id,name',
-            'variants:id,product_id,variant_id,variant_value_id,quantity,selling_price,image_url,sku_suffix,status',
+            'variants:id,product_id,variant_id,variant_value_id,quantity,selling_price,image_url,sku_suffix,status,color',
             'variants.variant:id,name',
             'variants.value:id,value',
             'variants.platformPricings' => fn ($q) =>

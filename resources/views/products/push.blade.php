@@ -63,6 +63,7 @@
                                     <th>Platform</th>
                                     <th>Type</th>
                                     <th>Value</th>
+                                    <th>Color</th>
                                     <th>SKU</th>
                                     <th>Quantity</th>
                                     <th>Price</th>
