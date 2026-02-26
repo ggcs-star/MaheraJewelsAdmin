@@ -551,7 +551,7 @@ private function handleVariants(Request $request, Product $product): array
                 'category.parent:id,name',
 
                 // ⭐ Load relations instead of columns
-                'variants:id,product_id,variant_id,variant_value_id,sku_suffix,image_url,sort_order,status,quantity,purchase_price,selling_price',
+                'variants:id,product_id,variant_id,variant_value_id,sku_suffix,image_url,sort_order,status,quantity,purchase_price,selling_price,color',
                 'variants.variant:id,name',
                 'variants.value:id,value',
 
@@ -580,6 +580,7 @@ private function handleVariants(Request $request, Product $product): array
                         'id' => $v->id,
                         'variant_type'  => $v->variant->name,   // from variants table
                         'variant_value' => $v->value->value,    // from variant_values table
+                        'color' => $v->color, 
                         'sku_suffix' => $v->sku_suffix,
                         'quantity' => $v->quantity,
                         'purchase_price' => $v->purchase_price,

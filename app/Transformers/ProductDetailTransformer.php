@@ -53,6 +53,7 @@ class ProductDetailTransformer
                     'id' => $variant->id,
                     'variant_type' => optional($variant->variant)->name,
                     'variant_value' => optional($variant->value)->value,
+                    'color' => $variant->color,
                     'sku' => $variant->sku_suffix,
 
                     'price' => $pricing?->price,

@@ -161,7 +161,7 @@ function renderVariants(variants) {
     if (!availableVariants.length) {
         variantsBody.innerHTML = `
             <tr>
-                <td colspan="8" class="text-center text-danger fw-semibold">
+                <td colspan="9" class="text-center text-danger fw-semibold">
                     No variants with available stock
                 </td>
             </tr>`;
@@ -180,6 +180,13 @@ function renderVariants(variants) {
             variantPlatformData[v.id] && Object.keys(variantPlatformData[v.id]).length
                 ? `<span class="badge bg-success">Configured</span>`
                 : `<span class="badge bg-secondary">Not Configured</span>`;
+           let colorDisplay = '-';
+        if (v.color) {
+            colorDisplay = `
+                <span style="display:inline-block; width:20px; height:20px; background:${v.color}; border-radius:4px; margin-right:5px;"></span>
+                ${v.color}
+            `;
+        }
 
         variantsBody.insertAdjacentHTML('beforeend', `
 <tr class="text-center">
@@ -192,6 +199,7 @@ function renderVariants(variants) {
     </td>
     <td>${v.variant_type}</td>
     <td>${v.variant_value}</td>
+    <td>${colorDisplay}</td>
     <td>${v.sku_suffix ?? '-'}</td>
     <td>${v.quantity}</td>
     <td>₹ ${v.purchase_price ?? 0}</td>
@@ -217,7 +225,7 @@ activeVariantId = parseInt(this.dataset.variantId);
             // ⭐ Variant ka apna selling price
             let defaultPrice = window.variantPriceMap?.[activeVariantId] ?? 0;
 
-            let originalStock = parseInt(row.children[4].innerText) || 0;
+            let originalStock = parseInt(row.children[5].innerText) || 0;
             window.variantOriginalStock = originalStock;
 
             // 🧼 STEP 1 — PURANA MODAL DATA RESET
@@ -390,7 +398,8 @@ const row = document.querySelector(
 
 calc.variant_type  = row.children[1].innerText;
 calc.variant_value = row.children[2].innerText;
-calc.variant_sku   = row.children[3].innerText;
+calc.variant_sku   = row.children[4].innerText;
+calc.color = row.children[3]?.innerText || null; 
 
 variantPlatformData[activeVariantId][platformId] = calc;
 
@@ -511,6 +520,11 @@ variantPlatformData[activeVariantId][platformId] = calc;
     <td>${window.platformMap?.[platformId] ?? 'Platform ' + platformId}</td>
     <td>${p.variant_type}</td>
     <td>${p.variant_value}</td>
+    <td>
+        ${p.color ? 
+            `<span style="display:inline-block; width:20px; height:20px; background:${p.color}; border-radius:4px; margin-right:5px;"></span>` 
+            : '-'}
+    </td>
     <td>${p.variant_sku}</td>
     <td>${qty}</td>
     <td>₹${p.price}</td>
