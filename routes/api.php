@@ -111,6 +111,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/user/profile', [ProfileController::class, 'show']);
     Route::put('/user/profile', [ProfileController::class, 'update']);
+    Route::post('/checkout/razorpay/create-order', [CheckoutController::class, 'createRazorpayOrder']);
+    Route::post('/checkout/razorpay/verify', [CheckoutController::class, 'verifyRazorpayPayment']);
+
 
 });
 
