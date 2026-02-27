@@ -21,7 +21,7 @@ class CartController extends Controller
             $cart = $this->getUserCart(true);
 
             if (!$cart || $cart->items->isEmpty()) {
-                return $this->emptyCartResponse();
+                return $this->emptyCartResponse($cart);
             }
 
             return response()->json([
@@ -192,6 +192,7 @@ private function getUserCart(bool $withRelations = false): ?Cart
 ])
 
         )
+        ->latest('id') 
         ->first();
 }
 
@@ -262,18 +263,18 @@ private function formatCartItem(CartItem $item): array
 }
 
 
-    private function emptyCartResponse(): JsonResponse
-    {
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'cart_id' => null,
-                'items' => [],
-                'cart_total' => 0,
-                'items_count' => 0,
-            ]
-        ]);
-    }
+    private function emptyCartResponse(?Cart $cart = null): JsonResponse
+{
+    return response()->json([
+        'success' => true,
+        'data' => [
+            'cart_id' => $cart?->id,   
+            'items' => [],
+            'cart_total' => 0,
+            'items_count' => 0,
+        ]
+    ]);
+}
 
     private function errorResponse(string $context, Throwable $e): JsonResponse
 {
