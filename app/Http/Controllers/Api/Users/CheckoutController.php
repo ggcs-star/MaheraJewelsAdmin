@@ -202,6 +202,12 @@ class CheckoutController extends Controller
     }
     public function createRazorpayOrder(Request $request): JsonResponse
 {
+      $request->validate([
+        'shipping_address_id' => 'required|integer',
+        'billing_address_id' => 'required|integer',
+        'payment_method_id' => 'required|integer|in:2', // 2 = ONLINE
+        'coupon_code' => 'nullable|string',
+    ]);
     try {
         $userId = auth()->id();
 
@@ -233,7 +239,7 @@ class CheckoutController extends Controller
 
         $payment = Payment::create([
     'user_id' => $userId,
-    'amount' => $total,
+    'amount' => (float) $total,
     'currency' => 'INR',
     'payment_method' => 'razorpay',
     'payment_status' => 'pending',
@@ -244,6 +250,7 @@ class CheckoutController extends Controller
 ],
 ]);
 
+
         // 4️⃣ Razorpay order create (SECRET KEY use hoti hai)
         $razorpay = new Api(
             config('services.razorpay.key'),
@@ -251,10 +258,10 @@ class CheckoutController extends Controller
         );
 
         $razorpayOrder = $razorpay->order->create([
-            'receipt'  => 'pay_' . $payment->id,
-            'amount'   => $total * 100, // paise
-            'currency' => 'INR',
-        ]);
+    'receipt'  => 'pay_' . $payment->id,
+    'amount'   => (int) round($total * 100), // ✅ IMPORTANT
+    'currency' => 'INR',
+]);
 
         // 5️⃣ Razorpay order id save karo
         $payment->update([
@@ -267,17 +274,19 @@ class CheckoutController extends Controller
             'data' => [
                 'payment_id' => $payment->id,
                 'razorpay_order_id' => $razorpayOrder['id'],
-                'amount' => $total,
+                'amount' => (float) $total,
                 'currency' => 'INR',
             ]
         ]);
 
     } catch (Throwable $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Unable to initiate payment'
-        ], 500);
-    }
+    return response()->json([
+        'success' => false,
+        'message' => $e->getMessage(),
+        'file' => $e->getFile(),
+        'line' => $e->getLine(),
+    ], 500);
+}
 }
 public function verifyRazorpayPayment(Request $request): JsonResponse
 {
