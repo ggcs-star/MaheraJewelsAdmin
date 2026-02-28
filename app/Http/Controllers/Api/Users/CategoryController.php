@@ -59,69 +59,69 @@ class CategoryController extends Controller
         }
     }
     public function show(int $category_id): JsonResponse
-{
-    try {
-        $category = Category::query()
-            ->where('id', $category_id)
-            ->where('visibility', 'public')
-            ->where('status', 'active')
-            ->firstOrFail();
+    {
+        try {
+            $category = Category::query()
+                ->where('id', $category_id)
+                ->where('visibility', 'public')
+                ->where('status', 'active')
+                ->firstOrFail();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'slug' => $category->slug,
+                    'image_url' => $category->image_url,
+                ],
+            ]);
+
+        } catch (Throwable $e) {
+
+            Log::error('Category Detail API Error', [
+                'message' => $e->getMessage(),
+                'category_id' => $category_id,
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Category not found',
+            ], 404);
+        }
+    }
+    public function products(Category $category): JsonResponse
+    {
+        $platform = Platform::getOwnWebsite();
+
+        $products = $category->products()
+            ->whereHas('platformListings', fn ($q) =>
+                $q->where('platform_id', $platform->id)->userVisible()
+            )
+            ->with([
+                'category:id,name',
+                'variants.platformPricings' => fn ($q) =>
+                    $q->where('status', 'active'),
+            ])
+            ->latest()
+            ->paginate(12);
 
         return response()->json([
             'success' => true,
             'data' => [
-                'id' => $category->id,
-                'name' => $category->name,
-                'slug' => $category->slug,
-                'image_url' => $category->image_url,
+                'category' => [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                ],
+                'products' => $products->getCollection()
+                    ->map(fn ($p) => ProductListTransformer::transform($p)),
+                'pagination' => [
+                    'current_page' => $products->currentPage(),
+                    'total' => $products->total(),
+                ],
             ],
         ]);
-
-    } catch (Throwable $e) {
-
-        Log::error('Category Detail API Error', [
-            'message' => $e->getMessage(),
-            'category_id' => $category_id,
-        ]);
-
-        return response()->json([
-            'success' => false,
-            'message' => 'Category not found',
-        ], 404);
     }
-}
-public function products(Category $category): JsonResponse
-{
-    $platform = Platform::getOwnWebsite();
-
-    $products = $category->products()
-        ->whereHas('platformListings', fn ($q) =>
-            $q->where('platform_id', $platform->id)->userVisible()
-        )
-        ->with([
-            'category:id,name',
-            'variants.platformPricings' => fn ($q) =>
-                $q->where('status', 'active'),
-        ])
-        ->latest()
-        ->paginate(12);
-
-    return response()->json([
-        'success' => true,
-        'data' => [
-            'category' => [
-                'id' => $category->id,
-                'name' => $category->name,
-            ],
-            'products' => $products->getCollection()
-                ->map(fn ($p) => ProductListTransformer::transform($p)),
-            'pagination' => [
-                'current_page' => $products->currentPage(),
-                'total' => $products->total(),
-            ],
-        ],
-    ]);
-}
 
 
 }
