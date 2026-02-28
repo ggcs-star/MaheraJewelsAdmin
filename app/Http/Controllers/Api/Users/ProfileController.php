@@ -23,9 +23,7 @@ class ProfileController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'phone' => $user->mobile,
-                    'profile_image' => $user->profile_image
-                        ? url($user->profile_image)
-                        : null,
+                    'profile_image' => $user->profile_image,
                     'created_at' => $user->created_at?->toISOString(),
                 ]
             ]);
@@ -44,37 +42,36 @@ class ProfileController extends Controller
         }
     }
 
-
-
     public function update(Request $request): JsonResponse
     {
-        
         $data = $request->validate([
-            'name' => 'nullable|string|max:255',
-            'mobile' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:500',
-            'profile_image' => 'nullable|string', 
+            'name'          => 'nullable|string|max:255',
+            'mobile'        => 'nullable|string|max:20',
+            'address'       => 'nullable|string|max:500',
+            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
         try {
             $user = $request->user();
-
             $updateData = [];
 
-            if (array_key_exists('name', $data)) {
+            if (isset($data['name'])) {
                 $updateData['name'] = $data['name'];
             }
 
-            if (array_key_exists('mobile', $data)) {
+            if (isset($data['mobile'])) {
                 $updateData['mobile'] = $data['mobile'];
             }
 
-            if (array_key_exists('address', $data)) {
+            if (isset($data['address'])) {
                 $updateData['address'] = $data['address'];
             }
 
-            if (!empty($data['profile_image'])) {
-                $updateData['profile_image'] = $this->handleAvatar($data['profile_image'], $user);
+            if ($request->hasFile('profile_image')) {
+                $updateData['profile_image'] = $this->handleAvatar(
+                    $request->file('profile_image'),
+                    $user
+                );
             }
 
             $user->update($updateData);
@@ -83,15 +80,15 @@ class ProfileController extends Controller
                 'success' => true,
                 'message' => 'Profile updated successfully',
                 'data' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'mobile' => $user->mobile,
-                    'address' => $user->address,
+                    'id'            => $user->id,
+                    'name'          => $user->name,
+                    'email'         => $user->email,
+                    'mobile'        => $user->mobile,
+                    'address'       => $user->address,
                     'profile_image' => $user->profile_image
-                        ? url($user->profile_image)
+                        ? Storage::disk('s3')->url($user->profile_image)
                         : null,
-                    'created_at' => $user->created_at?->toISOString(),
+                    'created_at'    => $user->created_at?->toISOString(),
                 ]
             ]);
 
@@ -108,41 +105,24 @@ class ProfileController extends Controller
             ], 500);
         }
     }
-
-    private function handleAvatar(string $avatar, $user): string
+    private function handleAvatar($file, $user): string
     {
-        if (filter_var($avatar, FILTER_VALIDATE_URL)) {
-            return $avatar;
+        if ($user->profile_image) {
+            Storage::disk('s3')->delete($user->profile_image);
         }
 
-        if (!str_contains($avatar, 'base64')) {
-            throw new \Exception('Invalid image data');
-        }
+        $userNameSlug = Str::slug($user->name, '_');
 
-        [$meta, $content] = explode(',', $avatar);
+        $path = 'admin/profile/' . $userNameSlug;
 
-        if (!preg_match('/data:image\/(png|jpg|jpeg|webp)/', $meta, $matches)) {
-            throw new \Exception('Unsupported image type');
-        }
+        $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
 
-        $extension = $matches[1];
-        $image = base64_decode($content);
-
-        if ($image === false) {
-            throw new \Exception('Base64 decode failed');
-        }
-
-        if ($user->profile_image && str_starts_with($user->profile_image, 'storage/')) {
-            $oldPath = str_replace('storage/', '', $user->profile_image);
-            Storage::disk('public')->delete($oldPath);
-        }
-
-        $fileName = 'profile_' . $user->id . '_' . time() . '.' . $extension;
-        $path = 'profiles/' . $fileName;
-
-        Storage::disk('public')->put($path, $image);
-
-        return 'storage/' . $path;
+        return Storage::disk('s3')->putFileAs(
+            $path,
+            $file,
+            $fileName,
+            'public'
+        );
     }
 
 
