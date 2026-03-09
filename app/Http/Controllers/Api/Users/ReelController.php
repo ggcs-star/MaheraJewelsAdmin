@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Users;
 use App\Http\Controllers\Controller;
 use App\Models\Reel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ReelController extends Controller
 {
@@ -16,14 +17,14 @@ class ReelController extends Controller
     public function index(Request $request)
     {
 
-        $reels = Reel::with([
-            'platformProduct.product'
-        ])
-        ->where('status', 1)
-        ->latest()
-        ->paginate(10);
+        $reels = Reel::with('platformProduct.product')
+            ->where('status', 1)
+            ->latest()
+            ->paginate(10);
 
-        $data = $reels->map(function ($reel) {
+        $data = $reels->getCollection()->map(function ($reel) {
+
+            $product = optional(optional($reel->platformProduct)->product);
 
             return [
 
@@ -33,18 +34,17 @@ class ReelController extends Controller
 
                 'description' => $reel->description,
 
-                'video' => asset($reel->video),
+                // S3 Video URL
+                'video' => Storage::disk('s3')->url($reel->video),
 
                 'views' => $reel->views,
 
                 'product' => [
-                    'id' => $reel->platformProduct->product->id ?? null,
-                    'name' => $reel->platformProduct->product->name ?? null,
-                    'slug' => $reel->platformProduct->product->slug ?? null,
+                    'id' => $product->id ?? null,
+                    'name' => $product->name ?? null,
+                    'slug' => $product->slug ?? null,
                     'price' => $reel->platformProduct->price ?? null,
-                    'image' => isset($reel->platformProduct->product->image)
-                        ? asset($reel->platformProduct->product->image)
-                        : null,
+                    'image' => $product->image ? asset($product->image) : null,
                 ],
 
                 'created_at' => $reel->created_at,
@@ -74,10 +74,9 @@ class ReelController extends Controller
     public function show($id)
     {
 
-        $reel = Reel::with([
-            'platformProduct.product'
-        ])
-        ->findOrFail($id);
+        $reel = Reel::with('platformProduct.product')->findOrFail($id);
+
+        $product = optional(optional($reel->platformProduct)->product);
 
         return response()->json([
             'status' => true,
@@ -89,18 +88,17 @@ class ReelController extends Controller
 
                 'description' => $reel->description,
 
-                'video' => asset($reel->video),
+                // S3 Video URL
+                'video' => Storage::disk('s3')->url($reel->video),
 
                 'views' => $reel->views,
 
                 'product' => [
-                    'id' => $reel->platformProduct->product->id ?? null,
-                    'name' => $reel->platformProduct->product->name ?? null,
-                    'slug' => $reel->platformProduct->product->slug ?? null,
+                    'id' => $product->id ?? null,
+                    'name' => $product->name ?? null,
+                    'slug' => $product->slug ?? null,
                     'price' => $reel->platformProduct->price ?? null,
-                    'image' => isset($reel->platformProduct->product->image)
-                        ? asset($reel->platformProduct->product->image)
-                        : null,
+                    'image' => $product->image ? asset($product->image) : null,
                 ],
 
                 'created_at' => $reel->created_at,
