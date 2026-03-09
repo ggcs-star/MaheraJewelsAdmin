@@ -49,4 +49,9 @@ class PlatformProduct extends Model
             ->where('is_enabled', true)
             ->where('status', 'active');
     }
+
+    public function reels()
+    {
+        return $this->hasMany(Reel::class,'platform_product_id');
+    }
 }

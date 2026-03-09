@@ -135,6 +135,20 @@
             </svg>
             <span>Stock Management</span>
         </a>
+        <a href="{{ admin_route('reels.index') }}"
+   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+   {{ request()->routeIs('reels.*')
+        ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/20 font-medium'
+        : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100' }}">
+
+    <!-- Reel Icon -->
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M7 4h10M7 8h10M7 12h10M5 4v16l14-8L5 4z"/>
+    </svg>
+
+    <span>Reels</span>
+</a>
 
         <a href="#"
            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-slate-100">

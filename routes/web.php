@@ -21,7 +21,12 @@ use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\BannerController;
+Route::get('/s3-test', function () {
 
+    $path = Storage::disk('s3')->put('test.txt', 'Hello S3');
+
+    dd($path);
+});
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -65,6 +70,8 @@ Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:admin']
     ->name('admin.')
     ->group(function () {
        
+        Route::resource('reels', \App\Http\Controllers\Admin\ReelController::class);
+
         Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
 
         Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
@@ -302,7 +309,6 @@ Route::put('/taxes/{tax}', [\App\Http\Controllers\TaxController::class, 'update'
 
 Route::delete('/taxes/{tax}', [\App\Http\Controllers\TaxController::class, 'destroy'])
     ->name('taxes.destroy');
-
 
 // USER ROUTES - Prefix: /users
 
