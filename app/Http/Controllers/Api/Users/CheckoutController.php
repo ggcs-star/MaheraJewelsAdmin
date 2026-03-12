@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\UserAddress;
 use App\Models\Coupon;
+use App\Models\DeliverySetting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Models\Payment;
@@ -33,13 +34,23 @@ class CheckoutController extends Controller
             }
 
             $subtotal = $cart->items->sum('subtotal');
-            $tax = 0;
-            $shipping = 0;
+            $settings = DeliverySetting::getSettings();
+
             $discount = $this->calculateDiscount($request->coupon_code, $subtotal);
-            $total = max(
-                round($subtotal - $discount, 2),
-                0
-            );
+
+            $afterDiscount = max($subtotal - $discount, 0);
+
+            $shipping = $settings->delivery_fee;
+
+            if ($settings->free_delivery_above && $afterDiscount >= $settings->free_delivery_above) {
+                $shipping = 0;
+            }
+
+            $platformFee = $settings->platform_fee;
+
+            $tax = ($afterDiscount * $settings->tax_percent) / 100;
+
+            $total = round($afterDiscount + $shipping + $platformFee + $tax, 2);
 
             $addresses = UserAddress::where('user_id', auth()->id())
                 ->where('type', 'shipping')
@@ -54,6 +65,7 @@ class CheckoutController extends Controller
                         'tax' => $tax,
                         'shipping' => $shipping,
                         'discount' => round($discount, 2),
+                        'platform_fee' => round($platformFee, 2),
                         'total' => $total,
                         'items_count' => $cart->items->sum('quantity'),
                         'coupon_code' => $request->coupon_code ?? null,
@@ -107,23 +119,33 @@ class CheckoutController extends Controller
             }
 
             $subtotal = $cart->items->sum('subtotal');
-            $tax = 0;
-            $shipping = 0;
+            $settings = DeliverySetting::getSettings();
+
             $discount = $this->calculateDiscount($request->coupon_code, $subtotal);
 
-            $total = max(
-                round($subtotal - $discount, 2),
-                0
-            );
+            $afterDiscount = max($subtotal - $discount, 0);
+
+            $shipping = $settings->delivery_fee;
+
+            if ($settings->free_delivery_above && $afterDiscount >= $settings->free_delivery_above) {
+                $shipping = 0;
+            }
+
+            $platformFee = $settings->platform_fee;
+
+            $tax = ($afterDiscount * $settings->tax_percent) / 100;
+
+            $total = round($afterDiscount + $shipping + $platformFee + $tax, 2);
             $order = Order::create([
                 'user_id' => $userId,
                 'order_number' => 'ORD-' . now()->format('Ymd') . '-' . rand(100, 999),
                 'status' => 'pending',
                 'payment_status' => 'pending',
                 'subtotal' => round($subtotal, 2),
-                'tax' => $tax,
+                'tax' => round($tax,2),
                 'shipping' => $shipping,
                 'discount' => round($discount, 2),
+                'platform_fee' => $platformFee,
                 'total' => $total,
                 'coupon_code' => $request->coupon_code,
                 'shipping_address_id' => $request->shipping_address_id,
@@ -226,17 +248,26 @@ class CheckoutController extends Controller
         }
 
         $subtotal = $cart->items->sum('subtotal');
-        $tax = 0;
-        $shipping = 0;
-         $discount = $this->calculateDiscount(
-            $request->coupon_code,
-            $subtotal
-        );
-        $total = max(
-            round($subtotal - $discount, 2),
-            0
-        );
-    
+        $settings = DeliverySetting::getSettings();
+        if (!$settings) {
+            throw new \Exception('Delivery settings not configured');
+        }
+        $discount = $this->calculateDiscount($request->coupon_code,$subtotal);
+
+        $afterDiscount = max($subtotal - $discount,0);
+
+        $shipping = $settings->delivery_fee;
+
+        if ($settings->free_delivery_above && $afterDiscount >= $settings->free_delivery_above) {
+            $shipping = 0;
+        }
+
+        $platformFee = $settings->platform_fee;
+
+        $tax = ($afterDiscount * $settings->tax_percent) / 100;
+
+        $total = round($afterDiscount + $shipping + $platformFee + $tax,2);
+            
 
         $payment = Payment::create([
             'user_id' => $userId,
@@ -322,14 +353,24 @@ class CheckoutController extends Controller
             }
 
             $subtotal = $cart->items->sum('subtotal');
-            $tax = 0;
-            $shipping = 0;
+            $settings = DeliverySetting::getSettings();
+
             $discount = $this->calculateDiscount($payment->coupon_code ?? null,$subtotal);
-            $total = max(
-                round($subtotal - $discount, 2),
-                0
-            );
-        
+
+            $afterDiscount = max($subtotal - $discount,0);
+
+            $shipping = $settings->delivery_fee;
+
+            if ($settings->free_delivery_above && $afterDiscount >= $settings->free_delivery_above) {
+                $shipping = 0;
+            }
+
+            $platformFee = $settings->platform_fee;
+
+            $tax = ($afterDiscount * $settings->tax_percent) / 100;
+
+            $total = round($afterDiscount + $shipping + $platformFee + $tax,2);
+                    
             $meta = $payment->payment_meta;
 
             $order = Order::create([
@@ -337,7 +378,7 @@ class CheckoutController extends Controller
                 'status' => 'confirmed',
                 'payment_status' => 'paid',
                 'subtotal' => round($subtotal, 2),
-                'tax' => $tax,
+                'tax' => round($tax,2),
                 'shipping' => $shipping,
                 'discount' => $discount,
                 'total' => $total,

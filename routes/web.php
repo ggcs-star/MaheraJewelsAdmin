@@ -21,12 +21,9 @@ use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\BannerController;
-Route::get('/s3-test', function () {
+use App\Http\Controllers\DeliverySettingController;
 
-    $path = Storage::disk('s3')->put('test.txt', 'Hello S3');
-
-    dd($path);
-});
+  
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -86,7 +83,45 @@ Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:admin']
         Route::delete('/suppliers/{supplier}', [SupplierController::class, 'destroy'])->name('suppliers.destroy');
         Route::get('/suppliers/{supplier}/details', [SupplierController::class, 'details'])->name('suppliers.details');
         Route::post('/suppliers/bulk-delete', [SupplierController::class, 'bulkDelete'])->name('suppliers.bulk-delete');
+        Route::get(
+'/delivery-settings',
+[DeliverySettingController::class,'index']
+)->name('delivery-settings.index');
 
+Route::get(
+'/delivery-settings/create',
+[DeliverySettingController::class,'create']
+)->name('delivery-settings.create');
+
+Route::post(
+'/delivery-settings',
+[DeliverySettingController::class,'store']
+)->name('delivery-settings.store');
+
+Route::post(
+'/delivery-settings/bulk-delete',
+[DeliverySettingController::class,'bulkDelete']
+)->name('delivery-settings.bulk-delete');
+
+Route::get(
+'/delivery-settings/{deliverySetting}/edit',
+[DeliverySettingController::class,'edit']
+)->name('delivery-settings.edit');
+
+Route::put(
+'/delivery-settings/{deliverySetting}',
+[DeliverySettingController::class,'update']
+)->name('delivery-settings.update');
+
+Route::delete(
+'/delivery-settings/{deliverySetting}',
+[DeliverySettingController::class,'destroy']
+)->name('delivery-settings.destroy');
+
+Route::get(
+'/delivery-settings/{deliverySetting}',
+[DeliverySettingController::class,'show']
+)->name('delivery-settings.show');
         Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
         Route::get('/categories/create', [CategoryController::class, 'create'])->name('categories.create');
         Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');

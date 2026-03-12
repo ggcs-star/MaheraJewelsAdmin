@@ -12,6 +12,8 @@ use App\Http\Controllers\Api\Users\CouponController;
 use App\Http\Controllers\Api\Users\CheckoutController;
 use App\Http\Controllers\Api\Users\OrderController;
 use App\Http\Controllers\Api\Users\BannerController;
+use App\Http\Controllers\Api\Users\UserCategoryController;
+
 use App\Http\Controllers\Api\Users\ReelController;
 
 Route::get('/reels', [ReelController::class, 'index']);
@@ -118,10 +120,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/user/profile', [ProfileController::class, 'show']);
     Route::put('/user/profile', [ProfileController::class, 'update']);
+    Route::delete('/user/profile/image', [ProfileController::class, 'removeImage']);
     Route::post('/checkout/razorpay/create-order', [CheckoutController::class, 'createRazorpayOrder']);
     Route::post('/checkout/razorpay/verify', [CheckoutController::class, 'verifyRazorpayPayment']);
 
+    Route::get('/categories/order', [UserCategoryController::class,'index']);
 
+    Route::post('/categories/order', [UserCategoryController::class,'save']);
 });
 
 
