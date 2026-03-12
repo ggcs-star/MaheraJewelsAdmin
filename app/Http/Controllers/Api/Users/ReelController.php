@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Users;
 
 use App\Http\Controllers\Controller;
 use App\Models\Reel;
+use App\Models\ReelLike;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -11,43 +12,44 @@ class ReelController extends Controller
 {
 
     /**
-     * Reel List API
+     * Reel Feed API
      * GET /api/reels
      */
     public function index(Request $request)
     {
 
         $reels = Reel::with('platformProduct.product')
-            ->where('status', 1)
+            ->where('status',1)
             ->latest()
             ->paginate(10);
 
-        $data = $reels->getCollection()->map(function ($reel) {
+        $data = $reels->getCollection()->map(function ($reel){
 
             $product = optional(optional($reel->platformProduct)->product);
 
             return [
 
                 'id' => $reel->id,
-
                 'title' => $reel->title,
-
                 'description' => $reel->description,
 
-                // S3 Video URL
                 'video' => Storage::disk('s3')->url($reel->video),
 
-                'views' => $reel->views,
+                'views' => $reel->views_count,
+                'likes' => $reel->likes_count,
+                'shares' => $reel->shares_count,
 
                 'product' => [
+
                     'id' => $product->id ?? null,
                     'name' => $product->name ?? null,
                     'slug' => $product->slug ?? null,
-                    'price' => $reel->platformProduct->price ?? null,
+                    'price' => optional($reel->platformProduct)->platform_price ?? null,
                     'image' => $product->image ? asset($product->image) : null,
+
                 ],
 
-                'created_at' => $reel->created_at,
+                'created_at' => $reel->created_at
 
             ];
         });
@@ -69,7 +71,6 @@ class ReelController extends Controller
 
     /**
      * Single Reel API
-     * GET /api/reels/{id}
      */
     public function show($id)
     {
@@ -79,34 +80,38 @@ class ReelController extends Controller
         $product = optional(optional($reel->platformProduct)->product);
 
         return response()->json([
+
             'status' => true,
+
             'data' => [
 
                 'id' => $reel->id,
-
                 'title' => $reel->title,
-
                 'description' => $reel->description,
-
-                // S3 Video URL
                 'video' => Storage::disk('s3')->url($reel->video),
 
-                'views' => $reel->views,
+                'views' => $reel->views_count,
+                'likes' => $reel->likes_count,
+                'shares' => $reel->shares_count,
 
                 'product' => [
+
                     'id' => $product->id ?? null,
                     'name' => $product->name ?? null,
                     'slug' => $product->slug ?? null,
-                    'price' => $reel->platformProduct->price ?? null,
+                    'price' => optional($reel->platformProduct)->platform_price ?? null,
                     'image' => $product->image ? asset($product->image) : null,
+
                 ],
 
-                'created_at' => $reel->created_at,
+                'created_at' => $reel->created_at
 
             ]
+
         ]);
 
     }
+
 
 
     /**
@@ -117,11 +122,81 @@ class ReelController extends Controller
 
         $reel = Reel::findOrFail($id);
 
-        $reel->increment('views');
+        $reel->increment('views_count');
 
         return response()->json([
             'status' => true,
-            'views' => $reel->views
+            'views' => $reel->views_count
+        ]);
+
+    }
+
+
+
+    /**
+     * Like Reel (Duplicate Prevent)
+     */
+   public function like($id, Request $request)
+{
+
+    $reel = Reel::findOrFail($id);
+
+    $ip = $request->ip();
+
+    $existing = ReelLike::where('reel_id',$id)
+        ->where('ip_address',$ip)
+        ->first();
+
+
+    /* UNLIKE */
+
+    if($existing){
+
+        $existing->delete();
+
+        $reel->decrement('likes_count');
+
+        return response()->json([
+            'status'=>true,
+            'liked'=>false,
+            'likes'=>$reel->likes_count
+        ]);
+
+    }
+
+
+    /* LIKE */
+
+    ReelLike::create([
+        'reel_id'=>$id,
+        'ip_address'=>$ip
+    ]);
+
+    $reel->increment('likes_count');
+
+    return response()->json([
+        'status'=>true,
+        'liked'=>true,
+        'likes'=>$reel->likes_count
+    ]);
+
+}
+
+
+
+    /**
+     * Share Reel
+     */
+    public function share($id)
+    {
+
+        $reel = Reel::findOrFail($id);
+
+        $reel->increment('shares_count');
+
+        return response()->json([
+            'status' => true,
+            'shares' => $reel->shares_count
         ]);
 
     }
