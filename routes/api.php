@@ -14,7 +14,14 @@ use App\Http\Controllers\Api\Users\OrderController;
 use App\Http\Controllers\Api\Users\BannerController;
 use App\Http\Controllers\Api\Users\UserCategoryController;
 
+use App\Http\Controllers\Api\Users\ReelController;
 
+Route::get('/reels', [ReelController::class, 'index']);
+Route::get('/reels/{id}', [ReelController::class, 'show']);
+
+Route::post('/reels/{id}/view', [ReelController::class, 'increaseViews']);
+Route::post('/reels/{id}/like', [ReelController::class, 'like']);
+Route::post('/reels/{id}/share', [ReelController::class, 'share']);
 Route::get('/test', function () {
     return response()->json([
         'status' => true,
@@ -134,7 +141,6 @@ Route::get('/products/top-selling', [ProductController::class, 'topSelling']);
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{slug}', [ProductController::class, 'show']);
 Route::get('/products/id/{product_id}', [ProductController::class, 'showById']);
-
 Route::prefix('banners')->group(function () {
     Route::get('/', [BannerController::class, 'index']);           // /api/banners?page=home&position=hero
     Route::get('/{id}', [BannerController::class, 'show']);        // /api/banners/5

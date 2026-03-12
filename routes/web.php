@@ -23,6 +23,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\BannerController;
 use App\Http\Controllers\DeliverySettingController;
 
+  
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -66,6 +67,8 @@ Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:admin']
     ->name('admin.')
     ->group(function () {
        
+        Route::resource('reels', \App\Http\Controllers\Admin\ReelController::class);
+
         Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
 
         Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
