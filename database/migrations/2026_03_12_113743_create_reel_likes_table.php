@@ -11,21 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-Schema::create('reel_likes', function (Blueprint $table) {
+        if (Schema::hasTable('reel_likes')) {
 
-    $table->id();
+            Schema::table('reel_likes', function (Blueprint $table) {
 
-    $table->foreignId('reel_id')->constrained()->cascadeOnDelete();
+                // Add ip_address if not exists
+                if (!Schema::hasColumn('reel_likes', 'ip_address')) {
+                    $table->string('ip_address')->nullable()->after('user_id');
+                }
 
-    $table->foreignId('user_id')->nullable();
+                // Make user_id nullable if needed
+                if (Schema::hasColumn('reel_likes', 'user_id')) {
+                    $table->unsignedBigInteger('user_id')->nullable()->change();
+                }
 
-    $table->string('ip_address')->nullable();
+            });
 
-    $table->timestamps();
-
-    $table->unique(['reel_id','user_id']);
-
-});
+        }
     }
 
     /**
@@ -33,6 +35,16 @@ Schema::create('reel_likes', function (Blueprint $table) {
      */
     public function down(): void
     {
-        Schema::dropIfExists('reel_likes');
+        if (Schema::hasTable('reel_likes')) {
+
+            Schema::table('reel_likes', function (Blueprint $table) {
+
+                if (Schema::hasColumn('reel_likes', 'ip_address')) {
+                    $table->dropColumn('ip_address');
+                }
+
+            });
+
+        }
     }
 };
