@@ -58,4 +58,18 @@ class Reel extends Model
         );
     }
 
+    public function likes()
+{
+    return $this->hasMany(ReelLike::class);
+}
+
+public function shares()
+{
+    return $this->hasMany(ReelShare::class);
+}
+
+public function views()
+{
+    return $this->hasMany(ReelView::class);
+}
 }
