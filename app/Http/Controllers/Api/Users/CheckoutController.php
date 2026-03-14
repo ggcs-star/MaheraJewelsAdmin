@@ -23,7 +23,7 @@ class CheckoutController extends Controller
     {
         try {
             $cart = Cart::where('user_id', auth()->id())
-                ->with(['items.product'])
+->with(['items.product:id,name'])
                 ->firstOrFail();
 
             if ($cart->items->isEmpty()) {
@@ -34,8 +34,11 @@ class CheckoutController extends Controller
             }
 
             $subtotal = $cart->items->sum('subtotal');
-            $settings = DeliverySetting::getSettings();
+$settings = DeliverySetting::getSettings();
 
+if (!$settings) {
+    throw new \Exception('Delivery settings not configured');
+}
             $discount = $this->calculateDiscount($request->coupon_code, $subtotal);
 
             $afterDiscount = max($subtotal - $discount, 0);
@@ -89,11 +92,13 @@ class CheckoutController extends Controller
             ]);
 
         } catch (Throwable $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unable to load checkout summary'
-            ], 500);
-        }
+    return response()->json([
+        'success' => false,
+        'error' => $e->getMessage(),
+        'file' => $e->getFile(),
+        'line' => $e->getLine()
+    ], 500);
+}
     }
 
     public function placeOrder(Request $request): JsonResponse
@@ -111,7 +116,7 @@ class CheckoutController extends Controller
             $userId = auth()->id();
 
             $cart = Cart::where('user_id', $userId)
-                ->with(['items.product'])
+    ->with(['items.product:id,name'])
                 ->firstOrFail();
 
             if ($cart->items->isEmpty()) {
@@ -237,7 +242,7 @@ class CheckoutController extends Controller
         $userId = auth()->id();
 
         $cart = Cart::where('user_id', $userId)
-            ->with(['items.product'])
+    ->with(['items.product:id,name'])
             ->firstOrFail();
 
         if ($cart->items->isEmpty()) {
@@ -269,29 +274,33 @@ class CheckoutController extends Controller
         $total = round($afterDiscount + $shipping + $platformFee + $tax,2);
             
 
-        $payment = Payment::create([
-            'user_id' => $userId,
-            'amount' => (float) $total,
-            'currency' => 'INR',
-            'payment_method' => 'razorpay',
-            'payment_status' => 'pending',
-            'coupon_code' => $request->coupon_code,
-            'payment_meta' => [
-            'shipping_address_id' => $request->shipping_address_id,
-            'billing_address_id' => $request->billing_address_id,
-        ],
-        ]);
+$payment = Payment::create([
+    'user_id' => $userId,
+    'amount' => (float) $total,
+    'currency' => 'INR',
+    'payment_method' => 'razorpay',
+    'payment_status' => 'pending',
+    'client_ip' => $request->ip(),
+    'coupon_code' => $request->coupon_code,
+    'payment_meta' => [
+        'shipping_address_id' => $request->shipping_address_id,
+        'billing_address_id' => $request->billing_address_id,
+    ],
+]);
 
         $razorpay = new Api(
             config('services.razorpay.key'),
             config('services.razorpay.secret')
         );
-
-        $razorpayOrder = $razorpay->order->create([
-            'receipt'  => 'pay_' . $payment->id,
-            'amount'   => (int) round($total * 100), 
-            'currency' => 'INR',
-        ]);
+$razorpayOrder = $razorpay->order->create([
+    'receipt'  => 'pay_' . $payment->id,
+    'amount'   => (int) round($total * 100),
+    'currency' => 'INR',
+    'notes' => [
+        'payment_id' => $payment->id,
+        'user_id' => $userId
+    ]
+]);
 
         $payment->update([
             'razorpay_order_id' => $razorpayOrder['id']
@@ -316,132 +325,240 @@ class CheckoutController extends Controller
             ], 500);
         }
         }
-    public function verifyRazorpayPayment(Request $request): JsonResponse
-    {
-        $request->validate([
-            'razorpay_payment_id' => 'required|string',
-            'razorpay_order_id'   => 'required|string',
-            'razorpay_signature'  => 'required|string',
+   public function verifyRazorpayPayment(Request $request): JsonResponse
+{
+    $request->validate([
+        'razorpay_payment_id' => 'required|string',
+        'razorpay_order_id'   => 'required|string',
+        'razorpay_signature'  => 'required|string',
+    ]);
+
+    DB::beginTransaction();
+
+    try {
+
+        $userId = auth()->id();
+
+        $payment = Payment::where('razorpay_order_id',$request->razorpay_order_id)
+            ->where('user_id',$userId)
+            ->lockForUpdate()
+            ->firstOrFail();
+
+     if ($payment->payment_status === 'paid') {
+
+    DB::rollBack();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Payment already processed'
+    ]);
+}
+
+        $api = new Api(
+            config('services.razorpay.key'),
+            config('services.razorpay.secret')
+        );
+
+        $api->utility->verifyPaymentSignature([
+            'razorpay_order_id'   => $request->razorpay_order_id,
+            'razorpay_payment_id' => $request->razorpay_payment_id,
+            'razorpay_signature'  => $request->razorpay_signature,
         ]);
 
-        DB::beginTransaction();
+        $paymentDetails = $api->payment->fetch($request->razorpay_payment_id);
+        $orderDetails = $api->order->fetch($request->razorpay_order_id);
 
-        try {
-            $userId = auth()->id();
-
-            $payment = Payment::where('razorpay_order_id', $request->razorpay_order_id)
-                ->where('user_id', $userId)
-                ->where('payment_status', 'pending')
-                ->firstOrFail();
-
-            $api = new Api(
-                config('services.razorpay.key'),
-                config('services.razorpay.secret')
-            );
-
-            $api->utility->verifyPaymentSignature([
-                'razorpay_order_id'   => $request->razorpay_order_id,
-                'razorpay_payment_id' => $request->razorpay_payment_id,
-                'razorpay_signature'  => $request->razorpay_signature,
-            ]);
-            $cart = Cart::where('user_id', $userId)
-                ->with(['items.product'])
-                ->firstOrFail();
-
-            if ($cart->items->isEmpty()) {
-                throw new \Exception('Cart is empty');
-            }
-
-            $subtotal = $cart->items->sum('subtotal');
-            $settings = DeliverySetting::getSettings();
-
-            $discount = $this->calculateDiscount($payment->coupon_code ?? null,$subtotal);
-
-            $afterDiscount = max($subtotal - $discount,0);
-
-            $shipping = $settings->delivery_fee;
-
-            if ($settings->free_delivery_above && $afterDiscount >= $settings->free_delivery_above) {
-                $shipping = 0;
-            }
-
-            $platformFee = $settings->platform_fee;
-
-            $tax = ($afterDiscount * $settings->tax_percent) / 100;
-
-            $total = round($afterDiscount + $shipping + $platformFee + $tax,2);
-                    
-            $meta = $payment->payment_meta;
-
-            $order = Order::create([
-                'user_id' => $userId,
-                'status' => 'confirmed',
-                'payment_status' => 'paid',
-                'subtotal' => round($subtotal, 2),
-                'tax' => round($tax,2),
-                'shipping' => $shipping,
-                'discount' => $discount,
-                'total' => $total,
-                'shipping_address_id' => $meta['shipping_address_id'],
-                'billing_address_id' => $meta['billing_address_id'],
-            ]);
-
-            foreach ($cart->items as $item) {
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $item->product_id,
-                    'variant_id' => $item->product_variant_id,
-                    'product_name' => $item->product->name ?? 'Product',
-                    'price' => $item->price,
-                    'quantity' => $item->quantity,
-                    'subtotal' => $item->subtotal,
-                ]);
-            }
-
-            $payment->update([
-                'order_id' => $order->id,
-                'payment_status' => 'paid',
-                'razorpay_payment_id' => $request->razorpay_payment_id,
-                'razorpay_signature' => $request->razorpay_signature,
-                'paid_at' => now(),
-            ]);
-
-            $cart->items()->delete();
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Payment verified & order placed',
-                'data' => [
-                    'order_id' => $order->id,
-                    'order_number' => $order->order_number,
-                ]
-            ]);
-
-        } catch (SignatureVerificationError $e) {
-            DB::rollBack();
-
-            if (isset($payment)) {
-                $payment->update(['payment_status' => 'failed']);
-            }
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Payment verification failed'
-            ], 400);
-
-        } catch (Throwable $e) {
-            DB::rollBack();
-
-            if (isset($payment)) {
-                $payment->update(['payment_status' => 'failed']);
-            }
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong'
-            ], 500);
+        if ($orderDetails['status'] !== 'paid') {
+            throw new \Exception('Order not paid yet');
         }
+
+        if ($paymentDetails['status'] !== 'captured') {
+            throw new \Exception('Payment not captured');
+        }
+
+        if ($paymentDetails['currency'] !== 'INR') {
+            throw new \Exception('Invalid currency');
+        }
+
+        if ($paymentDetails['amount'] != ($payment->amount * 100)) {
+            throw new \Exception('Amount mismatch');
+        }
+
+      if ($payment->order_id) {
+
+    DB::commit();
+
+    return response()->json([
+        'success'=>true,
+        'message'=>'Order already created',
+        'data'=>[
+            'order_id'=>$payment->order_id
+        ]
+    ]);
+}
+
+        $cart = Cart::where('user_id',$userId)
+    ->with(['items.product:id,name'])
+            ->firstOrFail();
+
+        if ($cart->items->isEmpty()) {
+            throw new \Exception('Cart empty');
+        }
+
+        $subtotal = $cart->items->sum('subtotal');
+
+        $settings = DeliverySetting::getSettings();
+
+        $discount = $this->calculateDiscount($payment->coupon_code,$subtotal);
+
+        $afterDiscount = max($subtotal - $discount,0);
+
+        $shipping = $settings->delivery_fee;
+
+        if ($settings->free_delivery_above && $afterDiscount >= $settings->free_delivery_above) {
+            $shipping = 0;
+        }
+
+        $platformFee = $settings->platform_fee;
+
+        $tax = ($afterDiscount * $settings->tax_percent)/100;
+
+        $total = round($afterDiscount + $shipping + $platformFee + $tax,2);
+
+        $meta = $payment->payment_meta;
+
+        $order = Order::create([
+            'user_id'=>$userId,
+            'order_number'=>'ORD-'.now()->format('Ymd').'-'.rand(1000,9999),
+            'status'=>'confirmed',
+            'payment_status'=>'paid',
+            'subtotal'=>$subtotal,
+            'tax'=>$tax,
+            'shipping'=>$shipping,
+            'discount'=>$discount,
+            'platform_fee'=>$platformFee,
+            'total'=>$total,
+            'shipping_address_id'=>$meta['shipping_address_id'],
+            'billing_address_id'=>$meta['billing_address_id'],
+        ]);
+
+        foreach($cart->items as $item){
+
+            OrderItem::create([
+                'order_id'=>$order->id,
+                'product_id'=>$item->product_id,
+                'variant_id'=>$item->product_variant_id,
+                'product_name'=>$item->product->name ?? 'Product',
+                'price'=>$item->price,
+                'quantity'=>$item->quantity,
+                'subtotal'=>$item->subtotal
+            ]);
+        }
+
+        $payment->update([
+            'order_id'=>$order->id,
+            'payment_status'=>'paid',
+            'razorpay_payment_id'=>$request->razorpay_payment_id,
+            'razorpay_signature'=>$request->razorpay_signature,
+'razorpay_payload' => $paymentDetails->toArray(),   
+         'paid_at'=>now()
+        ]);
+
+        $cart->items()->delete();
+
+        DB::commit();
+
+        return response()->json([
+            'success'=>true,
+            'message'=>'Payment verified & order placed',
+            'data'=>[
+                'order_id'=>$order->id,
+                'order_number'=>$order->order_number
+            ]
+        ]);
+
+    } catch (SignatureVerificationError $e) {
+
+        DB::rollBack();
+
+        if(isset($payment)){
+            $payment->update(['payment_status'=>'failed']);
+        }
+
+        return response()->json([
+            'success'=>false,
+            'message'=>'Signature verification failed'
+        ],400);
+
+    } catch (Throwable $e) {
+
+        DB::rollBack();
+
+        if(isset($payment)){
+            $payment->update(['payment_status'=>'failed']);
+        }
+
+        return response()->json([
+            'success'=>false,
+            'message'=>$e->getMessage()
+        ],500);
     }
 }
+
+
+public function razorpayWebhook(Request $request)
+{
+    $secret = config('services.razorpay.webhook_secret');
+
+    $payload = $request->getContent();
+    $signature = $request->header('X-Razorpay-Signature');
+
+    try {
+
+        $api = new Api(
+            config('services.razorpay.key'),
+            config('services.razorpay.secret')
+        );
+
+        $api->utility->verifyWebhookSignature($payload, $signature, $secret);
+
+        $data = json_decode($payload, true);
+
+        if ($data['event'] === 'payment.captured') {
+
+            $paymentId = $data['payload']['payment']['entity']['id'];
+            $orderId = $data['payload']['payment']['entity']['order_id'];
+            $status = $data['payload']['payment']['entity']['status'];
+
+            if ($status !== 'captured') {
+                return response()->json(['status' => 'ignored']);
+            }
+
+            DB::transaction(function () use ($orderId, $paymentId, $data) {
+
+      $payment = Payment::where('razorpay_order_id', $orderId)
+    ->lockForUpdate()
+    ->firstOrFail();
+                if ($payment && $payment->payment_status !== 'paid') {
+
+                    $payment->update([
+                        'razorpay_payment_id' => $paymentId,
+                        'payment_status' => 'paid',
+                        'razorpay_payload' => $data,
+                        'paid_at' => now()
+                    ]);
+                }
+            });
+        }
+
+        return response()->json(['status' => 'ok']);
+
+    } catch (Throwable $e) {
+
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ], 400);
+    }
+}  
+}      

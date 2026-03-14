@@ -123,7 +123,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/user/profile/image', [ProfileController::class, 'removeImage']);
     Route::post('/checkout/razorpay/create-order', [CheckoutController::class, 'createRazorpayOrder']);
     Route::post('/checkout/razorpay/verify', [CheckoutController::class, 'verifyRazorpayPayment']);
-
+Route::post('/razorpay/webhook', [CheckoutController::class,'razorpayWebhook']);
     Route::get('/categories/order', [UserCategoryController::class,'index']);
 
     Route::post('/categories/order', [UserCategoryController::class,'save']);
