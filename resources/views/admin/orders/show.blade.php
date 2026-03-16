@@ -2,23 +2,23 @@
 
 @section('content')
 
+@php
+use Illuminate\Support\Facades\Storage;
+@endphp
+
 <div class="container-fluid py-4">
 
 <div class="d-flex justify-content-between align-items-center mb-4">
 
 <h4 class="fw-bold">
-
 Order ID : #{{ $order->order_number }}
-
 </h4>
 
 <a
 href="{{ route('admin.orders.invoice',$order->id) }}"
 target="_blank"
 class="btn btn-danger">
-
 Print Invoice
-
 </a>
 
 </div>
@@ -41,8 +41,10 @@ Order Details
 <div class="d-flex mb-3 border-bottom pb-2">
 
 <img
-src="{{ $item->product->image ?? '/images/no-image.png' }}"
+src="{{ $item->product && $item->product->image ? Storage::disk('s3')->url($item->product->image) : asset('images/no-image.png') }}"
 width="60"
+height="60"
+style="object-fit:cover"
 class="me-3"
 />
 
@@ -53,9 +55,7 @@ class="me-3"
 </h6>
 
 <span class="text-muted">
-
 ₹{{ $item->price }} × {{ $item->quantity }}
-
 </span>
 
 </div>
@@ -73,6 +73,8 @@ class="me-3"
 
 <div class="col-md-4">
 
+<!-- ORDER TOTAL -->
+
 <div class="card shadow-sm mb-4">
 
 <div class="card-body">
@@ -89,6 +91,62 @@ class="me-3"
 
 </div>
 
+
+<!-- ORDER STATUS UPDATE -->
+
+<div class="card shadow-sm mb-4">
+
+<div class="card-header fw-bold">
+Update Order Status
+</div>
+
+<div class="card-body">
+
+<form method="POST" action="{{ route('admin.orders.updateStatus',$order->id) }}">
+
+@csrf
+@method('PUT')
+
+<select name="status" class="form-control mb-3">
+
+<option value="pending" {{ $order->status=='pending'?'selected':'' }}>
+Pending
+</option>
+
+<option value="confirmed" {{ $order->status=='confirmed'?'selected':'' }}>
+Confirmed
+</option>
+
+<option value="processing" {{ $order->status=='processing'?'selected':'' }}>
+Processing
+</option>
+
+<option value="shipped" {{ $order->status=='shipped'?'selected':'' }}>
+Shipped
+</option>
+
+<option value="delivered" {{ $order->status=='delivered'?'selected':'' }}>
+Delivered
+</option>
+
+<option value="cancelled" {{ $order->status=='cancelled'?'selected':'' }}>
+Cancelled
+</option>
+
+</select>
+
+<button class="btn btn-primary w-100">
+Update Status
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+
+<!-- DELIVERY INFO -->
 
 <div class="card shadow-sm">
 
