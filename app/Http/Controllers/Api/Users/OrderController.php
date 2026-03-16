@@ -4,145 +4,130 @@ namespace App\Http\Controllers\Api\Users;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
-use Illuminate\Http\JsonResponse;
+use App\Models\OrderItem;
+use App\Models\Cart;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Throwable;
 
 class OrderController extends Controller
 {
-   public function index(Request $request): JsonResponse
-{
-    try {
-    $orders = Order::with(['items:id,order_id,product_id,variant_id,product_name,price,quantity,subtotal','items.product:id,image_url','items.variant:id,image_url'])            ->where('user_id', auth()->id())
-            ->when($request->status, function ($query) use ($request) {
-                $query->where('status', $request->status);
-            })
-            ->latest()
-            ->paginate($request->per_page ?? 10);
-            $orders->getCollection()->transform(function ($order) {
 
-            $order->items->transform(function ($item) {
-
-               $item->image = $item->variant?->image_url 
-                ?? $item->product?->image_url 
-                ?? null;
-
-                return $item;
-            });
-
-            return $order;
-        });
-        return response()->json([
-            'success' => true,
-            'data' => $orders
-        ]);
-    } catch (Throwable $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Something went wrong'
-        ], 500);
-    }
-}
-    public function show($orderId): JsonResponse
+    /**
+     * Create Order
+     */
+    public function createOrder(Request $request)
     {
-        try {
-            $order = Order::with([
-            'items:id,order_id,product_id,variant_id,product_name,price,quantity,subtotal',
-            'items.product:id,image_url',
-            'items.variant:id,image_url'
-        ])
-                ->where('user_id', auth()->id())
-                ->findOrFail($orderId);
 
+        $user = auth()->user();
+
+        $cartItems = Cart::where('user_id',$user->id)->with('product')->get();
+
+        if($cartItems->isEmpty()){
             return response()->json([
-                'success' => true,
-                'data' => $order
+                'success'=>false,
+                'message'=>'Cart is empty'
             ]);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Order not found'
-            ], 404);
-        } catch (Throwable $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong'
-            ], 500);
         }
-    }
 
-    public function cancel(Request $request, $orderId): JsonResponse
-    {
-        try {
-            DB::beginTransaction();
+        DB::beginTransaction();
 
-            $order = Order::where('user_id', auth()->id())
-                ->findOrFail($orderId);
+        try{
 
-            if (!in_array($order->status, ['pending', 'confirmed'])) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Order cannot be cancelled'
-                ], 400);
+            $subtotal = 0;
+
+            foreach($cartItems as $item){
+                $subtotal += $item->price * $item->quantity;
             }
 
-            $order->status = 'cancelled';
-            $order->save();
+            $tax = $subtotal * 0.02;
+            $shipping = 0;
+            $discount = 0;
+
+            $total = $subtotal + $tax + $shipping - $discount;
+
+            $order = Order::create([
+                'user_id'=>$user->id,
+                'order_number'=>'ORD-'.time(),
+                'subtotal'=>$subtotal,
+                'tax'=>$tax,
+                'shipping'=>$shipping,
+                'discount'=>$discount,
+                'total'=>$total,
+                'status'=>'pending',
+                'payment_status'=>'paid',
+                'payment_method'=>'razorpay'
+            ]);
+
+            foreach($cartItems as $item){
+
+                OrderItem::create([
+                    'order_id'=>$order->id,
+                    'product_id'=>$item->product_id,
+                    'price'=>$item->price,
+                    'quantity'=>$item->quantity,
+                    'total'=>$item->price * $item->quantity
+                ]);
+
+            }
+
+            Cart::where('user_id',$user->id)->delete();
 
             DB::commit();
 
             return response()->json([
-                'success' => true,
-                'message' => 'Order cancelled successfully',
-                'data' => [
-                    'order' => [
-                        'id' => $order->id,
-                        'status' => $order->status
-                    ]
-                ]
+                'success'=>true,
+                'message'=>'Order created successfully',
+                'data'=>$order
             ]);
-        } catch (ModelNotFoundException $e) {
+
+        }catch(\Exception $e){
+
             DB::rollBack();
+
             return response()->json([
-                'success' => false,
-                'message' => 'Order not found'
-            ], 404);
-        } catch (Throwable $e) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong'
-            ], 500);
+                'success'=>false,
+                'message'=>$e->getMessage()
+            ]);
         }
+
     }
 
-    public function track($orderId): JsonResponse
+
+    /**
+     * User Orders List
+     */
+    public function orders()
     {
-        try {
-            $order = Order::where('user_id', auth()->id())
-                ->findOrFail($orderId);
 
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'order_number' => $order->order_number,
-                    'status' => $order->status,
-                    'tracking_number' => $order->tracking_number ?? null,
-                    'estimated_delivery' => $order->estimated_delivery ?? null,
-                ]
-            ]);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Order not found'
-            ], 404);
-        } catch (Throwable $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong'
-            ], 500);
-        }
+        $orders = Order::where('user_id',auth()->id())
+        ->latest()
+        ->paginate(10);
+
+        return response()->json([
+            'success'=>true,
+            'data'=>$orders
+        ]);
+
     }
+
+
+    /**
+     * Order Details
+     */
+    public function orderDetails($id)
+    {
+
+        $order = Order::with([
+            'items.product'
+        ])
+        ->where('user_id',auth()->id())
+        ->findOrFail($id);
+
+        return response()->json([
+            'success'=>true,
+            'data'=>$order
+        ]);
+
+    }
+
 }

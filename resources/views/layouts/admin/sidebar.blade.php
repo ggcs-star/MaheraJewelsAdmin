@@ -150,13 +150,21 @@
     <span>Reels</span>
 </a>
 
-        <a href="#"
-           class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-slate-100">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-            </svg>
-            <span>Orders</span>
-        </a>
+    <a href="{{ admin_route('orders.index') }}"
+   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+   {{ request()->routeIs('orders.*')
+        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 font-medium'
+        : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100' }}">
+
+    <!-- Order Icon -->
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 3h18l-2 13H5L3 3zm6 16a2 2 0 100 4 2 2 0 000-4zm8 0a2 2 0 100 4 2 2 0 000-4z"/>
+    </svg>
+
+    <span>Orders</span>
+
+</a>
 
         <a href="#"
            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-slate-100">
