@@ -127,7 +127,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/addresses', [AddressController::class, 'store']);
     Route::put('/user/addresses/{id}', [AddressController::class, 'update']);
     Route::delete('/user/addresses/{id}', [AddressController::class, 'destroy']);
-
+    
     Route::get('/user/profile', [ProfileController::class, 'show']);
     Route::put('/user/profile', [ProfileController::class, 'update']);
     Route::delete('/user/profile/image', [ProfileController::class, 'removeImage']);
@@ -147,12 +147,17 @@ Route::get(
 );
 
 Route::get('/products/top-selling', [ProductController::class, 'topSelling']);
+Route::get('/products/suggestions', [ProductController::class, 'searchSuggestions'])
+    ->middleware('throttle:30,1');
+Route::get('/products/search', [ProductController::class, 'search'])
+    ->middleware('throttle:30,1');
+Route::get('/search', [ProductController::class, 'unifiedSearch']);
 Route::get('/products', [ProductController::class, 'index']);
-Route::get('/products/{slug}', [ProductController::class, 'show']);
 Route::get('/products/id/{product_id}', [ProductController::class, 'showById']);
+Route::get('/products/{slug}', [ProductController::class, 'show']);
 Route::prefix('banners')->group(function () {
-    Route::get('/', [BannerController::class, 'index']);           // /api/banners?page=home&position=hero
-    Route::get('/{id}', [BannerController::class, 'show']);        // /api/banners/5
-    Route::get('/page/{page}', [BannerController::class, 'getByPage']); // /api/banners/page/home
-    Route::get('/position/{position}', [BannerController::class, 'getByPosition']); // /api/banners/position/hero
+    Route::get('/', [BannerController::class, 'index']);     
+    Route::get('/{id}', [BannerController::class, 'show']);    
+    Route::get('/page/{page}', [BannerController::class, 'getByPage']);
+    Route::get('/position/{position}', [BannerController::class, 'getByPosition']);
 });
