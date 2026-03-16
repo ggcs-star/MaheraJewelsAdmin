@@ -24,22 +24,7 @@ use App\Http\Controllers\BannerController;
 use App\Http\Controllers\DeliverySettingController;
 use App\Http\Controllers\Admin\OrderController;
 
-   Route::get('/orders', [OrderController::class,'index'])
-    ->name('admin.orders');
 
-    Route::get('/orders/{id}', [OrderController::class,'show'])
-    ->name('admin.orders.show');
-
-    Route::post('/orders/{id}/status', [OrderController::class,'updateStatus'])
-    ->name('admin.orders.status');
-
-    Route::get('/orders/{id}/invoice', [OrderController::class,'invoice'])
-    ->name('admin.orders.invoice');
-
-    Route::post('/orders/{id}/cancel', [OrderController::class,'cancel'])
-    ->name('admin.orders.cancel');
-
-  
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -341,6 +326,15 @@ Route::post(
     [CustomerController::class, 'ajaxStore']
 )->name('customers.ajax.store');
 
+
+Route::get('/orders', [OrderController::class,'index'])->name('orders.index');
+Route::get('/orders/{id}', [OrderController::class,'show'])->name('orders.show');
+
+Route::post('/orders/{id}/status', [OrderController::class,'updateStatus'])->name('orders.status');
+
+Route::get('/orders/{id}/invoice', [OrderController::class,'invoice'])->name('orders.invoice');
+
+Route::post('/orders/{id}/cancel', [OrderController::class,'cancel'])->name('orders.cancel');
     });
 // 💰 GST & TAXES
 Route::get('/taxes', [\App\Http\Controllers\TaxController::class, 'index'])
