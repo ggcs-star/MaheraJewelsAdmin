@@ -22,6 +22,22 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\BannerController;
 use App\Http\Controllers\DeliverySettingController;
+use App\Http\Controllers\Admin\OrderController;
+
+   Route::get('/orders', [OrderController::class,'index'])
+    ->name('admin.orders');
+
+    Route::get('/orders/{id}', [OrderController::class,'show'])
+    ->name('admin.orders.show');
+
+    Route::post('/orders/{id}/status', [OrderController::class,'updateStatus'])
+    ->name('admin.orders.status');
+
+    Route::get('/orders/{id}/invoice', [OrderController::class,'invoice'])
+    ->name('admin.orders.invoice');
+
+    Route::post('/orders/{id}/cancel', [OrderController::class,'cancel'])
+    ->name('admin.orders.cancel');
 
   
 

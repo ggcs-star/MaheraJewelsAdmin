@@ -14,7 +14,17 @@ use App\Http\Controllers\Api\Users\OrderController;
 use App\Http\Controllers\Api\Users\BannerController;
 use App\Http\Controllers\Api\Users\UserCategoryController;
 
+
+ Route::post('/create-order',[OrderController::class,'createOrder']);
+
+    Route::get('/my-orders',[OrderController::class,'orders']);
+
+    Route::get('/order/{id}',[OrderController::class,'orderDetails']);
 use App\Http\Controllers\Api\Users\ReelController;
+Route::post('/razorpay/webhook', [CheckoutController::class,'razorpayWebhook']);
+
+Route::middleware('auth:sanctum')->get('/orders/latest', [OrderController::class,'latest']);
+
 
 Route::get('/reels', [ReelController::class, 'index']);
 Route::get('/reels/{id}', [ReelController::class, 'show']);
@@ -123,7 +133,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/user/profile/image', [ProfileController::class, 'removeImage']);
     Route::post('/checkout/razorpay/create-order', [CheckoutController::class, 'createRazorpayOrder']);
     Route::post('/checkout/razorpay/verify', [CheckoutController::class, 'verifyRazorpayPayment']);
-Route::post('/razorpay/webhook', [CheckoutController::class,'razorpayWebhook']);
     Route::get('/categories/order', [UserCategoryController::class,'index']);
 
     Route::post('/categories/order', [UserCategoryController::class,'save']);
