@@ -12,7 +12,7 @@
 <div class="card shadow-sm bg-primary text-white border-0">
 <div class="card-body">
 <h6>Total Orders</h6>
-<h3>{{ $stats['total'] }}</h3>
+<h3>{{ $stats['total'] ?? 0 }}</h3>
 </div>
 </div>
 </div>
@@ -21,7 +21,7 @@
 <div class="card shadow-sm bg-warning text-white border-0">
 <div class="card-body">
 <h6>Pending</h6>
-<h3>{{ $stats['pending'] }}</h3>
+<h3>{{ $stats['pending'] ?? 0 }}</h3>
 </div>
 </div>
 </div>
@@ -30,7 +30,7 @@
 <div class="card shadow-sm bg-info text-white border-0">
 <div class="card-body">
 <h6>Processing</h6>
-<h3>{{ $stats['processing'] }}</h3>
+<h3>{{ $stats['processing'] ?? 0 }}</h3>
 </div>
 </div>
 </div>
@@ -39,7 +39,7 @@
 <div class="card shadow-sm bg-success text-white border-0">
 <div class="card-body">
 <h6>Delivered</h6>
-<h3>{{ $stats['delivered'] }}</h3>
+<h3>{{ $stats['delivered'] ?? 0 }}</h3>
 </div>
 </div>
 </div>
@@ -54,49 +54,22 @@
 <form method="GET" class="row g-2">
 
 <div class="col-md-4">
-
-<input
-type="text"
-name="search"
-value="{{ request('search') }}"
-placeholder="Search Order Number..."
-class="form-control"
-/>
-
+<input type="text" name="search" value="{{ request('search') }}"
+placeholder="Search Order Number..." class="form-control"/>
 </div>
 
 <div class="col-md-3">
-
 <select name="status" class="form-select">
-
 <option value="">All Status</option>
-
-<option value="pending" {{ request('status')=='pending'?'selected':'' }}>
-Pending
-</option>
-
-<option value="processing" {{ request('status')=='processing'?'selected':'' }}>
-Processing
-</option>
-
-<option value="shipped" {{ request('status')=='shipped'?'selected':'' }}>
-Shipped
-</option>
-
-<option value="delivered" {{ request('status')=='delivered'?'selected':'' }}>
-Delivered
-</option>
-
+<option value="pending" {{ request('status')=='pending'?'selected':'' }}>Pending</option>
+<option value="processing" {{ request('status')=='processing'?'selected':'' }}>Processing</option>
+<option value="shipped" {{ request('status')=='shipped'?'selected':'' }}>Shipped</option>
+<option value="delivered" {{ request('status')=='delivered'?'selected':'' }}>Delivered</option>
 </select>
-
 </div>
 
 <div class="col-md-2">
-
-<button class="btn btn-primary w-100">
-Search
-</button>
-
+<button class="btn btn-primary w-100">Search</button>
 </div>
 
 </form>
@@ -109,7 +82,6 @@ Search
 <table class="table table-hover align-middle mb-0">
 
 <thead class="table-light">
-
 <tr>
 <th>Order</th>
 <th>Customer</th>
@@ -118,7 +90,6 @@ Search
 <th>Total</th>
 <th>Action</th>
 </tr>
-
 </thead>
 
 <tbody>
@@ -128,7 +99,7 @@ Search
 <tr>
 
 <td class="fw-bold">
-{{ $order->order_number }}
+{{ $order->order_number ?? 'N/A' }}
 </td>
 
 <td>
@@ -136,11 +107,10 @@ Search
 </td>
 
 <td>
-{{ $order->created_at->format('d M Y') }}
+{{ optional($order->created_at)->format('d M Y') }}
 </td>
 
 <td>
-
 <span class="badge
 @if($order->status=='pending') bg-warning
 @elseif($order->status=='processing') bg-info
@@ -148,26 +118,25 @@ Search
 @elseif($order->status=='delivered') bg-success
 @endif
 ">
-
-{{ ucfirst($order->status) }}
-
+{{ ucfirst($order->status ?? 'N/A') }}
 </span>
-
 </td>
 
 <td class="fw-semibold">
-₹{{ number_format($order->total,2) }}
+₹{{ number_format($order->total ?? 0,2) }}
 </td>
 
 <td>
 
-<a
-href="{{ route('admin.orders.show',$order->id) }}"
-class="btn btn-sm btn-dark"
->
-
+<a href="{{ route('admin.orders.show', $order->id) }}"
+class="btn btn-sm btn-dark">
 View
+</a>
 
+<a href="{{ route('admin.orders.invoice', $order->id) }}"
+target="_blank"
+class="btn btn-sm btn-success">
+Invoice
 </a>
 
 </td>
@@ -191,9 +160,7 @@ No Orders Found
 </div>
 
 <div class="card-footer">
-
 {{ $orders->links() }}
-
 </div>
 
 </div>

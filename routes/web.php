@@ -327,16 +327,19 @@ Route::post(
 )->name('customers.ajax.store');
 
 
+
 Route::get('/orders', [OrderController::class,'index'])->name('orders.index');
+
 Route::get('/orders/{id}', [OrderController::class,'show'])->name('orders.show');
 
-Route::post('/orders/{id}/status', [OrderController::class,'updateStatus'])->name('orders.status');
+Route::post('/orders/{id}/status', [OrderController::class,'updateStatus'])
+    ->name('orders.updateStatus'); // ✅ FIXED NAME
 
-Route::get('/orders/{id}/invoice', [OrderController::class,'invoice'])->name('orders.invoice');
+Route::get('/orders/{id}/invoice', [OrderController::class,'invoice'])
+    ->name('orders.invoice');
 
-Route::post('/orders/{id}/cancel', [OrderController::class,'cancel'])->name('orders.cancel');
-Route::put('/admin/orders/{id}/status',[OrderController::class,'updateStatus'])
-->name('admin.orders.updateStatus');
+Route::post('/orders/{id}/cancel', [OrderController::class,'cancel'])
+    ->name('orders.cancel');
     });
 // 💰 GST & TAXES
 Route::get('/taxes', [\App\Http\Controllers\TaxController::class, 'index'])
