@@ -49,23 +49,36 @@
             text-align: right;
         }
 
-        .no-border {
-            border: none !important;
-        }
-
         .total-box {
             margin-top: 20px;
-            width: 300px;
+            width: 320px;
             float: right;
         }
 
         .print-btn {
             margin: 20px 0;
         }
+
+        .grand-total {
+            font-weight: bold;
+            font-size: 15px;
+        }
     </style>
 </head>
 
 <body>
+
+@php
+    // 🔥 MAIN FIX (Checkout Data)
+    $meta = $order->payment->payment_meta ?? null;
+
+    $subtotal = $meta['subtotal'] ?? $order->subtotal;
+    $discount = $meta['discount'] ?? $order->discount;
+    $tax = $meta['tax'] ?? $order->tax;
+    $shipping = $meta['shipping'] ?? $order->shipping;
+    $platformFee = $meta['platform_fee'] ?? $order->platform_fee;
+    $total = $meta['total'] ?? $order->total;
+@endphp
 
 <div class="container">
 
@@ -96,32 +109,25 @@
 
             <p><strong>Order #:</strong> {{ $order->order_number }}</p>
             <p><strong>Date:</strong> {{ $order->created_at->format('d M Y') }}</p>
-@php
-$statusLabels = [
-    'pending' => 'Order Placed',
-    'confirmed' => 'Order Confirmed',
-    'processing' => 'Packing In Progress',
-    'shipped' => 'Out for Delivery',
-    'delivered' => 'Delivered',
-    'cancelled' => 'Cancelled',
-];
 
-$statusColors = [
-    'pending' => 'orange',
-    'confirmed' => 'blue',
-    'processing' => 'purple',
-    'shipped' => 'brown',
-    'delivered' => 'green',
-    'cancelled' => 'red',
-];
-@endphp
+            @php
+            $statusLabels = [
+                'pending' => 'Order Placed',
+                'confirmed' => 'Order Confirmed',
+                'processing' => 'Packing In Progress',
+                'shipped' => 'Out for Delivery',
+                'delivered' => 'Delivered',
+                'cancelled' => 'Cancelled',
+            ];
+            @endphp
 
-<p>
-    <strong>Status:</strong> 
-    <span style="color: {{ $statusColors[$order->status] ?? 'black' }}; font-weight: bold;">
-        {{ $statusLabels[$order->status] ?? ucfirst($order->status) }}
-    </span>
-</p>        </div>
+            <p>
+                <strong>Status:</strong>
+                <span style="font-weight: bold;">
+                    {{ $statusLabels[$order->status] ?? ucfirst($order->status) }}
+                </span>
+            </p>
+        </div>
 
     </div>
 
@@ -155,7 +161,6 @@ $statusColors = [
 
         <tbody>
             @foreach($order->items as $key => $item)
-
             <tr>
                 <td>{{ $key + 1 }}</td>
 
@@ -163,35 +168,54 @@ $statusColors = [
                     {{ $item->product_name ?? optional($item->product)->name }}
                 </td>
 
-                <td>₹{{ $item->price }}</td>
+                <td>₹{{ number_format($item->price, 2) }}</td>
 
                 <td>{{ $item->quantity }}</td>
 
                 <td class="text-right">
-                    ₹{{ $item->price * $item->quantity }}
+                    ₹{{ number_format($item->subtotal, 2) }}
                 </td>
             </tr>
-
             @endforeach
         </tbody>
     </table>
 
 
-    <!-- TOTAL -->
+    <!-- 🔥 TOTAL BREAKDOWN (CHECKOUT SAME) -->
     <table class="total-box">
+
         <tr>
             <td>Subtotal</td>
-            <td class="text-right">₹{{ $order->subtotal }}</td>
+            <td class="text-right">₹{{ number_format($subtotal, 2) }}</td>
+        </tr>
+
+        @if($discount > 0)
+        <tr>
+            <td>Discount</td>
+            <td class="text-right">- ₹{{ number_format($discount, 2) }}</td>
+        </tr>
+        @endif
+
+        <tr>
+            <td>Tax</td>
+            <td class="text-right">₹{{ number_format($tax, 2) }}</td>
         </tr>
 
         <tr>
             <td>Shipping</td>
-            <td class="text-right">₹{{ $order->shipping }}</td>
+            <td class="text-right">₹{{ number_format($shipping, 2) }}</td>
         </tr>
 
+        @if($platformFee > 0)
         <tr>
-            <th>Total</th>
-            <th class="text-right">₹{{ $order->total }}</th>
+            <td>Platform Fee</td>
+            <td class="text-right">₹{{ number_format($platformFee, 2) }}</td>
+        </tr>
+        @endif
+
+        <tr class="grand-total">
+            <td>Total</td>
+            <td class="text-right">₹{{ number_format($total, 2) }}</td>
         </tr>
     </table>
 

@@ -4,6 +4,16 @@
 
 @php
 use Illuminate\Support\Facades\Storage;
+
+// 🔥 MAIN FIX (Checkout Data)
+$meta = $order->payment->payment_meta ?? null;
+
+$subtotal = $meta['subtotal'] ?? $order->subtotal;
+$discount = $meta['discount'] ?? $order->discount;
+$tax = $meta['tax'] ?? $order->tax;
+$shipping = $meta['shipping'] ?? $order->shipping;
+$platformFee = $meta['platform_fee'] ?? $order->platform_fee;
+$total = $meta['total'] ?? $order->total;
 @endphp
 
 <div class="container-fluid py-4">
@@ -22,17 +32,16 @@ Print Invoice
 
 </div>
 
-
 <div class="row">
 
-<!-- ================= LEFT SIDE ================= -->
+<!-- ================= LEFT ================= -->
 
 <div class="col-md-8">
 
 <div class="card shadow-sm mb-4">
 
 <div class="card-header fw-bold">
-Order Details
+Order Items
 </div>
 
 <div class="card-body">
@@ -40,24 +49,33 @@ Order Details
 @forelse($order->items as $item)
 
 <div class="d-flex mb-3 border-bottom pb-2">
-
 <img
-src="{{ optional($item->product)->image ? Storage::disk('s3')->url(optional($item->product)->image) : asset('images/no-image.png') }}"
+src="{{ 
+    optional($item->product)->image 
+    ? Storage::disk('s3')->url('admin/product/' . $item->product->image . '/image.jpg')
+    : asset('images/no-image.png') 
+}}"
 width="60"
 height="60"
-style="object-fit:cover"
-class="me-3"
 />
 
-<div>
+<div class="w-100">
 
 <h6 class="mb-1">
 {{ $item->product_name ?? optional($item->product)->name ?? 'Product' }}
 </h6>
 
+<div class="d-flex justify-content-between">
+
 <span class="text-muted">
-₹{{ $item->price ?? 0 }} × {{ $item->quantity ?? 0 }}
+₹{{ number_format($item->price,2) }} × {{ $item->quantity }}
 </span>
+
+<span class="fw-bold">
+₹{{ number_format($item->subtotal,2) }}
+</span>
+
+</div>
 
 </div>
 
@@ -76,30 +94,62 @@ class="me-3"
 </div>
 
 
-<!-- ================= RIGHT SIDE ================= -->
+<!-- ================= RIGHT ================= -->
 
 <div class="col-md-4">
 
-<!-- ORDER TOTAL -->
+<!-- 🔥 PRICE BREAKDOWN -->
 
 <div class="card shadow-sm mb-4">
 
+<div class="card-header fw-bold">
+Price Details
+</div>
+
 <div class="card-body">
 
-<p>Subtotal : ₹{{ $order->subtotal ?? 0 }}</p>
+<div class="d-flex justify-content-between mb-2">
+<span>Subtotal</span>
+<span>₹{{ number_format($subtotal,2) }}</span>
+</div>
 
-<p>Shipping : ₹{{ $order->shipping ?? 0 }}</p>
+@if($discount > 0)
+<div class="d-flex justify-content-between mb-2 text-success">
+<span>Discount</span>
+<span>- ₹{{ number_format($discount,2) }}</span>
+</div>
+@endif
+
+<div class="d-flex justify-content-between mb-2">
+<span>Tax</span>
+<span>₹{{ number_format($tax,2) }}</span>
+</div>
+
+<div class="d-flex justify-content-between mb-2">
+<span>Shipping</span>
+<span>₹{{ number_format($shipping,2) }}</span>
+</div>
+
+@if($platformFee > 0)
+<div class="d-flex justify-content-between mb-2">
+<span>Platform Fee</span>
+<span>₹{{ number_format($platformFee,2) }}</span>
+</div>
+@endif
 
 <hr>
 
-<h5>Total : ₹{{ $order->total ?? 0 }}</h5>
-
+<div class="d-flex justify-content-between fw-bold fs-5">
+<span>Total</span>
+<span>₹{{ number_format($total,2) }}</span>
 </div>
 
 </div>
 
+</div>
 
-<!-- ORDER STATUS UPDATE -->
+
+<!-- ORDER STATUS -->
 
 <div class="card shadow-sm mb-4">
 
@@ -110,21 +160,15 @@ Update Order Status
 <div class="card-body">
 
 <form method="POST" action="{{ route('admin.orders.updateStatus',$order->id) }}">
-
 @csrf
 
 <select name="status" class="form-control mb-3">
 
 <option value="pending" {{ $order->status=='pending'?'selected':'' }}>Pending</option>
-
 <option value="confirmed" {{ $order->status=='confirmed'?'selected':'' }}>Confirmed</option>
-
 <option value="processing" {{ $order->status=='processing'?'selected':'' }}>Processing</option>
-
 <option value="shipped" {{ $order->status=='shipped'?'selected':'' }}>Shipped</option>
-
 <option value="delivered" {{ $order->status=='delivered'?'selected':'' }}>Delivered</option>
-
 <option value="cancelled" {{ $order->status=='cancelled'?'selected':'' }}>Cancelled</option>
 
 </select>
@@ -140,7 +184,7 @@ Update Status
 </div>
 
 
-<!-- DELIVERY INFO -->
+<!-- DELIVERY -->
 
 <div class="card shadow-sm">
 
@@ -154,15 +198,12 @@ Delivery Information
 {{ optional($order->shippingAddress)->full_name ?? 'N/A' }}
 </h6>
 
-<p>
-{{ optional($order->shippingAddress)->phone ?? '' }}
-</p>
+<p>{{ optional($order->shippingAddress)->phone }}</p>
 
 <p>
-{{ optional($order->shippingAddress)->address_line_1 ?? '' }}
-<br>
-{{ optional($order->shippingAddress)->city ?? '' }},
-{{ optional($order->shippingAddress)->state ?? '' }}
+{{ optional($order->shippingAddress)->address_line_1 }}<br>
+{{ optional($order->shippingAddress)->city }},
+{{ optional($order->shippingAddress)->state }}
 </p>
 
 </div>
