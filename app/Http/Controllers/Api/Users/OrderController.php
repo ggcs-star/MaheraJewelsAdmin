@@ -12,32 +12,24 @@ use Throwable;
 
 class OrderController extends Controller
 {
-   public function index(Request $request): JsonResponse
+public function index(Request $request): JsonResponse
 {
     try {
-    $orders = Order::with(['items:id,order_id,product_id,variant_id,product_name,price,quantity,subtotal','items.product:id,image_url','items.variant:id,image_url'])            ->where('user_id', auth()->id())
-            ->when($request->status, function ($query) use ($request) {
-                $query->where('status', $request->status);
-            })
-            ->latest()
-            ->paginate($request->per_page ?? 10);
-            $orders->getCollection()->transform(function ($order) {
+        $orders = Order::with([
+            'items:id,order_id,product_id,variant_id,product_name,price,quantity,subtotal,image'
+        ])
+        ->where('user_id', auth()->id())
+        ->when($request->status, function ($query) use ($request) {
+            $query->where('status', $request->status);
+        })
+        ->latest()
+        ->paginate($request->per_page ?? 10);
 
-            $order->items->transform(function ($item) {
-
-               $item->image = $item->variant?->image_url 
-                ?? $item->product?->image_url 
-                ?? null;
-
-                return $item;
-            });
-
-            return $order;
-        });
         return response()->json([
             'success' => true,
             'data' => $orders
         ]);
+
     } catch (Throwable $e) {
         return response()->json([
             'success' => false,
@@ -45,33 +37,33 @@ class OrderController extends Controller
         ], 500);
     }
 }
-    public function show($orderId): JsonResponse
-    {
-        try {
-            $order = Order::with([
-            'items:id,order_id,product_id,variant_id,product_name,price,quantity,subtotal',
-            'items.product:id,image_url',
-            'items.variant:id,image_url'
+   public function show($orderId): JsonResponse
+{
+    try {
+        $order = Order::with([
+            'items:id,order_id,product_id,variant_id,product_name,price,quantity,subtotal,image'
         ])
-                ->where('user_id', auth()->id())
-                ->findOrFail($orderId);
+        ->where('user_id', auth()->id())
+        ->findOrFail($orderId);
 
-            return response()->json([
-                'success' => true,
-                'data' => $order
-            ]);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Order not found'
-            ], 404);
-        } catch (Throwable $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong'
-            ], 500);
-        }
+        return response()->json([
+            'success' => true,
+            'data' => $order
+        ]);
+
+    } catch (ModelNotFoundException $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Order not found'
+        ], 404);
+
+    } catch (Throwable $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Something went wrong'
+        ], 500);
     }
+}
 
     public function cancel(Request $request, $orderId): JsonResponse
     {
@@ -145,35 +137,4 @@ class OrderController extends Controller
             ], 500);
         }
     }
-    public function latest(): JsonResponse
-{
-    try {
-
-        $order = Order::where('user_id', auth()->id())
-            ->latest()
-            ->first();
-
-        if (!$order) {
-            return response()->json([
-                'success' => false
-            ]);
-        }
-
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'id' => $order->id,
-                'status' => $order->status,
-                'payment_status' => $order->payment_status
-            ]
-        ]);
-
-    } catch (Throwable $e) {
-
-        return response()->json([
-            'success' => false,
-            'message' => 'Something went wrong'
-        ],500);
-    }
-}
 }
