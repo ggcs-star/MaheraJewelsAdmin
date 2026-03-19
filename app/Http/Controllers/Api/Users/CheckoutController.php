@@ -23,7 +23,7 @@ class CheckoutController extends Controller
     {
         try {
             $cart = Cart::where('user_id', auth()->id())
-->with(['items.product:id,name'])
+            ->with(['items.product:id,name'])
                 ->firstOrFail();
 
             if ($cart->items->isEmpty()) {
@@ -34,11 +34,11 @@ class CheckoutController extends Controller
             }
 
             $subtotal = $cart->items->sum('subtotal');
-$settings = DeliverySetting::getSettings();
+            $settings = DeliverySetting::getSettings();
 
-if (!$settings) {
-    throw new \Exception('Delivery settings not configured');
-}
+            if (!$settings) {
+                throw new \Exception('Delivery settings not configured');
+            }
             $discount = $this->calculateDiscount($request->coupon_code, $subtotal);
 
             $afterDiscount = max($subtotal - $discount, 0);
@@ -92,14 +92,14 @@ if (!$settings) {
             ]);
 
         } catch (Throwable $e) {
-    return response()->json([
-        'success' => false,
-        'error' => $e->getMessage(),
-        'file' => $e->getFile(),
-        'line' => $e->getLine()
-    ], 500);
-}
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ], 500);
     }
+        }
 
     public function placeOrder(Request $request): JsonResponse
     {
@@ -116,7 +116,7 @@ if (!$settings) {
             $userId = auth()->id();
 
             $cart = Cart::where('user_id', $userId)
-    ->with(['items.product:id,name'])
+            ->with(['items.product:id,name'])
                 ->firstOrFail();
 
             if ($cart->items->isEmpty()) {
@@ -166,6 +166,7 @@ if (!$settings) {
                     'price' => $item->price,
                     'quantity' => $item->quantity,
                     'subtotal' => $item->subtotal,
+                    'image' => $item->image
                 ]);
             }
 
@@ -274,33 +275,33 @@ if (!$settings) {
         $total = round($afterDiscount + $shipping + $platformFee + $tax,2);
             
 
-$payment = Payment::create([
-    'user_id' => $userId,
-    'amount' => (float) $total,
-    'currency' => 'INR',
-    'payment_method' => 'razorpay',
-    'payment_status' => 'pending',
-    'client_ip' => $request->ip(),
-    'coupon_code' => $request->coupon_code,
-    'payment_meta' => [
-        'shipping_address_id' => $request->shipping_address_id,
-        'billing_address_id' => $request->billing_address_id,
-    ],
-]);
+        $payment = Payment::create([
+            'user_id' => $userId,
+            'amount' => (float) $total,
+            'currency' => 'INR',
+            'payment_method' => 'razorpay',
+            'payment_status' => 'pending',
+            'client_ip' => $request->ip(),
+            'coupon_code' => $request->coupon_code,
+            'payment_meta' => [
+                'shipping_address_id' => $request->shipping_address_id,
+                'billing_address_id' => $request->billing_address_id,
+            ],
+        ]);
 
         $razorpay = new Api(
             config('services.razorpay.key'),
             config('services.razorpay.secret')
         );
-$razorpayOrder = $razorpay->order->create([
-    'receipt'  => 'pay_' . $payment->id,
-    'amount'   => (int) round($total * 100),
-    'currency' => 'INR',
-    'notes' => [
-        'payment_id' => $payment->id,
-        'user_id' => $userId
-    ]
-]);
+        $razorpayOrder = $razorpay->order->create([
+            'receipt'  => 'pay_' . $payment->id,
+            'amount'   => (int) round($total * 100),
+            'currency' => 'INR',
+            'notes' => [
+                'payment_id' => $payment->id,
+                'user_id' => $userId
+            ]
+        ]);
 
         $payment->update([
             'razorpay_order_id' => $razorpayOrder['id']
@@ -451,7 +452,8 @@ $razorpayOrder = $razorpay->order->create([
                 'product_name'=>$item->product->name ?? 'Product',
                 'price'=>$item->price,
                 'quantity'=>$item->quantity,
-                'subtotal'=>$item->subtotal
+                'subtotal'=>$item->subtotal,
+                'image' => $item->image
             ]);
         }
 

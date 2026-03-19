@@ -83,6 +83,7 @@ class CartController extends Controller
                 $cartItem->price = $unitPrice;
                 $cartItem->quantity = $newQty;
                 $cartItem->subtotal = $newQty * $unitPrice;
+                $cartItem->image = $itemData['image'] ?? null;
                 $cartItem->save();
             }
 
@@ -257,7 +258,7 @@ class CartController extends Controller
             'price' => $item->price,
             'quantity' => $item->quantity,
             'subtotal' => $item->subtotal,
-            'image_url' => $item->product?->image_url,
+            'image_url' => $item->image ? $item->image : $item->product?->image_url,
         ];
     }
 
