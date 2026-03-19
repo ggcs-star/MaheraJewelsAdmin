@@ -20,7 +20,7 @@ class OrderController extends Controller
                 'items' => function($query) {
                     $query->select('id', 'order_id', 'product_id', 'variant_id', 'product_name', 'price', 'quantity', 'subtotal', 'image');
                 },
-                'items.product:id,image_url,gallery_images',  // 🔥 gallery_images bhi lo
+                'items.product:id,image_url,gallery_images', 
                 'items.variant:id,image_url'
             ])
             ->where('user_id', auth()->id())
@@ -30,47 +30,18 @@ class OrderController extends Controller
             ->latest()
             ->paginate($request->per_page ?? 10);
 
-            // Transform items to add image URLs
             $orders->getCollection()->transform(function ($order) {
-                $order->items->transform(function ($item) {
-                    
-                    // Case 1: Direct item image
-                    if ($item->image) {
-                        if (!str_starts_with($item->image, 'http')) {
-                            $item->image = Storage::disk('s3')->url($item->image);
-                        }
-                        return $item;
-                    }
-                    
-                    // Case 2: Variant image
-                    if ($item->variant && $item->variant->image_url) {
-                        $item->image = Storage::disk('s3')->url($item->variant->image_url);
-                        return $item;
-                    }
-                    
-                    // Case 3: Product gallery image (priority)
-                    if ($item->product && !empty($item->product->gallery_images)) {
-                        $galleryImage = $item->product->gallery_images[0];
-                        if (!str_starts_with($galleryImage, 'http')) {
-                            $item->image = Storage::disk('s3')->url($galleryImage);
-                        } else {
-                            $item->image = $galleryImage;
-                        }
-                        return $item;
-                    }
-                    
-                    // Case 4: Product image_url
-                    if ($item->product && $item->product->image_url) {
-                        $item->image = Storage::disk('s3')->url($item->product->image_url);
-                        return $item;
-                    }
-                    
-                    $item->image = null;
-                    return $item;
-                });
-                
-                return $order;
+            $order->items->transform(function ($item) {
+
+                if ($item->image && !str_starts_with($item->image, 'http')) {
+                    $item->image = Storage::disk('s3')->url($item->image);
+                }
+
+                return $item;
             });
+
+            return $order;
+        });
 
             return response()->json([
                 'success' => true,
@@ -92,48 +63,19 @@ class OrderController extends Controller
                 'items' => function($query) {
                     $query->select('id', 'order_id', 'product_id', 'variant_id', 'product_name', 'price', 'quantity', 'subtotal', 'image');
                 },
-                'items.product:id,image_url,gallery_images',  // 🔥 gallery_images bhi lo
+                'items.product:id,image_url,gallery_images', 
                 'items.variant:id,image_url'
             ])
             ->where('user_id', auth()->id())
             ->findOrFail($orderId);
-// Transform items to add image URLs
-            $order->items->transform(function ($item) {
-                
-                // Case 1: Direct item image
-                if ($item->image) {
-                    if (!str_starts_with($item->image, 'http')) {
-                        $item->image = Storage::disk('s3')->url($item->image);
-                    }
-                    return $item;
-                }
-                
-                // Case 2: Variant image
-                if ($item->variant && $item->variant->image_url) {
-                    $item->image = Storage::disk('s3')->url($item->variant->image_url);
-                    return $item;
-                }
-                
-                // Case 3: Product gallery image (priority)
-                if ($item->product && !empty($item->product->gallery_images)) {
-                    $galleryImage = $item->product->gallery_images[0];
-                    if (!str_starts_with($galleryImage, 'http')) {
-                        $item->image = Storage::disk('s3')->url($galleryImage);
-                    } else {
-                        $item->image = $galleryImage;
-                    }
-                    return $item;
-                }
-                
-                // Case 4: Product image_url
-                if ($item->product && $item->product->image_url) {
-                    $item->image = Storage::disk('s3')->url($item->product->image_url);
-                    return $item;
-                }
-                
-                $item->image = null;
-                return $item;
-            });
+                $order->items->transform(function ($item) {
+
+            if ($item->image && !str_starts_with($item->image, 'http')) {
+                $item->image = Storage::disk('s3')->url($item->image);
+            }
+
+            return $item;
+        });
 
             return response()->json([
                 'success' => true,
@@ -206,7 +148,7 @@ class OrderController extends Controller
         try {
             $order = Order::where('user_id', auth()->id())
                 ->findOrFail($orderId);
-return response()->json([
+            return response()->json([
                 'success' => true,
                 'data' => [
                     'order_number' => $order->order_number,
