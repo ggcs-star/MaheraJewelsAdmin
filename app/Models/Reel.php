@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Reel extends Model
 {
-
     protected $table = 'reels';
 
     protected $fillable = [
@@ -14,9 +13,12 @@ class Reel extends Model
         'title',
         'description',
         'video',
-        'status'
+        'status',
+        'views_count',
+        'likes_count',
+        'shares_count',
+        'comments_count'
     ];
-
 
     /*
     |--------------------------------------------------------------------------
@@ -24,28 +26,23 @@ class Reel extends Model
     |--------------------------------------------------------------------------
     */
 
-    // Reel -> Platform Product
     public function platformProduct()
     {
-        return $this->belongsTo(PlatformProduct::class, 'platform_product_id');
+        return $this->belongsTo(PlatformProduct::class);
     }
 
-
-    // Reel -> Actual Product
     public function product()
     {
         return $this->hasOneThrough(
             Product::class,
             PlatformProduct::class,
-            'id',              // PlatformProduct primary key
-            'id',              // Product primary key
+            'id',
+            'id',
             'platform_product_id',
             'product_id'
         );
     }
 
-
-    // Reel -> Platform (Amazon / Flipkart / Meesho etc)
     public function platform()
     {
         return $this->hasOneThrough(
@@ -59,17 +56,22 @@ class Reel extends Model
     }
 
     public function likes()
-{
-    return $this->hasMany(ReelLike::class);
-}
+    {
+        return $this->hasMany(ReelLike::class);
+    }
 
-public function shares()
-{
-    return $this->hasMany(ReelShare::class);
-}
+    public function shares()
+    {
+        return $this->hasMany(ReelShare::class);
+    }
 
-public function views()
-{
-    return $this->hasMany(ReelView::class);
-}
+    public function views()
+    {
+        return $this->hasMany(ReelView::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(ReelComment::class);
+    }
 }

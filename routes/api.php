@@ -28,6 +28,8 @@ Route::middleware('auth:sanctum')->get('/orders/latest', [OrderController::class
 
 Route::get('/reels', [ReelController::class, 'index']);
 Route::get('/reels/{id}', [ReelController::class, 'show']);
+  Route::get('/reels/{id}/comments', [ReelController::class, 'comments']);
+Route::post('/reels/{id}/comment', [ReelController::class, 'addComment']);
 
 Route::post('/reels/{id}/view', [ReelController::class, 'increaseViews']);
 Route::post('/reels/{id}/like', [ReelController::class, 'like']);

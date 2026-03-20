@@ -23,6 +23,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\BannerController;
 use App\Http\Controllers\DeliverySettingController;
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\ReelController;
 
 
 
@@ -68,7 +69,23 @@ Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:admin']
     ->name('admin.')
     ->group(function () {
        
-        Route::resource('reels', \App\Http\Controllers\Admin\ReelController::class);
+  // Reels CRUD
+Route::resource('reels', ReelController::class);
+
+// Comments
+Route::post('/reels/{reel}/comment', [ReelController::class, 'addComment'])
+    ->name('reels.comment');
+
+Route::delete('/reels/comment/{comment}', [ReelController::class, 'deleteComment'])
+    ->name('reels.comment.delete');
+
+// Share
+Route::post('/reels/{reel}/share', [ReelController::class, 'addShare'])
+    ->name('reels.share');
+
+// Stats API (modal / ajax)
+Route::get('/reels/{reel}/stats', [ReelController::class, 'stats'])
+    ->name('reels.stats');
 
         Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
 
