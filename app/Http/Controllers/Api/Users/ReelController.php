@@ -5,27 +5,35 @@ namespace App\Http\Controllers\Api\Users;
 use App\Http\Controllers\Controller;
 use App\Models\Reel;
 use App\Models\ReelLike;
+use App\Models\ReelComment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class ReelController extends Controller
 {
 
-    /**
-     * Reel Feed API
-     * GET /api/reels
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | REEL FEED
+    |--------------------------------------------------------------------------
+    */
+
     public function index(Request $request)
     {
+        $ip = $request->ip();
 
         $reels = Reel::with('platformProduct.product')
             ->where('status',1)
             ->latest()
             ->paginate(10);
 
-        $data = $reels->getCollection()->map(function ($reel){
+        $data = $reels->getCollection()->map(function ($reel) use ($ip){
 
             $product = optional(optional($reel->platformProduct)->product);
+
+            $isLiked = ReelLike::where('reel_id',$reel->id)
+                ->where('ip_address',$ip)
+                ->exists();
 
             return [
 
@@ -38,19 +46,19 @@ class ReelController extends Controller
                 'views' => $reel->views_count,
                 'likes' => $reel->likes_count,
                 'shares' => $reel->shares_count,
+                'comments' => $reel->comments_count,
+
+                'is_liked' => $isLiked,
 
                 'product' => [
-
                     'id' => $product->id ?? null,
                     'name' => $product->name ?? null,
                     'slug' => $product->slug ?? null,
                     'price' => optional($reel->platformProduct)->platform_price ?? null,
                     'image' => $product->image ? asset($product->image) : null,
-
                 ],
 
                 'created_at' => $reel->created_at
-
             ];
         });
 
@@ -64,27 +72,30 @@ class ReelController extends Controller
                 'total' => $reels->total()
             ]
         ]);
-
     }
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | SINGLE REEL
+    |--------------------------------------------------------------------------
+    */
 
-    /**
-     * Single Reel API
-     */
-    public function show($id)
+    public function show($id, Request $request)
     {
+        $ip = $request->ip();
 
         $reel = Reel::with('platformProduct.product')->findOrFail($id);
 
         $product = optional(optional($reel->platformProduct)->product);
 
+        $isLiked = ReelLike::where('reel_id',$id)
+            ->where('ip_address',$ip)
+            ->exists();
+
         return response()->json([
-
             'status' => true,
-
             'data' => [
-
                 'id' => $reel->id,
                 'title' => $reel->title,
                 'description' => $reel->description,
@@ -93,103 +104,102 @@ class ReelController extends Controller
                 'views' => $reel->views_count,
                 'likes' => $reel->likes_count,
                 'shares' => $reel->shares_count,
+                'comments' => $reel->comments_count,
+
+                'is_liked' => $isLiked,
 
                 'product' => [
-
                     'id' => $product->id ?? null,
                     'name' => $product->name ?? null,
                     'slug' => $product->slug ?? null,
                     'price' => optional($reel->platformProduct)->platform_price ?? null,
                     'image' => $product->image ? asset($product->image) : null,
-
                 ],
 
                 'created_at' => $reel->created_at
-
             ]
-
         ]);
-
     }
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | VIEW (ANTI SPAM 🔥)
+    |--------------------------------------------------------------------------
+    */
 
-    /**
-     * Increase Reel Views
-     */
-    public function increaseViews($id)
+    public function increaseViews($id, Request $request)
     {
+        $ip = $request->ip();
 
         $reel = Reel::findOrFail($id);
 
-        $reel->increment('views_count');
+        // prevent duplicate views (optional logic)
+        $alreadyViewed = cache()->has("reel_view_{$id}_{$ip}");
+
+        if(!$alreadyViewed){
+            $reel->increment('views_count');
+            cache()->put("reel_view_{$id}_{$ip}", true, 3600); // 1 hour
+        }
 
         return response()->json([
             'status' => true,
             'views' => $reel->views_count
         ]);
-
     }
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | LIKE / UNLIKE
+    |--------------------------------------------------------------------------
+    */
 
-    /**
-     * Like Reel (Duplicate Prevent)
-     */
-   public function like($id, Request $request)
-{
+    public function like($id, Request $request)
+    {
+        $reel = Reel::findOrFail($id);
 
-    $reel = Reel::findOrFail($id);
+        $ip = $request->ip();
 
-    $ip = $request->ip();
+        $existing = ReelLike::where('reel_id',$id)
+            ->where('ip_address',$ip)
+            ->first();
 
-    $existing = ReelLike::where('reel_id',$id)
-        ->where('ip_address',$ip)
-        ->first();
+        if($existing){
 
+            $existing->delete();
+            $reel->decrement('likes_count');
 
-    /* UNLIKE */
+            return response()->json([
+                'status'=>true,
+                'liked'=>false,
+                'likes'=>$reel->likes_count
+            ]);
+        }
 
-    if($existing){
+        ReelLike::create([
+            'reel_id'=>$id,
+            'ip_address'=>$ip
+        ]);
 
-        $existing->delete();
-
-        $reel->decrement('likes_count');
+        $reel->increment('likes_count');
 
         return response()->json([
             'status'=>true,
-            'liked'=>false,
+            'liked'=>true,
             'likes'=>$reel->likes_count
         ]);
-
     }
 
 
-    /* LIKE */
+    /*
+    |--------------------------------------------------------------------------
+    | SHARE
+    |--------------------------------------------------------------------------
+    */
 
-    ReelLike::create([
-        'reel_id'=>$id,
-        'ip_address'=>$ip
-    ]);
-
-    $reel->increment('likes_count');
-
-    return response()->json([
-        'status'=>true,
-        'liked'=>true,
-        'likes'=>$reel->likes_count
-    ]);
-
-}
-
-
-
-    /**
-     * Share Reel
-     */
     public function share($id)
     {
-
         $reel = Reel::findOrFail($id);
 
         $reel->increment('shares_count');
@@ -198,7 +208,65 @@ class ReelController extends Controller
             'status' => true,
             'shares' => $reel->shares_count
         ]);
-
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | COMMENTS (NEW 🔥🔥🔥)
+    |--------------------------------------------------------------------------
+    */
+public function comments($id)
+{
+    $comments = ReelComment::with('user')
+        ->where('reel_id',$id)
+        ->latest()
+        ->take(20)
+        ->get()
+        ->map(function($c){
+
+            $user = $c->user; // safe reference
+
+            return [
+                'id' => $c->id,
+                'comment' => $c->comment,
+                'time' => optional($c->created_at)->diffForHumans(),
+
+                'user' => [
+                    'id' => $user->id ?? null,
+                    'name' => $user->name ?? 'User',
+
+                    'avatar' => ($user && $user->avatar)
+                        ? asset($user->avatar)
+                        : 'https://ui-avatars.com/api/?name=' . urlencode($user->name ?? 'User')
+                ]
+            ];
+        });
+
+    return response()->json([
+        'status'=>true,
+        'data'=>$comments
+    ]);
+}
+   public function addComment($id, Request $request)
+{
+    $request->validate([
+        'comment'=>'required|string|max:500'
+    ]);
+
+    $user = auth('sanctum')->user(); // optional
+
+    $comment = ReelComment::create([
+        'reel_id' => $id,
+        'user_id' => $user?->id, // ✅ nullable
+        'comment' => $request->comment
+    ]);
+
+    Reel::where('id',$id)->increment('comments_count');
+
+    return response()->json([
+        'status'=>true,
+        'message'=>'Comment added'
+    ]);
+}
 }

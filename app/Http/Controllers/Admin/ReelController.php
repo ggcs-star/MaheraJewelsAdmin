@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Reel;
 use App\Models\PlatformProduct;
+use App\Models\ReelComment;
+use App\Models\ReelShare;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
@@ -12,9 +14,14 @@ use Illuminate\Support\Facades\Log;
 class ReelController extends Controller
 {
 
+    /*
+    |--------------------------------------------------------------------------
+    | LISTING
+    |--------------------------------------------------------------------------
+    */
+
     public function index(Request $request)
     {
-
         $query = Reel::with(['platformProduct.product']);
 
         // Search
@@ -32,26 +39,31 @@ class ReelController extends Controller
 
         // Sorting
         if ($request->sort == 'views') {
-            $query->orderBy('views_count', 'desc');
+            $query->orderByDesc('views_count');
         } elseif ($request->sort == 'likes') {
-            $query->orderBy('likes_count', 'desc');
+            $query->orderByDesc('likes_count');
         } else {
             $query->latest();
         }
 
         $reels = $query->paginate(10);
 
-        // Stats for dashboard cards
         $stats = [
             'total_reels' => Reel::count(),
             'total_views' => Reel::sum('views_count'),
             'total_likes' => Reel::sum('likes_count'),
             'total_shares' => Reel::sum('shares_count'),
+            'total_comments' => Reel::sum('comments_count'),
         ];
 
         return view('admin.reels.index', compact('reels', 'stats'));
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | CREATE
+    |--------------------------------------------------------------------------
+    */
 
     public function create()
     {
@@ -62,6 +74,11 @@ class ReelController extends Controller
         return view('admin.reels.create', compact('products'));
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | STORE
+    |--------------------------------------------------------------------------
+    */
 
     public function store(Request $request)
     {
@@ -77,7 +94,6 @@ class ReelController extends Controller
             $videoPath = null;
 
             if ($request->hasFile('video')) {
-
                 $file = $request->file('video');
 
                 $videoPath = Storage::disk('s3')->putFileAs(
@@ -92,11 +108,14 @@ class ReelController extends Controller
                 'title' => $request->title,
                 'description' => $request->description,
                 'video' => $videoPath,
-                'status' => $request->status ?? 1
+                'status' => $request->status ?? 1,
+                'views_count' => 0,
+                'likes_count' => 0,
+                'shares_count' => 0,
+                'comments_count' => 0,
             ]);
 
-            return redirect()
-                ->route('admin.reels.index')
+            return redirect()->route('admin.reels.index')
                 ->with('success', 'Reel uploaded successfully');
 
         } catch (\Throwable $e) {
@@ -109,6 +128,11 @@ class ReelController extends Controller
         }
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | EDIT
+    |--------------------------------------------------------------------------
+    */
 
     public function edit($id)
     {
@@ -121,6 +145,11 @@ class ReelController extends Controller
         return view('admin.reels.edit', compact('reel', 'products'));
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | UPDATE
+    |--------------------------------------------------------------------------
+    */
 
     public function update(Request $request, $id)
     {
@@ -160,8 +189,7 @@ class ReelController extends Controller
                 'video' => $reel->video
             ]);
 
-            return redirect()
-                ->route('admin.reels.index')
+            return redirect()->route('admin.reels.index')
                 ->with('success', 'Reel updated successfully');
 
         } catch (\Exception $e) {
@@ -174,6 +202,11 @@ class ReelController extends Controller
         }
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | DELETE
+    |--------------------------------------------------------------------------
+    */
 
     public function destroy($id)
     {
@@ -187,8 +220,7 @@ class ReelController extends Controller
 
             $reel->delete();
 
-            return redirect()
-                ->route('admin.reels.index')
+            return redirect()->route('admin.reels.index')
                 ->with('success', 'Reel deleted successfully');
 
         } catch (\Exception $e) {
@@ -201,20 +233,84 @@ class ReelController extends Controller
         }
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | COMMENTS (NEW 🔥)
+    |--------------------------------------------------------------------------
+    */
 
-    /**
-     * Stats API (for modal)
-     */
+    public function addComment(Request $request, $reelId)
+    {
+        $request->validate([
+            'comment' => 'required|string|max:1000'
+        ]);
+
+        ReelComment::create([
+            'reel_id' => $reelId,
+            'user_id' => auth()->id(),
+            'comment' => $request->comment
+        ]);
+
+        Reel::where('id', $reelId)->increment('comments_count');
+
+        return back()->with('success', 'Comment added');
+    }
+
+    public function deleteComment($id)
+    {
+        $comment = ReelComment::findOrFail($id);
+
+        Reel::where('id', $comment->reel_id)->decrement('comments_count');
+
+        $comment->delete();
+
+        return back()->with('success', 'Comment deleted');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | SHARE (NEW 🔥)
+    |--------------------------------------------------------------------------
+    */
+
+    public function addShare($reelId)
+    {
+        ReelShare::create([
+            'reel_id' => $reelId,
+            'user_id' => auth()->id(),
+            'platform' => 'admin'
+        ]);
+
+        Reel::where('id', $reelId)->increment('shares_count');
+
+        return back()->with('success', 'Share added');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | STATS API (FIXED 🔥)
+    |--------------------------------------------------------------------------
+    */
+
     public function stats($id)
     {
         $reel = Reel::findOrFail($id);
+
+        $engagement = 0;
+
+        if ($reel->views_count > 0) {
+            $engagement = (
+                ($reel->likes_count + $reel->comments_count + $reel->shares_count)
+                / $reel->views_count
+            ) * 100;
+        }
 
         return response()->json([
             'views_count' => $reel->views_count,
             'likes_count' => $reel->likes_count,
             'shares_count' => $reel->shares_count,
-            'comments_count' => 0,
-            'engagement_rate' => 0
+            'comments_count' => $reel->comments_count,
+            'engagement_rate' => round($engagement, 2)
         ]);
     }
 
