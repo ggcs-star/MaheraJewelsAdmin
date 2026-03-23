@@ -62,6 +62,20 @@ return [
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
         ],
+        'social_mysql' => [
+    'driver' => 'mysql',
+    'host' => env('SOCIAL_DB_HOST', '127.0.0.1'),
+    'port' => env('SOCIAL_DB_PORT', '3306'),
+    'database' => env('SOCIAL_DB_DATABASE', 'social_db'),
+    'username' => env('SOCIAL_DB_USERNAME', 'root'),
+    'password' => env('SOCIAL_DB_PASSWORD', ''),
+    'charset' => 'utf8mb4',
+    'collation' => 'utf8mb4_unicode_ci',
+    'prefix' => '',
+    'prefix_indexes' => true,
+    'strict' => true,
+    'engine' => null,
+],
 
         'pgsql' => [
             'driver' => 'pgsql',

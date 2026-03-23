@@ -15,6 +15,17 @@ use App\Http\Controllers\Api\Users\BannerController;
 use App\Http\Controllers\Api\Users\UserCategoryController;
 
 
+use App\Http\Controllers\API\LikeController;
+use App\Http\Controllers\API\CommentController;
+
+Route::post('/like', [LikeController::class, 'toggle']);
+Route::get('/like-count/{link_id}', [LikeController::class, 'count']);
+Route::get('/is-liked/{link_id}', [LikeController::class, 'isLiked']);
+
+Route::post('/comments', [CommentController::class, 'store']);
+Route::get('/comments/{link_id}', [CommentController::class, 'index']);
+Route::delete('/comments/{id}', [CommentController::class, 'destroy']);
+Route::get('/comment-count/{link_id}', [CommentController::class, 'count']);
  Route::post('/create-order',[OrderController::class,'createOrder']);
 
     Route::get('/my-orders',[OrderController::class,'orders']);
