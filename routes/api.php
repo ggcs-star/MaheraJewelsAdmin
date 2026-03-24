@@ -14,9 +14,8 @@ use App\Http\Controllers\Api\Users\OrderController;
 use App\Http\Controllers\Api\Users\BannerController;
 use App\Http\Controllers\Api\Users\UserCategoryController;
 
-
-use App\Http\Controllers\API\LikeController;
-use App\Http\Controllers\API\CommentController;
+use App\Http\Controllers\Api\LikeController;
+use App\Http\Controllers\Api\CommentController;
 
 Route::post('/like', [LikeController::class, 'store']);
 Route::get('/like-count/{link_id}', [LikeController::class, 'count']);
