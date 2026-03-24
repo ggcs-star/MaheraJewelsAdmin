@@ -9,7 +9,7 @@ use App\Models\Like;
 class LikeController extends Controller
 {
     /**
-     * Add Like (ONLY INCREASE)
+     * Add Like
      */
     public function store(Request $request)
     {
@@ -28,7 +28,34 @@ class LikeController extends Controller
     }
 
     /**
-     * Get Like Count
+     * ❌ DISLIKE (remove 1 like)
+     */
+    public function dislike(Request $request)
+    {
+        $request->validate([
+            'link_id' => 'required|string'
+        ]);
+
+        // 🔥 ek random like delete karo
+        $like = Like::where('link_id', $request->link_id)->first();
+
+        if ($like) {
+            $like->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Disliked successfully'
+            ]);
+        }
+
+        return response()->json([
+            'status' => false,
+            'message' => 'No likes to remove'
+        ]);
+    }
+
+    /**
+     * Count
      */
     public function count($link_id)
     {
