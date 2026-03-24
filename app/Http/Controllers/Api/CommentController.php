@@ -15,26 +15,25 @@ class CommentController extends Controller
     {
         $request->validate([
             'link_id' => 'required|string',
+            'username' => 'required|string|max:50',
             'comment' => 'required|string'
         ]);
 
-        $userId = auth()->id() ?? 1; // testing fallback
-
         $comment = Comment::create([
-            'user_id' => $userId,
             'link_id' => $request->link_id,
+            'username' => $request->username,
             'comment' => $request->comment
         ]);
 
         return response()->json([
             'status' => true,
-            'message' => 'Comment added successfully',
+            'message' => 'Comment added',
             'data' => $comment
         ]);
     }
 
     /**
-     * 📥 Get Comments (by link_id)
+     * 📥 Get Comments
      */
     public function index($link_id)
     {
@@ -49,33 +48,7 @@ class CommentController extends Controller
     }
 
     /**
-     * ❌ Delete Comment
-     */
-    public function destroy($id)
-    {
-        $userId = auth()->id() ?? 1;
-
-        $comment = Comment::where('id', $id)
-            ->where('user_id', $userId)
-            ->first();
-
-        if (!$comment) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Comment not found or unauthorized'
-            ], 404);
-        }
-
-        $comment->delete();
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Comment deleted successfully'
-        ]);
-    }
-
-    /**
-     * 🔢 Comment Count
+     * 🔢 Count
      */
     public function count($link_id)
     {
@@ -84,6 +57,19 @@ class CommentController extends Controller
         return response()->json([
             'status' => true,
             'count' => $count
+        ]);
+    }
+
+    /**
+     * ❌ Delete (simple)
+     */
+    public function destroy($id)
+    {
+        Comment::where('id', $id)->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Deleted'
         ]);
     }
 }
