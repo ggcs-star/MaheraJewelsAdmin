@@ -6,28 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
-{
-    Schema::connection('social_mysql')->create('comments', function (Blueprint $table) {
-        $table->id();
+    {
+        Schema::connection('social_mysql')->create('comments', function (Blueprint $table) {
+            $table->id();
 
-        $table->unsignedBigInteger('user_id');
-        $table->string('link_id');
+            $table->string('link_id');
+            $table->string('username'); // 🔥 important
+            $table->text('comment');
 
-        $table->text('comment');
+            $table->timestamps();
+        });
+    }
 
-        $table->timestamps();
-    });
-}
-
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('comments');
+        Schema::connection('social_mysql')->dropIfExists('comments');
     }
 };

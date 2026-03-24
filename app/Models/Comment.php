@@ -9,17 +9,11 @@ class Comment extends Model
 {
     use HasFactory;
 
-    protected $connection = 'social_mysql'; // 🔥 VERY IMPORTANT
+    protected $connection = 'social_mysql';
 
     protected $fillable = [
-        'user_id',
         'link_id',
+        'username',
         'comment'
     ];
-
-    // (optional) user relation future ke liye
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
 }
