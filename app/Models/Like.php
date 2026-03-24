@@ -9,10 +9,9 @@ class Like extends Model
 {
     use HasFactory;
 
-    protected $connection = 'social_mysql'; // 🔥 VERY IMPORTANT
+    protected $connection = 'social_mysql';
 
     protected $fillable = [
-        'user_id',
         'link_id'
     ];
 }
