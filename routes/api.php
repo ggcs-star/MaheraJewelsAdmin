@@ -19,6 +19,8 @@ use App\Http\Controllers\Api\CommentController;
 
 Route::post('/like', [LikeController::class, 'store']);
 Route::get('/like-count/{link_id}', [LikeController::class, 'count']);
+Route::post('/dislike', [LikeController::class, 'dislike']);
+
 Route::get('/is-liked/{link_id}', [LikeController::class, 'isLiked']);
 
 Route::post('/comments', [CommentController::class, 'store']);
