@@ -14,7 +14,19 @@ use App\Http\Controllers\Api\Users\OrderController;
 use App\Http\Controllers\Api\Users\BannerController;
 use App\Http\Controllers\Api\Users\UserCategoryController;
 use App\Http\Controllers\Api\Users\AppSettingController;
+use App\Http\Controllers\Api\LikeController;
+use App\Http\Controllers\Api\CommentController;
 
+Route::post('/like', [LikeController::class, 'store']);
+Route::get('/like-count/{link_id}', [LikeController::class, 'count']);
+Route::post('/dislike', [LikeController::class, 'dislike']);
+
+Route::get('/is-liked/{link_id}', [LikeController::class, 'isLiked']);
+
+Route::post('/comments', [CommentController::class, 'store']);
+Route::get('/comments/{link_id}', [CommentController::class, 'index']);
+Route::delete('/comments/{id}', [CommentController::class, 'destroy']);
+Route::get('/comment-count/{link_id}', [CommentController::class, 'count']);
  Route::post('/create-order',[OrderController::class,'createOrder']);
 
     Route::get('/my-orders',[OrderController::class,'orders']);
@@ -28,6 +40,8 @@ Route::middleware('auth:sanctum')->get('/orders/latest', [OrderController::class
 
 Route::get('/reels', [ReelController::class, 'index']);
 Route::get('/reels/{id}', [ReelController::class, 'show']);
+  Route::get('/reels/{id}/comments', [ReelController::class, 'comments']);
+Route::post('/reels/{id}/comment', [ReelController::class, 'addComment']);
 
 Route::post('/reels/{id}/view', [ReelController::class, 'increaseViews']);
 Route::post('/reels/{id}/like', [ReelController::class, 'like']);
