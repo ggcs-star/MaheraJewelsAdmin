@@ -23,7 +23,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\BannerController;
 use App\Http\Controllers\DeliverySettingController;
 use App\Http\Controllers\Admin\OrderController;
-
+use App\Http\Controllers\AppSettingController;
 
 
 Route::get('/', function () {
@@ -270,6 +270,41 @@ Route::delete('/organizations/{organization}', [OrganizationController::class, '
 
 Route::post('/organizations/bulk-delete', [OrganizationController::class, 'bulkDelete'])
     ->name('organizations.bulk-delete');
+
+Route::get(
+    '/app-settings',
+    [AppSettingController::class, 'index']
+)->name('app-settings.index');
+
+Route::get(
+    '/app-settings/create',
+    [AppSettingController::class, 'create']
+)->name('app-settings.create');
+
+Route::post(
+    '/app-settings',
+    [AppSettingController::class, 'store']
+)->name('app-settings.store');
+
+Route::get(
+    '/app-settings/{appSetting}',
+    [AppSettingController::class, 'show']
+)->name('app-settings.show');
+
+Route::get(
+    '/app-settings/{appSetting}/edit',
+    [AppSettingController::class, 'edit']
+)->name('app-settings.edit');
+
+Route::put(
+    '/app-settings/{appSetting}',
+    [AppSettingController::class, 'update']
+)->name('app-settings.update');
+
+Route::delete(
+    '/app-settings/{appSetting}',
+    [AppSettingController::class, 'destroy']
+)->name('app-settings.destroy');
 // Customers CRUD
 Route::get('/customers', [CustomerController::class, 'index'])
     ->name('customers.index');

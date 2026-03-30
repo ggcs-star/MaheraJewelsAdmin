@@ -218,4 +218,50 @@ class AddressController extends Controller
             'message' => $message
         ], 500);
     }
+    public function setDefault($addressId): JsonResponse
+    {
+        try {
+            DB::beginTransaction();
+
+            $user = auth()->user();
+            $address = UserAddress::where('id', $addressId)
+                ->where('user_id', $user->id)
+                ->first();
+
+            if (!$address) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Address not found'
+                ], 404);
+            }
+
+            UserAddress::where('user_id', $user->id)
+                ->where('type', $address->type)
+                ->update(['is_default' => false]);
+
+            $address->update(['is_default' => true]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Default address updated successfully',
+                'data' => [
+                    'address' => $this->formatAddress($address)
+                ]
+            ]);
+
+        } catch (Throwable $e) {
+            DB::rollBack();
+            Log::error('Set Default Address Error', [
+                'message' => $e->getMessage(),
+                'user_id' => auth()->id(),
+                'address_id' => $addressId
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Unable to set default address'
+            ], 500);
+        }
+    }
 }

@@ -13,7 +13,7 @@ use App\Http\Controllers\Api\Users\CheckoutController;
 use App\Http\Controllers\Api\Users\OrderController;
 use App\Http\Controllers\Api\Users\BannerController;
 use App\Http\Controllers\Api\Users\UserCategoryController;
-
+use App\Http\Controllers\Api\Users\AppSettingController;
 
  Route::post('/create-order',[OrderController::class,'createOrder']);
 
@@ -121,12 +121,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/{id}', [OrderController::class, 'show']);
     Route::post('/orders/{id}/cancel', [OrderController::class, 'cancel']);
     Route::get('/orders/{id}/track', [OrderController::class, 'track']);
-  Route::get('/checkout/summary', [CheckoutController::class, 'summary']);
+    Route::get('/checkout/summary', [CheckoutController::class, 'summary']);
     Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder']);
     Route::get('/user/addresses', [AddressController::class, 'index']);
     Route::post('/user/addresses', [AddressController::class, 'store']);
     Route::put('/user/addresses/{id}', [AddressController::class, 'update']);
     Route::delete('/user/addresses/{id}', [AddressController::class, 'destroy']);
+    Route::put('/user/addresses/{id}/set-default', [AddressController::class, 'setDefault']);
     
     Route::get('/user/profile', [ProfileController::class, 'show']);
     Route::put('/user/profile', [ProfileController::class, 'update']);
@@ -155,6 +156,7 @@ Route::get('/search', [ProductController::class, 'unifiedSearch']);
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/id/{product_id}', [ProductController::class, 'showById']);
 Route::get('/products/{slug}', [ProductController::class, 'show']);
+Route::get('/app-settings', [AppSettingController::class, 'index']);
 Route::prefix('banners')->group(function () {
     Route::get('/', [BannerController::class, 'index']);     
     Route::get('/{id}', [BannerController::class, 'show']);    
