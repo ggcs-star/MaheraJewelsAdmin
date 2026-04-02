@@ -15,13 +15,21 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => ['*'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => [
+        'http://localhost:5173',
+        'https://retailadmin.ggconsultancy.services',
+        'http://10.22.125.245:8000',
+        'https://reels.jagods.in',
+        'http://127.0.0.1',
+        'http://127.0.0.1:8000',
+        'https://jagods.in'
+    ],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => ['*'],
 
     'allowed_headers' => ['*'],
 
