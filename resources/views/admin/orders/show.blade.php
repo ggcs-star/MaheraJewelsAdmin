@@ -51,14 +51,15 @@ Order Items
 <div class="d-flex mb-3 border-bottom pb-2">
 <img
 src="{{ 
-    optional($item->product)->image 
-    ? Storage::disk('s3')->url('admin/product/' . $item->product->image . '/image.jpg')
-    : asset('images/no-image.png') 
+    $item->image 
+    ? (str_starts_with($item->image, 'http') ? $item->image : Storage::disk('s3')->url($item->image))
+    : (optional($item->product)->image_url ? Storage::disk('s3')->url($item->product->image_url) : asset('images/no-image.png'))
 }}"
 width="60"
 height="60"
+style="object-fit: cover; border-radius: 8px;"
+onerror="this.src='{{ asset('images/no-image.png') }}'"
 />
-
 <div class="w-100">
 
 <h6 class="mb-1">

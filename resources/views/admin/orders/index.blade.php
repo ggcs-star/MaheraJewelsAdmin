@@ -111,13 +111,16 @@ placeholder="Search Order Number..." class="form-control"/>
 </td>
 
 <td>
-<span class="badge
-@if($order->status=='pending') bg-warning
-@elseif($order->status=='processing') bg-info
-@elseif($order->status=='shipped') bg-primary
-@elseif($order->status=='delivered') bg-success
+<span class="badge px-3 py-2
+@if($order->status=='pending') bg-warning text-dark
+@elseif($order->status=='processing') bg-info text-dark
+@elseif($order->status=='shipped') bg-primary text-white
+@elseif($order->status=='delivered') bg-success text-white
+@elseif($order->status=='confirmed') bg-secondary text-white
+@elseif($order->status=='cancelled') bg-danger text-white
+@else bg-secondary text-white
 @endif
-">
+" style="font-weight: 500; border-radius: 20px;">
 {{ ucfirst($order->status ?? 'N/A') }}
 </span>
 </td>

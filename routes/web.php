@@ -23,7 +23,10 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\BannerController;
 use App\Http\Controllers\DeliverySettingController;
 use App\Http\Controllers\Admin\OrderController;
-use App\Http\Controllers\AppSettingController;use App\Http\Controllers\Admin\ReelController;
+use App\Http\Controllers\AppSettingController;
+use App\Http\Controllers\Admin\ReelController;
+use App\Http\Controllers\StockController;
+use App\Http\Controllers\StockSettingController;
 
 
 
@@ -392,6 +395,9 @@ Route::get('/orders/{id}/invoice', [OrderController::class,'invoice'])
 
 Route::post('/orders/{id}/cancel', [OrderController::class,'cancel'])
     ->name('orders.cancel');
+Route::get('/stock-management',[StockController::class, 'index'])->name('stock.index');
+Route::get('/stock-settings', [StockSettingController::class, 'index'])->name('stock.settings');
+Route::post('/stock-settings', [StockSettingController::class, 'update'])->name('stock.settings.update');
     });
 // 💰 GST & TAXES
 Route::get('/taxes', [\App\Http\Controllers\TaxController::class, 'index'])

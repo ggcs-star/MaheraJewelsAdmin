@@ -8,20 +8,34 @@
     class="fixed top-0 left-0 bottom-0 z-40 w-[260px] bg-[#1e293b] text-white transition-transform duration-300 transform shadow-2xl overflow-y-auto"
     :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
 >
-    <div class="h-[64px] flex items-center px-6 bg-[#0f172a]/50">
-       <div class="flex items-center gap-3">
-    <img
-        src="https://www.ggconsultancy.services/assets/rapid-e140fd75.svg"
-        alt="Rapid Retail Logo"
-        class="h-10 w-10 object-contain"
-    >
+    <div class="h-[72px] flex items-center px-5 bg-[#0f172a] border-b border-slate-700">
 
-    <span class="font-bold text-lg tracking-tight uppercase">
-        RAPID <span class="text-indigo-400">RETAIL</span>
-    </span>
-</div>
+    <div class="flex items-center gap-3 w-full">
+
+        <img
+            src="{{ asset('assets/logo/logo.png') }}"
+            alt="Radiant Jewel Logo"
+            class="h-12 w-12 object-contain rounded-lg bg-white p-1"
+            onerror="this.src='{{ asset('assets/logo/logo.png') }}'"
+        >
+
+        <div class="flex flex-col leading-tight">
+
+            <span class="text-white font-semibold text-[15px] tracking-wide whitespace-nowrap">
+                RADIANT
+            </span>
+
+            <span class="text-indigo-400 font-medium text-[12px] tracking-wide whitespace-nowrap">
+                JEWEL
+            </span>
+
+        </div>
 
     </div>
+
+</div>
+
+    <!-- </div> -->
 
     <nav class="mt-8 px-4 space-y-1">
 
@@ -128,14 +142,7 @@
 
     <span>Banners</span>
 </a>
-        <a href="#"
-           class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-slate-100">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6M4 5h16v14H4z" />
-            </svg>
-            <span>Stock Management</span>
-        </a>
-        <a href="{{ admin_route('reels.index') }}"
+<a href="{{ admin_route('reels.index') }}"
    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
    {{ request()->routeIs('reels.*')
         ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/20 font-medium'
@@ -150,7 +157,7 @@
     <span>Reels</span>
 </a>
 
-    <a href="{{ admin_route('orders.index') }}"
+<a href="{{ admin_route('orders.index') }}"
    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
    {{ request()->routeIs('orders.*')
         ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 font-medium'
@@ -165,7 +172,35 @@
     <span>Orders</span>
 
 </a>
+<a href="{{ admin_route('stock.index') }}"
+   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+   {{ request()->routeIs('stock.*')
+        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 font-medium'
+        : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100' }}">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M3 7l9-4 9 4-9 4-9-4z"/>
+        <path stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M3 7v10l9 4 9-4V7"/>
+    </svg>
 
+    <span>Stock Management</span>
+
+</a>
+<a href="{{ admin_route('stock.settings') }}"
+   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+   {{ request()->routeIs('stock.settings') 
+        ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20 font-medium' 
+        : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100' }}">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 16v-2m8-6h-2M6 12H4m13.657-5.657l-1.414 1.414M7.757 16.243l-1.414 1.414M12 8a4 4 0 100 8 4 4 0 000-8z"/>
+    </svg>
+    <span>Stock Alert Settings</span>
+</a>
         <a href="#"
            class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-slate-100">
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
