@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | RAPID RETAIL</title>
+    <title>Login | RADIANT JEWEL</title>
     <style>
         .logo span {
   margin-left: 8px;
@@ -31,7 +31,7 @@
         .image-section {
             flex: 1;
             background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
-                        url('https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80');
+                url('https://images.pexels.com/photos/1927259/pexels-photo-1927259.jpeg?auto=compress&cs=tinysrgb&w=1600');
             background-size: cover;
             background-position: center;
             display: flex;
@@ -327,7 +327,7 @@
         
         <div class="login-section">
             <div class="login-container">
-                <div class="logo">RAPID <span>RETAIL</span></div>
+                <div class="logo">RADIANT <span>JEWEL</span></div>
                 
                 <div class="login-header">
                     <h2>Sign In</h2>

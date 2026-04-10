@@ -1,174 +1,156 @@
 <?php
 
-namespace App\Http\Controllers\Api\Users;
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
-use Illuminate\Http\JsonResponse;
+use App\Models\Organization;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Throwable;
-
+use App\Models\ProductVariant;
+use App\Models\StockMovement;
 class OrderController extends Controller
 {
-    public function index(Request $request): JsonResponse
+
+    public function index(Request $request)
     {
-        try {
-            $orders = Order::with([
-                'items' => function($query) {
-                    $query->select('id', 'order_id', 'product_id', 'variant_id', 'product_name', 'price', 'quantity', 'subtotal', 'image');
-                },
-                'items.product:id,image_url,gallery_images', 
-                'items.variant:id,image_url'
-            ])
-            ->where('user_id', auth()->id())
-            ->when($request->status, function ($query) use ($request) {
-                $query->where('status', $request->status);
-            })
-            ->latest()
-            ->paginate($request->per_page ?? 10);
+        $query = Order::with(['user']);
 
-            $orders->getCollection()->transform(function ($order) {
-            $order->items->transform(function ($item) {
-
-                if ($item->image && !str_starts_with($item->image, 'http')) {
-                    $item->image = Storage::disk('s3')->url($item->image);
-                }
-
-                return $item;
-            });
-
-            return $order;
-        });
-
-            return response()->json([
-                'success' => true,
-                'data' => $orders
-            ]);
-
-        } catch (Throwable $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong: ' . $e->getMessage()
-            ], 500);
+        if ($request->filled('search')) {
+            $query->where('order_number', 'like', '%' . $request->search . '%');
         }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $orders = $query->latest()->paginate(10);
+
+        $stats = [
+            'total' => Order::count(),
+            'pending' => Order::where('status', 'pending')->count(),
+            'confirmed' => Order::where('status', 'confirmed')->count(),
+            'processing' => Order::where('status', 'processing')->count(),
+            'shipped' => Order::where('status', 'shipped')->count(),
+            'delivered' => Order::where('status', 'delivered')->count(),
+            'cancelled' => Order::where('status', 'cancelled')->count(),
+        ];
+
+        return view('admin.orders.index', compact('orders', 'stats'));
     }
 
-    public function show($orderId): JsonResponse
+    public function show($id)
     {
-        try {
-            $order = Order::with([
-                'items' => function($query) {
-                    $query->select('id', 'order_id', 'product_id', 'variant_id', 'product_name', 'price', 'quantity', 'subtotal', 'image');
-                },
-                'items.product:id,image_url,gallery_images', 
-                'items.variant:id,image_url'
-            ])
-            ->where('user_id', auth()->id())
-            ->findOrFail($orderId);
-                $order->items->transform(function ($item) {
+        $order = Order::with([
+            'items.product',
+            'items.variant',
+            'user',
+            'shippingAddress',
+            'billingAddress',
+            'payment'
+        ])->findOrFail($id);
 
-            if ($item->image && !str_starts_with($item->image, 'http')) {
-                $item->image = Storage::disk('s3')->url($item->image);
+        return view('admin.orders.show', compact('order'));
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,confirmed,processing,shipped,delivered,cancelled'
+        ]);
+
+        $order = Order::with('items')->findOrFail($id);
+
+        $currentStatus = strtolower(trim($order->status));
+        $newStatus = strtolower(trim($request->status));
+
+        if ($currentStatus === $newStatus) {
+            return back()->with('error', 'Status is already ' . ucfirst($currentStatus));
+        }
+
+        $allowedTransitions = [
+            'pending' => ['confirmed', 'cancelled'],
+            'confirmed' => ['processing', 'cancelled'],
+            'processing' => ['shipped'],
+            'shipped' => ['delivered'],
+        ];
+
+        if (
+            isset($allowedTransitions[$currentStatus]) &&
+            !in_array($newStatus, $allowedTransitions[$currentStatus])
+        ) {
+            return back()->with('error', 'Invalid status transition');
+        }
+
+        $order->status = $newStatus;
+
+        if ($newStatus === 'confirmed') {
+            $order->confirmed_at = now();
+        }
+
+        if ($newStatus === 'shipped') {
+            $order->shipped_at = now();
+        }
+
+        if ($newStatus === 'delivered') {
+            $order->delivered_at = now();
+        }
+
+        $order->save();
+        if ($newStatus === 'confirmed') {
+
+        foreach ($order->items as $item) {
+
+            $variant = ProductVariant::find($item->variant_id);
+
+            if ($variant) {
+
+                $variant->decrement('quantity', $item->quantity);
+
+                StockMovement::create([
+                    'product_id' => $item->product_id,
+                    'variant_id' => $item->variant_id,
+                    'platform_id' => 1,
+                    'movement' => 'OUT',
+                    'quantity' => $item->quantity,
+                    'balance' => $variant->quantity,
+                    'reference_type' => 'order',
+                    'reference_id' => $order->id,
+                    'remarks' => 'Order confirmed',
+                ]);
             }
-
-            return $item;
-        });
-
-            return response()->json([
-                'success' => true,
-                'data' => $order
-            ]);
-
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Order not found'
-            ], 404);
-
-        } catch (Throwable $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong: ' . $e->getMessage()
-            ], 500);
         }
     }
 
-    public function cancel(Request $request, $orderId): JsonResponse
+        return back()->with('success', 'Order status updated to ' . ucfirst($newStatus));
+    }
+
+
+    public function invoice($id)
     {
-        try {
-            DB::beginTransaction();
+        $order = Order::with([
+            'items.product',
+            'items.variant',
+            'user',
+            'shippingAddress',
+            'payment'
+        ])->findOrFail($id);
 
-            $order = Order::where('user_id', auth()->id())
-                ->findOrFail($orderId);
+        $company = Organization::first();
 
-            if (!in_array($order->status, ['pending', 'confirmed'])) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Order cannot be cancelled'
-                ], 400);
-            }
-
-            $order->status = 'cancelled';
-            $order->save();
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Order cancelled successfully',
-                'data' => [
-                    'order' => [
-                        'id' => $order->id,
-                        'status' => $order->status
-                    ]
-                ]
-            ]);
-            
-        } catch (ModelNotFoundException $e) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Order not found'
-            ], 404);
-            
-        } catch (Throwable $e) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong'
-            ], 500);
-        }
+        return view('admin.orders.invoice', compact('order', 'company'));
     }
-
-    public function track($orderId): JsonResponse
+    public function cancel($id)
     {
-        try {
-            $order = Order::where('user_id', auth()->id())
-                ->findOrFail($orderId);
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'order_number' => $order->order_number,
-                    'status' => $order->status,
-                    'tracking_number' => $order->tracking_number ?? null,
-                    'estimated_delivery' => $order->estimated_delivery ?? null,
-                ]
-            ]);
-            
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Order not found'
-            ], 404);
-            
-        } catch (Throwable $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong'
-            ], 500);
+        $order = Order::findOrFail($id);
+
+        if ($order->status === 'delivered') {
+            return back()->with('error', 'Delivered order cannot be cancelled');
         }
+
+        $order->status = 'cancelled';
+        $order->save();
+
+        return back()->with('success', 'Order cancelled successfully');
     }
+
 }
