@@ -6,33 +6,25 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Organization;
 use Illuminate\Http\Request;
-
+use App\Models\ProductVariant;
+use App\Models\StockMovement;
 class OrderController extends Controller
 {
-
-    /*
-    |--------------------------------------------------------------------------
-    | Orders List
-    |--------------------------------------------------------------------------
-    */
 
     public function index(Request $request)
     {
         $query = Order::with(['user']);
 
-        // 🔍 Search Order Number
         if ($request->filled('search')) {
             $query->where('order_number', 'like', '%' . $request->search . '%');
         }
 
-        // 🎯 Filter Status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
         $orders = $query->latest()->paginate(10);
 
-        // 📊 Stats
         $stats = [
             'total' => Order::count(),
             'pending' => Order::where('status', 'pending')->count(),
@@ -46,12 +38,6 @@ class OrderController extends Controller
         return view('admin.orders.index', compact('orders', 'stats'));
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Order Details
-    |--------------------------------------------------------------------------
-    */
 
     public function show($id)
     {
@@ -68,29 +54,21 @@ class OrderController extends Controller
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Update Order Status
-    |--------------------------------------------------------------------------
-    */
-
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
             'status' => 'required|in:pending,confirmed,processing,shipped,delivered,cancelled'
         ]);
 
-        $order = Order::findOrFail($id);
+        $order = Order::with('items')->findOrFail($id);
 
         $currentStatus = strtolower(trim($order->status));
         $newStatus = strtolower(trim($request->status));
 
-        // ❌ Same status
         if ($currentStatus === $newStatus) {
             return back()->with('error', 'Status is already ' . ucfirst($currentStatus));
         }
 
-        // 🔒 Allowed transitions
         $allowedTransitions = [
             'pending' => ['confirmed', 'cancelled'],
             'confirmed' => ['processing', 'cancelled'],
@@ -105,7 +83,6 @@ class OrderController extends Controller
             return back()->with('error', 'Invalid status transition');
         }
 
-        // ✅ Update status
         $order->status = $newStatus;
 
         if ($newStatus === 'confirmed') {
@@ -121,16 +98,33 @@ class OrderController extends Controller
         }
 
         $order->save();
+        if ($newStatus === 'confirmed') {
+
+        foreach ($order->items as $item) {
+
+            $variant = ProductVariant::find($item->variant_id);
+
+            if ($variant) {
+
+                $variant->decrement('quantity', $item->quantity);
+
+                StockMovement::create([
+                    'product_id' => $item->product_id,
+                    'variant_id' => $item->variant_id,
+                    'platform_id' => 1,
+                    'movement' => 'OUT',
+                    'quantity' => $item->quantity,
+                    'balance' => $variant->quantity,
+                    'reference_type' => 'order',
+                    'reference_id' => $order->id,
+                    'remarks' => 'Order confirmed',
+                ]);
+            }
+        }
+    }
 
         return back()->with('success', 'Order status updated to ' . ucfirst($newStatus));
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Print Invoice
-    |--------------------------------------------------------------------------
-    */
 
     public function invoice($id)
     {
@@ -142,18 +136,10 @@ class OrderController extends Controller
             'payment'
         ])->findOrFail($id);
 
-        // ✅ Company Fetch (IMPORTANT FIX)
         $company = Organization::first();
 
         return view('admin.orders.invoice', compact('order', 'company'));
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Cancel Order
-    |--------------------------------------------------------------------------
-    */
 
     public function cancel($id)
     {
