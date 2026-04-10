@@ -10,20 +10,33 @@
     class="fixed top-0 left-0 bottom-0 z-40 w-[260px] bg-[#1e293b] text-white transition-transform duration-300 transform shadow-2xl overflow-y-auto"
     :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
 >
-    {{-- HEADER (EXACT SAME HEIGHT & STYLE) --}}
-   <div class="h-[64px] flex items-center px-6 bg-[#0f172a]/50">
-    <div class="flex items-center gap-3">
+    <div class="h-[72px] flex items-center px-5 bg-[#0f172a] border-b border-slate-700">
+
+    <div class="flex items-center gap-3 w-full">
+
         <img
-            src="https://www.ggconsultancy.services/assets/rapid-e140fd75.svg"
-            alt="Rapid Retail Logo"
-            class="h-10 w-10 object-contain"
+            src="{{ asset('assets/logo/logo.png') }}"
+            alt="Radiant Jewel Logo"
+            class="h-12 w-12 object-contain rounded-lg bg-white p-1"
+            onerror="this.src='{{ asset('assets/logo/logo.png') }}'"
         >
 
-        <span class="font-bold text-lg tracking-tight uppercase">
-            SETTINGS
-        </span>
+        <div class="flex flex-col leading-tight">
+
+            <span class="text-white font-semibold text-[15px] tracking-wide whitespace-nowrap">
+                RADIANT
+            </span>
+
+            <span class="text-indigo-400 font-medium text-[12px] tracking-wide whitespace-nowrap">
+                JEWEL
+            </span>
+
+        </div>
+
     </div>
+
 </div>
+   
 
 <nav class="mt-8 px-4 space-y-1">
 
