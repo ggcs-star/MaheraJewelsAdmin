@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Email | RAPID RETAIL</title>
+    <title>Verify Email | RADIANT JEWEL</title>
     <style>
-              .logo span {
+        .logo span {
             margin-left: 8px;
-    }
+        }
         * {
             margin: 0;
             padding: 0;
@@ -30,7 +30,7 @@
         .image-section {
             flex: 1;
             background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
-                        url('https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80');
+                url('https://images.pexels.com/photos/1927259/pexels-photo-1927259.jpeg?auto=compress&cs=tinysrgb&w=1600');
             background-size: cover;
             background-position: center;
             display: flex;
