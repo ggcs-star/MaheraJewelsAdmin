@@ -21,6 +21,7 @@ class Product extends Model
         'brand',
         'cost_price',
         'base_selling_price',
+        'product_price',
         'image_url',
         'gallery_images',
         'meta_title',
@@ -41,6 +42,7 @@ class Product extends Model
         'is_featured' => 'boolean',
         'is_top_selling' => 'boolean',
         'expected_delivery_date' => 'date',
+        'product_price' => 'decimal:2',
     ];
 
     public function category()

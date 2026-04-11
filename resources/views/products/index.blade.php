@@ -173,7 +173,7 @@
                                 @endif
                             </td>
 
-                            <td>₹{{ number_format($product->variants->sum('total_price'), 2) }}</td>
+                            <td>₹{{ number_format($product->product_price, 2) }}</td>
                             <td>
                                 <span class="badge {{ $product->status == 'active' ? 'bg-success' : 'bg-secondary' }}">
                                     {{ ucfirst($product->status) }}

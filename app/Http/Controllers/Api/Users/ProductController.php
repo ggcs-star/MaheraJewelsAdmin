@@ -117,7 +117,7 @@ class ProductController extends Controller
             ->where('is_top_selling', 1)
             ->where('status', 'active')
             ->where('visibility', 'public')
-            ->select('id', 'name', 'slug', 'brand', 'gallery_images')
+            ->select('id', 'name', 'slug', 'brand','product_price' , 'gallery_images')
             ->with([
                 'category:id,name',
                 'variants:id,product_id,variant_id,variant_value_id,quantity,selling_price,image_url,sku_suffix,status',
@@ -247,7 +247,7 @@ class ProductController extends Controller
                         $q->where('status','active')
                 ])
 
-                ->select('id','name','slug','brand','image_url','sort_order')
+                ->select('id','name','slug','brand','image_url','product_price','sort_order')
 
                 ->orderBy('sort_order','asc')
                 ->latest()
@@ -326,7 +326,7 @@ class ProductController extends Controller
                     });
                 })
 
-                ->select('id','name','slug','brand','image_url')
+                ->select('id','name','slug','brand','image_url','product_price')
                 ->limit(10)
                 ->get()
                 ->map(fn($p)=>ProductListTransformer::transform($p));

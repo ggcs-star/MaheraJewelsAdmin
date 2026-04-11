@@ -11,7 +11,6 @@
     <div class="card-body">
         <div class="row g-3">
 
-            <!-- Product Name -->
             <div class="col-md-4">
                 <label class="form-label fw-semibold">
                     Product Name <span class="text-danger">*</span>
@@ -27,7 +26,6 @@
                 </div>
             </div>
 
-            <!-- SKU -->
             <div class="col-md-4">
                 <label class="form-label fw-semibold">
                     SKU <span class="text-danger">*</span>
@@ -43,7 +41,6 @@
                 </div>
             </div>
 
-            <!-- Slug -->
             <div class="col-md-4">
                 <label class="form-label fw-semibold">
                     Slug <span class="text-danger">*</span>
@@ -58,8 +55,25 @@
                     Used in product URL.
                 </div>
             </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">
+                    Product Price <span class="text-danger">*</span>
+                </label>
 
-            <!-- Short Description -->
+                <input type="number"
+                    name="product_price"
+                    class="form-control"
+                    step="0.01"
+                    min="0"
+                    placeholder="Enter product price"
+                    value="{{ old('product_price', $product->product_price ?? '') }}"
+                    required>
+
+                <div class="form-text">
+                    Default price shown before selecting variant.
+                </div>
+            </div>
+            
             <div class="col-md-12">
                 <label class="form-label fw-semibold">
                     Short Description
@@ -73,7 +87,6 @@
                 </div>
             </div>
 
-            <!-- Full Description -->
             <div class="col-md-12">
                 <label class="form-label fw-semibold">
                     Full Description
