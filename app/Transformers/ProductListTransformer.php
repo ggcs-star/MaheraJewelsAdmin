@@ -29,6 +29,7 @@ class ProductListTransformer
             'name' => $product->name,
             'slug' => $product->slug,
             'brand' => $product->brand,
+            'product_price' => $product->product_price,
 
             // ⭐ YAHI MAIN CHEEZ HAI
             'image_url' => $imageUrl,

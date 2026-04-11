@@ -404,11 +404,12 @@ function updateColorCells() {
 
         if (!typeSelect || !blocker || !input) return;
 
+        const currentColor = input.value;
+
         const typeName =
             typeSelect.options[typeSelect.selectedIndex]?.text
                 .toLowerCase() || '';
 
-        // ✅ allowed types
         const allowColorTypes = ['size', 'color', 'storage'];
 
         const allowColor = allowColorTypes.some(t =>
@@ -422,9 +423,11 @@ function updateColorCells() {
             blocker.style.display = 'block';
             input.classList.add('bg-light');
         }
+
+        
+        input.value = currentColor;
     });
 }
-
 </script>
 <script>
 document.addEventListener('DOMContentLoaded', updateColorCells);

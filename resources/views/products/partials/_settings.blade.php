@@ -14,7 +14,7 @@
             <!-- Sort Order -->
             <div class="col-md-3">
                 <label class="form-label fw-semibold">
-                    Sort Order
+                    Sort Order<span class="text-danger">*</span>
                 </label>
                 <input type="number"
                        name="sort_order"

@@ -16,6 +16,7 @@ class ProductDetailTransformer
             'id' => $product->id,
             'name' => $product->name,
             'slug' => $product->slug,
+            'product_price' => $product->product_price,
             'description' => $product->description,
             'short_description' => $product->short_description,
 
