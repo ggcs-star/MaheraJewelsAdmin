@@ -47,6 +47,7 @@ class CartController extends Controller
             'items.*.product_id' => 'required|integer',
             'items.*.variant_id' => 'required|integer',
             'items.*.quantity' => 'required|integer|min:1',
+            'items.*.price' => 'nullable|numeric|min:0',
         ]);
 
         try {
@@ -71,7 +72,7 @@ class CartController extends Controller
                     'platform_id' => $platformProduct->platform_id,
                 ]);
 
-                $unitPrice = $pricing->final_price ?? $pricing->price;
+                $unitPrice =$itemData['price']?? ($pricing->final_price ?? $pricing->price);
 
                 $existingQty = $cartItem->exists ? $cartItem->quantity : 0;
                 $newQty = $existingQty + $itemData['quantity'];
@@ -128,7 +129,7 @@ class CartController extends Controller
                 $request->quantity
             );
 
-            $unitPrice = $pricing->final_price ?? $pricing->price;
+            $unitPrice = $request->price?? ($pricing->final_price ?? $pricing->price);
 
             $cartItem->quantity = $request->quantity;
             $cartItem->price = $unitPrice;
