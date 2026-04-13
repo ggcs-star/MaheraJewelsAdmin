@@ -45,7 +45,7 @@ class CartController extends Controller
         $request->validate([
             'items' => 'required|array|min:1',
             'items.*.product_id' => 'required|integer',
-            'items.*.variant_id' => 'required|integer',
+            'items.*.variant_id' => 'nullable|integer',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.price' => 'nullable|numeric|min:0',
         ]);
@@ -57,20 +57,22 @@ class CartController extends Controller
 
             foreach ($request->items as $itemData) {
 
-                $platformProduct = $this->getPlatformProduct($itemData['product_id']);
+            $platformProduct = $this->getPlatformProduct($itemData['product_id']);
+            
+            $variantId = $itemData['variant_id'] ?? null;
 
-                $pricing = $this->getPricing(
-                    $platformProduct->id,
-                    $itemData['variant_id'],
-                    $itemData['quantity']
-                );
+            $pricing = $this->getPricing(
+                $platformProduct->id,
+                $variantId,
+                $itemData['quantity']
+            );
 
-                $cartItem = CartItem::firstOrNew([
-                    'cart_id' => $cart->id,
-                    'product_id' => $itemData['product_id'],
-                    'product_variant_id' => $itemData['variant_id'],
-                    'platform_id' => $platformProduct->platform_id,
-                ]);
+            $cartItem = CartItem::firstOrNew([
+                'cart_id' => $cart->id,
+                'product_id' => $itemData['product_id'],
+                'product_variant_id' => $variantId,
+                'platform_id' => $platformProduct->platform_id,
+            ]);
 
                 $unitPrice =$itemData['price']?? ($pricing->final_price ?? $pricing->price);
 
@@ -218,13 +220,20 @@ class CartController extends Controller
             ->firstOrFail();
     }
 
-    private function getPricing(int $platformProductId, int $variantId, int $qty): PlatformPricing
+    private function getPricing(int $platformProductId, ?int $variantId, int $qty): PlatformPricing
     {
-        $pricing = PlatformPricing::where([
+        $query = PlatformPricing::where([
             'platform_product_id' => $platformProductId,
-            'product_variant_id' => $variantId,
             'status' => 'active',
-        ])->firstOrFail();
+        ]);
+        
+        if ($variantId !== null) {
+            $query->where('product_variant_id', $variantId);
+        } else {
+            $query->whereNull('product_variant_id');
+        }
+        
+        $pricing = $query->firstOrFail();
 
         if ($pricing->quantity < $qty) {
             abort(422, 'Requested quantity not available');
