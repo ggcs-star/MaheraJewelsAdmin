@@ -11,13 +11,27 @@
 .color-blocker {
     position: absolute;
     inset: 0;
-    z-index: 9999;          /* 🔥 VERY IMPORTANT */
+    z-index: 9999;         
     background: transparent;
     cursor: not-allowed;
     display: none;
-    pointer-events: all;    /* 🔥 FORCE BLOCK */
+    pointer-events: all;    
 }
-
+.badge {
+    display: inline-block;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 20px;
+}
+.bg-info {
+    background-color: #17a2b8;
+    color: white;
+}
+.btn-sm {
+    padding: 4px 10px;
+    font-size: 12px;
+}
 </style>
 
 <div class="card mb-4 shadow-sm">
@@ -58,58 +72,52 @@
                             <tr class="variant-row">
                                 <!-- Type -->
                               <td>
-  <select
-    name="variants[{{ $i }}][variant_id]"
-    class="form-control variant-type">
+                    <select
+                        name="variants[{{ $i }}][variant_id]"
+                        class="form-control variant-type">
 
-        <option value="">Select</option>
+                            <option value="">Select</option>
 
-       @foreach($variants as $masterVariant)
-<option value="{{ $masterVariant->id }}"
-        data-input-type="{{ $masterVariant->input_type }}"
-        data-has-dimensions="{{ $masterVariant->has_dimensions }}"
-        {{ $variant->variant_id == $masterVariant->id ? 'selected' : '' }}>
-    {{ $masterVariant->name }}
-</option>
+                                @foreach($variants as $masterVariant)
+                            <option value="{{ $masterVariant->id }}"
+                                    data-input-type="{{ $masterVariant->input_type }}"
+                                    data-has-dimensions="{{ $masterVariant->has_dimensions }}"
+                                    {{ $variant->variant_id == $masterVariant->id ? 'selected' : '' }}>
+                                {{ $masterVariant->name }}
+                            </option>
+                            @endforeach
+                                </select>
+                            </td>
 
+                            <td class="variant-value-cell">
+                                <select
+                                    name="variants[{{ $i }}][variant_value_id]"
+                                    class="form-control variant-value">
 
-@endforeach
+                                    <option value="">Select value</option>
 
+                                    @foreach($variants as $masterVariant)
+                                        @if($masterVariant->id == $variant->variant_id)
+                                            @foreach($masterVariant->values as $val)
+                                                <option value="{{ $val->id }}"
+                                                    {{ $variant->variant_value_id == $val->id ? 'selected' : '' }}>
+                                                    {{ $val->value }}
+                                                </option>
+                                            @endforeach
+                                        @endif
+                                    @endforeach
 
-    </select>
-</td>
+                                </select>
+                            </td>
 
-                                <!-- Value -->
-                              
-<td class="variant-value-cell">
-    <select
-        name="variants[{{ $i }}][variant_value_id]"
-        class="form-control variant-value">
+                            <td class="color-cell">
+                                <input type="color"
+                                    name="variants[{{ $i }}][color]"
+                                    class="form-control form-control-color variant-color"
+                                    value="{{ $variant->color ?? '' }}">
 
-        <option value="">Select value</option>
-
-        @foreach($variants as $masterVariant)
-            @if($masterVariant->id == $variant->variant_id)
-                @foreach($masterVariant->values as $val)
-                    <option value="{{ $val->id }}"
-                        {{ $variant->variant_value_id == $val->id ? 'selected' : '' }}>
-                        {{ $val->value }}
-                    </option>
-                @endforeach
-            @endif
-        @endforeach
-
-    </select>
-</td>
-
-<td class="color-cell">
-    <input type="color"
-           name="variants[{{ $i ?? '__INDEX__' }}][color]"
-           class="form-control form-control-color variant-color"
-           value="{{ $variant->color ?? '#000000' }}">
-
-    <div class="color-blocker"></div>
-</td>
+                                <div class="color-blocker"></div>
+                            </td>
 
 
                                 <!-- SKU -->
@@ -118,31 +126,48 @@
                                         value="{{ $variant->sku_suffix }}">
                                 </td>
                                 <!-- Height -->
-<td>
-    <input type="text"
-           name="variants[{{ $i }}][height]"
-           class="form-control"
-           placeholder="e.g. 10 cm"
-           value="{{ $variant->height ?? '' }}">
-</td>
-
-<!-- Width -->
-<td>
-    <input type="text"
-           name="variants[{{ $i }}][width]"
-           class="form-control"
-           placeholder="e.g. 5 cm"
-           value="{{ $variant->width ?? '' }}">
-</td>
-
-
-                                <!-- Image -->
                                 <td>
-                                    <input type="file" name="variants[{{ $i }}][image_url]" class="form-control"
-                                        accept="image/*">
+                                    <input type="text"
+                                        name="variants[{{ $i }}][height]"
+                                        class="form-control"
+                                        placeholder="e.g. 10 cm"
+                                        value="{{ $variant->height ?? '' }}">
                                 </td>
 
-                                <!-- Sort -->
+                                <!-- Width -->
+                                <td>
+                                    <input type="text"
+                                        name="variants[{{ $i }}][width]"
+                                        class="form-control"
+                                        placeholder="e.g. 5 cm"
+                                        value="{{ $variant->width ?? '' }}">
+                                </td>
+                                
+                            <td class="text-center">
+                                @if($loop->first)
+                                    @if($variant->image_url)
+                                        @php
+                                            $s3Url = 'https://inventorydata-s3-bucket.s3.us-east-1.amazonaws.com/' . $variant->image_url;
+                                        @endphp
+                                        <img src="{{ $s3Url }}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;margin-bottom:5px;">
+                                    @else
+                                        <span class="badge bg-info">Auto from gallery</span>
+                                    @endif
+                                    <input type="hidden" name="variants[{{ $i }}][selected_gallery_image]" class="selected-gallery-image" value="{{ $variant->image_url ?? '' }}">
+                                @else
+                                    @if($variant->image_url)
+                                        @php
+                                            $s3Url = 'https://inventorydata-s3-bucket.s3.us-east-1.amazonaws.com/' . $variant->image_url;
+                                        @endphp
+                                        <img src="{{ $s3Url }}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;margin-bottom:5px;">
+                                    @endif
+                                    <div class="d-flex flex-column gap-1">
+                                        <input type="file" name="variants[{{ $i }}][image_file]" class="form-control form-control-sm" accept="image/*" style="font-size:12px; padding:4px;">
+                                        <small class="text-muted">Choose file</small>
+                                    </div>
+                                @endif
+                            </td>
+
                                 <td>
                                     <input type="number" name="variants[{{ $i }}][sort_order]" class="form-control"
                                         value="{{ $variant->sort_order ?? 0 }}">
@@ -288,9 +313,9 @@
     </td>
 <td class="color-cell">
     <input type="color"
-           name="variants[{{ $i ?? '__INDEX__' }}][color]"
-           class="form-control form-control-color variant-color"
-           value="{{ $variant->color ?? '#000000' }}">
+       name="variants[__INDEX__][color]"
+       class="form-control form-control-color variant-color"
+       value="">
 
     <div class="color-blocker"></div>
 </td>
@@ -321,14 +346,16 @@
                placeholder="e.g. 5 cm">
     </td>
 
-    <!-- Image -->
-    <td>
-        <input type="file"
-               name="variants[__INDEX__][image_url]"
-               class="form-control"
-               accept="image/*">
-    </td>
-
+   <td class="text-center">
+    <input type="hidden" name="variants[__INDEX__][selected_gallery_image]" class="selected-gallery-image">
+    <div class="auto-text" style="display:inline-block;">
+        <span class="badge bg-info">Auto from gallery</span>
+    </div>
+    <div class="manual-upload" style="display:none; display:inline-block;">
+        <input type="file" name="variants[__INDEX__][image_file]" class="form-control form-control-sm variant-image-file" accept="image/*" style="display:none;">
+        <button type="button" class="btn btn-sm btn-outline-secondary choose-file-btn">Choose File</button>
+    </div>
+</td>
     <!-- Sort -->
     <td>
         <input type="number"

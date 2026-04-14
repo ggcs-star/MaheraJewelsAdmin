@@ -39,32 +39,31 @@
                      class="border rounded bg-light p-2 d-flex flex-wrap gap-2 align-items-start"
                      style="width:100%; min-height:220px; cursor:pointer;">
 
-                    {{-- MULTIPLE IMAGES (new system) --}}
-                 {{-- MULTIPLE IMAGES (AWS) --}}
-@if(!empty($product?->gallery_images) && is_array($product->gallery_images))
-    @foreach($product->gallery_images as $img)
-        <img
-            src="{{ Storage::disk('s3')->url($img) }}"
-            class="rounded border"
-            style="width:100px;height:100px;object-fit:cover;">
-    @endforeach
+            @if(!empty($product?->gallery_images) && is_array($product->gallery_images))
+                @foreach($product->gallery_images as $img)
+                    <img
+                        src="{{ Storage::disk('s3')->url($img) }}"
+                        data-path="{{ $img }}"
+                        class="rounded border selectable-gallery-image"
+                        style="width:100px;height:100px;object-fit:cover;cursor:pointer;">
+                @endforeach
 
-{{-- SINGLE IMAGE (AWS – backward support) --}}
-@elseif(!empty($product?->image_url))
-    <img
-        src="{{ Storage::disk('s3')->url($product->image_url) }}"
-        class="rounded border"
-        style="width:100px;height:100px;object-fit:cover;">
+            @elseif(!empty($product?->image_url))
+                <img
+                    src="{{ Storage::disk('s3')->url($product->image_url) }}"
+                    data-path="{{ $product->image_url }}"
+                    class="rounded border selectable-gallery-image"
+                    style="width:100px;height:100px;object-fit:cover;cursor:pointer;">
 
-{{-- NO IMAGE --}}
-@else
-    <div class="text-center text-muted w-100" id="imagePlaceholder">
-        <div class="fs-3">📷</div>
-        <div class="small">
-            Click to upload images
-        </div>
-    </div>
-@endif
+
+            @else
+                <div class="text-center text-muted w-100" id="imagePlaceholder">
+                    <div class="fs-3">📷</div>
+                    <div class="small">
+                        Click to upload images
+                    </div>
+                </div>
+            @endif
 
 
                 </div>

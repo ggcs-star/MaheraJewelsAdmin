@@ -17,7 +17,7 @@
             <!-- Supplier Select -->
             <div class="col-md-4">
                 <label class="form-label fw-semibold">
-                    Select Supplier
+                    Select Supplier<span class="text-danger">*</span>
                 </label>
 
                 <select id="supplierSelect"

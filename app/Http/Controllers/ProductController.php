@@ -262,112 +262,183 @@ private function isUploadedFile($file): bool
         return Product::create($data);
     }
 
-private function handleVariants(Request $request, Product $product): array
-{
-    $totalPurchase = 0;
-    $totalSelling  = 0;
+    private function handleVariants(Request $request, Product $product): array
+    {
+        \Log::info('=== handleVariants START ===');
+        
+        $totalPurchase = 0;
+        $totalSelling  = 0;
 
-    if (!$request->has('variants')) {
+        if (!$request->has('variants')) {
+            \Log::info('No variants in request');
+            return compact('totalPurchase', 'totalSelling');
+        }
+
+        \Log::info('Variants count: ' . count($request->variants));
+
+        $seen = []; 
+        $processedVariantIds = [];
+
+        foreach ($request->variants as $index => $variant) {
+            
+            \Log::info("--- Processing variant $index ---");
+            \Log::info("Variant keys: " . json_encode(array_keys($variant)));
+
+            if (
+                empty($variant['variant_id']) ||
+                empty($variant['variant_value_id'])
+            ) {
+                \Log::info("Skipping variant $index - missing variant_id or variant_value_id");
+                continue;
+            }
+
+            $variantId = (int) $variant['variant_id'];
+            $valueId   = (int) $variant['variant_value_id'];
+
+            $key = $variantId . '-' . $valueId;
+            if (isset($seen[$key])) {
+                \Log::info("Skipping duplicate variant $index");
+                continue;
+            }
+            $seen[$key] = true;
+
+            $qty      = (int) ($variant['quantity'] ?? 0);
+            $purchase = (float) ($variant['purchase_price'] ?? 0);
+            $selling = (float) ($variant['selling_price'] ?? 0);
+            
+            $color = !empty($variant['color']) ? $variant['color'] : null;
+
+            if ($qty <= 0) {
+                \Log::info("Skipping variant $index - qty <= 0");
+                continue;
+            }
+
+            $imagePath = null;
+            if (!empty($variant['selected_gallery_image'])) {
+            $imagePath = $this->saveBase64Image($variant['selected_gallery_image'], $product, $variant);
+        }
+        elseif (isset($variant['image_url']) && $this->isUploadedFile($variant['image_url'])) {
+            $productSlug = Str::slug($product->slug ?? $product->name);
+            $variantSlug = Str::slug(($variant['sku_suffix'] ?? 'variant') . '-' . ($variant['variant_value_id'] ?? uniqid()));
+            $imagePath = $variant['image_url']->store("admin/product/{$productSlug}/variant/{$variantSlug}", 's3');
+        }
+        elseif (isset($variant['image_file']) && $this->isUploadedFile($variant['image_file'])) {
+            $productSlug = Str::slug($product->slug ?? $product->name);
+            $variantSlug = Str::slug(($variant['sku_suffix'] ?? 'variant') . '-' . ($variant['variant_value_id'] ?? uniqid()));
+            $imagePath = $variant['image_file']->store("admin/product/{$productSlug}/variant/{$variantSlug}", 's3');
+        }
+            $existingVariant = ProductVariant::where([
+                'product_id' => $product->id,
+                'variant_id' => $variantId,
+                'variant_value_id' => $valueId,
+            ])->first();
+
+            if (!$imagePath && $existingVariant) {
+                $imagePath = $existingVariant->image_url;
+                if (empty($color) && $existingVariant->color) {
+                    $color = $existingVariant->color;
+                }
+                \Log::info("Using existing variant image: " . ($imagePath ?? 'null'));
+            }
+
+            if (!empty($variant['selected_gallery_image'])) {
+                \Log::info("🔥 selected_gallery_image FOUND for variant $index");
+                \Log::info("Image string length: " . strlen($variant['selected_gallery_image']));
+                \Log::info("Image string starts with: " . substr($variant['selected_gallery_image'], 0, 50));
+                
+                $imagePath = $this->saveBase64Image($variant['selected_gallery_image'], $product, $variant);
+                \Log::info('After saveBase64Image, $imagePath = ' . ($imagePath ?? 'NULL')); 
+                \Log::info("Saved image path: " . ($imagePath ?? 'NULL'));
+            }
+            elseif (isset($variant['image_url']) && $this->isUploadedFile($variant['image_url'])) {
+                \Log::info("Processing uploaded file for variant $index");
+                $productSlug = Str::slug($product->slug ?? $product->name);
+                $variantSlug = Str::slug(($variant['sku_suffix'] ?? 'variant') . '-' . ($variant['variant_value_id'] ?? uniqid()));
+                $imagePath = $variant['image_url']->store(
+                    "admin/product/{$productSlug}/variant/{$variantSlug}",
+                    's3'
+                );
+                \Log::info("Uploaded file saved to: " . $imagePath);
+            } else {
+                \Log::info("No image source for variant $index");
+            }
+
+            $variantModel = ProductVariant::updateOrCreate(
+                [
+                    'product_id'       => $product->id,
+                    'variant_id'       => $variantId,
+                    'variant_value_id' => $valueId,
+                ],
+                [
+                    'quantity'         => $qty,
+                    'purchase_price'   => $purchase,
+                    'selling_price'    => $selling,
+                    'total_price'      => $qty * $purchase,
+                    'sku_suffix'       => $variant['sku_suffix'] ?? null,
+                    'sort_order'       => $variant['sort_order'] ?? 0,
+                    'status'           => $variant['status'] ?? 'active',
+                    'color'            => $color,
+                    'height'           => $variant['height'] ?? null,
+                    'width'            => $variant['width'] ?? null,
+                    'image_url'        => $imagePath,
+                ]
+            );
+            
+            \Log::info("Variant $index saved with image_url: " . ($imagePath ?? 'null'));
+            
+            $processedVariantIds[] = $variantModel->id;
+
+            $totalPurchase += $qty * $purchase;
+            $totalSelling  += $qty * $selling;
+        }
+        
+        if (!empty($processedVariantIds)) {
+            ProductVariant::where('product_id', $product->id)
+                ->whereNotIn('id', $processedVariantIds)
+                ->delete();
+            \Log::info("Deleted variants not in processed list");
+        }
+
+        \Log::info("=== handleVariants END - Total Purchase: $totalPurchase, Total Selling: $totalSelling ===");
+        
         return compact('totalPurchase', 'totalSelling');
     }
-
-    $seen = []; 
-    $processedVariantIds = []; // Track processed variants
-
-    foreach ($request->variants as $variant) {
-
-        if (
-            empty($variant['variant_id']) ||
-            empty($variant['variant_value_id'])
-        ) {
-            continue;
-        }
-
-        $variantId = (int) $variant['variant_id'];
-        $valueId   = (int) $variant['variant_value_id'];
-
-        $key = $variantId . '-' . $valueId;
-        if (isset($seen[$key])) {
-            continue;
-        }
-        $seen[$key] = true;
-
-        $qty      = (int) ($variant['quantity'] ?? 0);
-        $purchase = (float) ($variant['purchase_price'] ?? 0);
-        $selling = (float) ($variant['selling_price'] ?? 0);
-        
-        // Get color value - FIXED: properly get color from request
-        $color = !empty($variant['color']) ? $variant['color'] : null;
-
-        if ($qty <= 0) continue;
-
-        $imagePath = null;
-        $existingVariant = ProductVariant::where([
-            'product_id' => $product->id,
-            'variant_id' => $variantId,
-            'variant_value_id' => $valueId,
-        ])->first();
-
-        if (!$imagePath && $existingVariant) {
-            $imagePath = $existingVariant->image_url;
-            // Preserve existing color if not provided in request
-            if (empty($color) && $existingVariant->color) {
-                $color = $existingVariant->color;
+    private function saveBase64Image($base64String, $product, $variant)
+    {
+        try {
+            if (strpos($base64String, 'data:image') !== 0) {
+                return $base64String;
             }
-        }
-
-        if (
-            isset($variant['image_url'])
-            && $this->isUploadedFile($variant['image_url'])) {
+            
+            $image_parts = explode(";base64,", $base64String);
+            
+            if (count($image_parts) < 2) {
+                return null;
+            }
+            
+            $image_type_aux = explode("image/", $image_parts[0]);
+            $image_type = $image_type_aux[1] ?? 'jpeg';
+            $image_base64 = base64_decode($image_parts[1]);
+            
+            if (!$image_base64) {
+                return null;
+            }
+            
+            $filename = uniqid() . '.' . $image_type;
             $productSlug = Str::slug($product->slug ?? $product->name);
-
-            $variantSlug = Str::slug(
-                ($variant['sku_suffix'] ?? 'variant') . '-' . ($variant['variant_value_id'] ?? uniqid())
-            );
-
-            $imagePath = $variant['image_url']->store(
-                "admin/product/{$productSlug}/variant/{$variantSlug}",
-                's3'
-            );
+            $variantSlug = Str::slug(($variant['sku_suffix'] ?? 'variant') . '-' . ($variant['variant_value_id'] ?? uniqid()));
+            
+            $path = "admin/product/{$productSlug}/variant/{$variantSlug}/{$filename}";
+            
+            Storage::disk('s3')->put($path, $image_base64);
+            
+            return $path;
+            
+        } catch (\Exception $e) {
+            \Log::error("Failed to save base64 image: " . $e->getMessage());
+            return null;
         }
-
-        $variantModel = ProductVariant::updateOrCreate(
-            [
-                'product_id'       => $product->id,
-                'variant_id'       => $variantId,
-                'variant_value_id' => $valueId,
-            ],
-            [
-                'quantity'         => $qty,
-                'purchase_price'   => $purchase,
-                'selling_price'    => $selling,
-                'total_price'      => $qty * $purchase,
-                'sku_suffix'       => $variant['sku_suffix'] ?? null,
-                'sort_order'       => $variant['sort_order'] ?? 0,
-                'status'           => $variant['status'] ?? 'active',
-                'color'            => $color, // FIXED: Use the color variable
-                'height'           => $variant['height'] ?? null,
-                'width'            => $variant['width'] ?? null,
-                'image_url'        => $imagePath,
-            ]
-        );
-        
-        $processedVariantIds[] = $variantModel->id;
-
-        $totalPurchase += $qty * $purchase;
-        $totalSelling  += $qty * $selling;
     }
-    
-    // Optional: Delete variants that are no longer in the request
-    if (!empty($processedVariantIds)) {
-        ProductVariant::where('product_id', $product->id)
-            ->whereNotIn('id', $processedVariantIds)
-            ->delete();
-    }
-
-    return compact('totalPurchase', 'totalSelling');
-}
-
     private function updateProductPrices(Product $product, array $totals): void
     {
         $product->update([
@@ -405,57 +476,55 @@ private function handleVariants(Request $request, Product $product): array
     ));
 }
     public function update(Request $request, Product $product)
-{
-     try {
-    DB::transaction(function () use ($request, $product) {
+    {
+        try {
+        DB::transaction(function () use ($request, $product) {
 
-        $productData = $this->validateProductForUpdate($request, $product);
-        $productData = $this->handleProductImagesForUpdate($request, $product, $productData);
+            $productData = $this->validateProductForUpdate($request, $product);
+            $productData = $this->handleProductImagesForUpdate($request, $product, $productData);
 
-        $product->update($productData);
+            $product->update($productData);
 
-        $keepVariantIds = [];
-        
-        if ($request->has('variants')) {
-            foreach ($request->variants as $variant) {
-                if (!empty($variant['variant_id']) && !empty($variant['variant_value_id'])) {
-                    // Find existing variant or create a temporary key
-                    $existingVariant = ProductVariant::where([
-                        'product_id' => $product->id,
-                        'variant_id' => $variant['variant_id'],
-                        'variant_value_id' => $variant['variant_value_id'],
-                    ])->first();
-                    
-                    if ($existingVariant) {
-                        $keepVariantIds[] = $existingVariant->id;
+            $keepVariantIds = [];
+            
+            if ($request->has('variants')) {
+                foreach ($request->variants as $variant) {
+                    if (!empty($variant['variant_id']) && !empty($variant['variant_value_id'])) {
+                        // Find existing variant or create a temporary key
+                        $existingVariant = ProductVariant::where([
+                            'product_id' => $product->id,
+                            'variant_id' => $variant['variant_id'],
+                            'variant_value_id' => $variant['variant_value_id'],
+                        ])->first();
+                        
+                        if ($existingVariant) {
+                            $keepVariantIds[] = $existingVariant->id;
+                        }
                     }
                 }
             }
+            ProductVariant::where('product_id', $product->id)
+                ->whereNotIn('id', $keepVariantIds)
+                ->delete();
+
+            $totals = $this->handleVariants($request, $product);
+
+            $this->updateProductPrices($product, $totals);
+        });
+
+        return redirect()
+            ->to(admin_route('products.index'))
+            ->with('success', 'Product & variants updated successfully.');
+    } catch (\Throwable $e) {
+
+            \Log::error($e); 
+
+            return back()->with(
+                'error',
+                'Something went wrong while saving the product. Please check required fields.'
+            );
         }
-        
-        // Delete variants that are not in the keep list
-        ProductVariant::where('product_id', $product->id)
-            ->whereNotIn('id', $keepVariantIds)
-            ->delete();
-
-        $totals = $this->handleVariants($request, $product);
-
-        $this->updateProductPrices($product, $totals);
-    });
-
-    return redirect()
-        ->to(admin_route('products.index'))
-        ->with('success', 'Product & variants updated successfully.');
- } catch (\Throwable $e) {
-
-        \Log::error($e); 
-
-        return back()->with(
-            'error',
-            'Something went wrong while saving the product. Please check required fields.'
-        );
     }
-}
     private function validateProductForUpdate(Request $request, Product $product): array
     {
         $data = $request->validate([

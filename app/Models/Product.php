@@ -92,7 +92,6 @@ protected static function booted()
             }
         });
     }
-// ✅ USER SIDE ONLY (safe)
 public function getImageUrlPublicAttribute()
 {
     if (!$this->image_url) return null;
