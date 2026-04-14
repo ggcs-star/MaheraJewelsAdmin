@@ -60,6 +60,10 @@ class CartController extends Controller
             $platformProduct = $this->getPlatformProduct($itemData['product_id']);
             
             $variantId = $itemData['variant_id'] ?? null;
+                if ($variantId === null) {
+                    $firstVariant = \App\Models\ProductVariant::where('product_id', $itemData['product_id'])->first();
+                    $variantId = $firstVariant ? $firstVariant->id : 0;
+                }
 
             $pricing = $this->getPricing(
                 $platformProduct->id,
@@ -227,13 +231,26 @@ class CartController extends Controller
             'status' => 'active',
         ]);
         
-        if ($variantId !== null) {
+        if ($variantId !== null && $variantId !== 0) {
             $query->where('product_variant_id', $variantId);
         } else {
-            $query->whereNull('product_variant_id');
+            $query->where(function($q) {
+                $q->whereNull('product_variant_id')
+                ->orWhere('product_variant_id', 0);
+            });
         }
         
-        $pricing = $query->firstOrFail();
+        $pricing = $query->first();
+        
+        if (!$pricing) {
+            $pricing = PlatformPricing::where('platform_product_id', $platformProductId)
+                ->where('status', 'active')
+                ->first();
+        }
+        
+        if (!$pricing) {
+            abort(422, 'Pricing configuration missing for this product');
+        }
 
         if ($pricing->quantity < $qty) {
             abort(422, 'Requested quantity not available');
