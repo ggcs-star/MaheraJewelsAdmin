@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\StockMovement;
-
+use App\Helpers\ColorHelper;
 class StockController extends Controller
 {
     public function index()
@@ -25,6 +25,7 @@ class StockController extends Controller
                 $variant->sold_qty = (int) $sold;
                 $variant->remaining_qty = $remaining;
                 $variant->total_qty = (int) ($variant->sold_qty + $variant->remaining_qty);
+                $variant->color_name = ColorHelper::getColorName($variant->color);
             }
         }
 

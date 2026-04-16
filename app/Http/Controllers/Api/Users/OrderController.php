@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Throwable;
-
+use App\Helpers\S3Helper;
 class OrderController extends Controller
 {
     public function index(Request $request): JsonResponse
@@ -34,7 +34,7 @@ class OrderController extends Controller
             $order->items->transform(function ($item) {
 
                 if ($item->image && !str_starts_with($item->image, 'http')) {
-                    $item->image = Storage::disk('s3')->url($item->image);
+                    $item->image = S3Helper::url($item->image);
                 }
 
                 return $item;
@@ -71,7 +71,7 @@ class OrderController extends Controller
                 $order->items->transform(function ($item) {
 
             if ($item->image && !str_starts_with($item->image, 'http')) {
-                $item->image = Storage::disk('s3')->url($item->image);
+                $item->image = S3Helper::url($item->image);
             }
 
             return $item;

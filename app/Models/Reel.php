@@ -17,15 +17,9 @@ class Reel extends Model
         'views_count',
         'likes_count',
         'shares_count',
-        'comments_count'
+        'comments_count',
+        'sort_order'
     ];
-
-    /*
-    |--------------------------------------------------------------------------
-    | Relationships
-    |--------------------------------------------------------------------------
-    */
-
     public function platformProduct()
     {
         return $this->belongsTo(PlatformProduct::class);

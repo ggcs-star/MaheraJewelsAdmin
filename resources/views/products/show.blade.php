@@ -121,7 +121,7 @@
     <div class="mb-3 border rounded overflow-hidden" style="height:220px">
         <img
             id="mainProductImage"
-            src="{{ Storage::disk('s3')->url(ltrim($mainImage,'/')) }}"
+            src="{{ \App\Helpers\S3Helper::url(ltrim($mainImage,'/')) }}"
             class="w-100 h-100 object-fit-cover"
             alt="{{ $product->name }}">
     </div>
@@ -145,7 +145,7 @@
             @if(is_string($img) && str_contains($img, '/'))
 
                 <img
-                    src="{{ Storage::disk('s3')->url(ltrim($img,'/')) }}"
+                    src="{{ \App\Helpers\S3Helper::url(ltrim($img,'/')) }}"
                     class="border rounded"
                     style="width:70px;height:70px;object-fit:cover;cursor:pointer"
                     onclick="changeMainImage(this.src)"
@@ -528,23 +528,22 @@
                                         <tr>
                                             <td class="text-center">{{ $index + 1 }}</td>
                                            <td>
-    <span class="badge bg-primary bg-opacity-10 text-primary">
-        {{ $variant->variant->name }}
-    </span>
-</td>
-<td class="fw-semibold">{{ $variant->value->value }}</td>
+                                            <span class="badge bg-primary bg-opacity-10 text-primary">
+                                                {{ $variant->variant->name }}
+                                            </span>
+                                        </td>
+                                        <td class="fw-semibold">{{ $variant->value->value }}</td>
 
                                             <td>
                                                 <code class="small">{{ $variant->sku_suffix ?? '—' }}</code>
                                             </td>
                                             <td class="text-center">
                                                @if($variant->image_url)
-    <img
-        src="{{ Storage::disk('s3')->url($variant->image_url) }}"
-        width="50" height="50"
-        class="img-thumbnail rounded"
-        alt="{{ $variant->variant_value }}">
-
+                                                    <img
+                                                        src="{{ \App\Helpers\S3Helper::url($variant->image_url) }}"
+                                                        width="50" height="50"
+                                                        class="img-thumbnail rounded"
+                                                        alt="{{ $variant->variant_value }}">
 
                                                 @else
                                                     <div class="bg-light rounded d-inline-flex align-items-center justify-content-center"

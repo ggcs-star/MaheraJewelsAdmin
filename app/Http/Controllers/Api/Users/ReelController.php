@@ -8,23 +8,17 @@ use App\Models\ReelLike;
 use App\Models\ReelComment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-
+use App\Helpers\S3Helper;
 class ReelController extends Controller
 {
-
-    /*
-    |--------------------------------------------------------------------------
-    | REEL FEED
-    |--------------------------------------------------------------------------
-    */
-
     public function index(Request $request)
     {
         $ip = $request->ip();
 
         $reels = Reel::with('platformProduct.product')
             ->where('status',1)
-            ->latest()
+            ->orderBy('sort_order', 'asc')
+            ->orderBy('created_at', 'desc')
             ->paginate(10);
 
         $data = $reels->getCollection()->map(function ($reel) use ($ip){
@@ -41,7 +35,7 @@ class ReelController extends Controller
                 'title' => $reel->title,
                 'description' => $reel->description,
 
-                'video' => Storage::disk('s3')->url($reel->video),
+                'video' => S3Helper::url($reel->video),
 
                 'views' => $reel->views_count,
                 'likes' => $reel->likes_count,
@@ -99,7 +93,7 @@ class ReelController extends Controller
                 'id' => $reel->id,
                 'title' => $reel->title,
                 'description' => $reel->description,
-                'video' => Storage::disk('s3')->url($reel->video),
+                'video' => S3Helper::url($reel->video),
 
                 'views' => $reel->views_count,
                 'likes' => $reel->likes_count,

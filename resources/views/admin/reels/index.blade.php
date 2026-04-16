@@ -91,6 +91,8 @@
                         <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>Latest</option>
                         <option value="views" {{ request('sort') == 'views' ? 'selected' : '' }}>Most Views</option>
                         <option value="likes" {{ request('sort') == 'likes' ? 'selected' : '' }}>Most Likes</option>
+                        <option value="sort_order" {{ request('sort') == 'sort_order' ? 'selected' : '' }}>Sort Order</option> <!-- YEH ADD KARO -->
+
                     </select>
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
@@ -138,9 +140,9 @@
                             </td>
                             
                             <td>
-                                <div class="reel-thumb" onclick="openVideo('{{ Storage::disk('s3')->url($reel->video) }}')">
+                                <div class="reel-thumb" onclick="openVideo('{{ \App\Helpers\S3Helper::url($reel->video) }}')"></div>
                                     <video muted preload="metadata">
-                                        <source src="{{ Storage::disk('s3')->url($reel->video) }}#t=0.5" type="video/mp4">
+                                        <source src="{{ \App\Helpers\S3Helper::url($reel->video) }}#t=0.5" type="video/mp4">
                                     </video>
                                     <div class="play-overlay">
                                         <i class="bi bi-play-fill"></i>

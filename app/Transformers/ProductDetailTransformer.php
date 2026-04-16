@@ -5,7 +5,7 @@ namespace App\Transformers;
 use App\Models\Product;
 use App\Services\ProductPricingService;
 use Illuminate\Support\Facades\Storage;
-
+use App\Helpers\S3Helper;
 class ProductDetailTransformer
 {
     public static function transform(Product $product): array
@@ -20,20 +20,20 @@ class ProductDetailTransformer
             'description' => $product->description,
             'short_description' => $product->short_description,
 
-            // ✅ MAIN IMAGE (FULL URL)
             'image_url' => $product->image_url
-                ? Storage::disk('s3')->url($product->image_url)
+                ? S3Helper::url($product->image_url)
                 : null,
 
             'gallery_images' => is_array($product->gallery_images)
-    ? collect($product->gallery_images)
-        ->map(fn ($img) =>
-            Storage::disk('s3')->url(
-                str_replace('\\', '/', $img)
-            )
-        )
-        ->values()
-    : [],
+                ? collect($product->gallery_images)
+                    ->map(fn ($img) =>
+                        S3Helper::url(
+                        str_replace('\\', '/', $img)
+                    )
+                        
+                    )
+                    ->values()
+                : [],
 
             'category' => [
                 'id' => $product->category?->id,
@@ -62,9 +62,8 @@ class ProductDetailTransformer
                     'currency' => $pricing?->currency ?? 'INR',
                     'quantity' => $pricing?->quantity ?? 0,
 
-                    // ✅ VARIANT IMAGE (FULL URL)
                     'image_url' => $variant->image_url
-                        ? Storage::disk('s3')->url($variant->image_url)
+                        ? S3Helper::url($variant->image_url)
                         : null,
 
                     'in_stock' => ($pricing?->quantity ?? 0) > 0,

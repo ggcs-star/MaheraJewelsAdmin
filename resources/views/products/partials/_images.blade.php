@@ -42,7 +42,7 @@
             @if(!empty($product?->gallery_images) && is_array($product->gallery_images))
                 @foreach($product->gallery_images as $img)
                     <img
-                        src="{{ Storage::disk('s3')->url($img) }}"
+                        src="{{ \App\Helpers\S3Helper::url($img) }}"
                         data-path="{{ $img }}"
                         class="rounded border selectable-gallery-image"
                         style="width:100px;height:100px;object-fit:cover;cursor:pointer;">
@@ -50,7 +50,7 @@
 
             @elseif(!empty($product?->image_url))
                 <img
-                    src="{{ Storage::disk('s3')->url($product->image_url) }}"
+                    src="{{ \App\Helpers\S3Helper::url($product->image_url) }}"
                     data-path="{{ $product->image_url }}"
                     class="rounded border selectable-gallery-image"
                     style="width:100px;height:100px;object-fit:cover;cursor:pointer;">

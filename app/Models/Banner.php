@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use App\Helpers\S3Helper;
 
 class Banner extends Model
 {
@@ -36,7 +37,7 @@ class Banner extends Model
             return $value;
         }
 
-        return Storage::disk('s3')->url($value);
+         return S3Helper::url($value);
     }
 
     // Mobile image full URL
@@ -48,6 +49,6 @@ class Banner extends Model
             return $value;
         }
 
-        return Storage::disk('s3')->url($value);
+         return S3Helper::url($value);
     }
 }

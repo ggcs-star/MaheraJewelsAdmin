@@ -6,7 +6,7 @@ use App\Models\Banner;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-
+use App\Helpers\S3Helper;
 class BannerController extends Controller
 {
     public function index()
@@ -26,17 +26,17 @@ class BannerController extends Controller
 
         $folder = Str::slug($request->title ?? 'banner-'.time());
 
-        $data['image'] = $request->file('image')->storeAs(
+        $data['image'] = S3Helper::storeAs(
+            $request->file('image'),
             "admin/banner/desktop/{$folder}",
-            $request->file('image')->getClientOriginalName(),
-            's3'
+            $request->file('image')->getClientOriginalName()
         );
 
         if ($request->hasFile('mobile_image')) {
-            $data['mobile_image'] = $request->file('mobile_image')->storeAs(
+           $data['mobile_image'] = S3Helper::storeAs(
+                $request->file('mobile_image'),
                 "admin/banner/mobile/{$folder}",
-                $request->file('mobile_image')->getClientOriginalName(),
-                's3'
+                $request->file('mobile_image')->getClientOriginalName()
             );
         }
 
@@ -70,13 +70,13 @@ class BannerController extends Controller
     ]);
 
     if ($request->hasFile('image')) {
-        $data['image'] = $request->file('image')
-            ->store("admin/banner/desktop/{$banner->title}", 's3');
+        $data['image'] = S3Helper::store($request->file('image'),
+            "admin/banner/desktop/{$banner->title}" );
     }
 
     if ($request->hasFile('mobile_image')) {
-        $data['mobile_image'] = $request->file('mobile_image')
-            ->store("admin/banner/mobile/{$banner->title}", 's3');
+        $data['mobile_image'] = S3Helper::store($request->file('mobile_image'),
+            "admin/banner/mobile/{$banner->title}" );
     }
 
     $banner->update($data);
@@ -120,8 +120,8 @@ class BannerController extends Controller
 
     private function deleteImage(?string $path): void
     {
-        if ($path && Storage::disk('s3')->exists($path)) {
-            Storage::disk('s3')->delete($path);
+        if ($path) {
+            S3Helper::delete($path);
         }
     }
 

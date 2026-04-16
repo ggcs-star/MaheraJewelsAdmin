@@ -156,7 +156,7 @@
 
                         @if ($organization->logo_path)
                             <div class="mt-2">
-                                <img src="{{ Storage::disk('s3')->url($organization->logo_path) }}"
+                                <img src="{{ \App\Helpers\S3Helper::url($organization->logo_path) }}"
                                      class="rounded border"
                                      height="80"
                                      alt="Organization Logo">
