@@ -82,10 +82,10 @@
                 $productVariants = $product->variants;
                 
                 $productImage = 'https://placehold.co/52x52?text=📦';
-                if($product->image_url && Storage::disk('s3')->exists($product->image_url)) {
-                    $productImage = Storage::disk('s3')->url($product->image_url);
+                if($product->image_url && \App\Helpers\S3Helper::exists($product->image_url)) {
+                    $productImage = \App\Helpers\S3Helper::url($product->image_url);
                 } elseif($product->gallery_images && is_array($product->gallery_images) && count($product->gallery_images) > 0) {
-                    $productImage = Storage::disk('s3')->url($product->gallery_images[0]);
+                    $productImage = \App\Helpers\S3Helper::url($product->gallery_images[0]);
                 }
             @endphp
             
@@ -149,18 +149,18 @@
                                     @foreach($productVariants as $idx => $variant)
                                     @php
                                         $variantImage = 'https://placehold.co/36x36?text=📦';
-                                        if($variant->image_url && Storage::disk('s3')->exists($variant->image_url)) {
-                                            $variantImage = Storage::disk('s3')->url($variant->image_url);
-                                        } elseif($product->image_url && Storage::disk('s3')->exists($product->image_url)) {
-                                            $variantImage = Storage::disk('s3')->url($product->image_url);
+                                        if($variant->image_url && \App\Helpers\S3Helper::exists($variant->image_url)) {
+                                            $variantImage = \App\Helpers\S3Helper::url($variant->image_url);
+                                        } elseif($product->image_url && \App\Helpers\S3Helper::exists($product->image_url)) {
+                                            $variantImage = \App\Helpers\S3Helper::url($product->image_url);
                                         } elseif($product->gallery_images && is_array($product->gallery_images) && count($product->gallery_images) > 0) {
-                                            $variantImage = Storage::disk('s3')->url($product->gallery_images[0]);
+                                            $variantImage = \App\Helpers\S3Helper::url($product->gallery_images[0]);
                                         }
                                         
                                         $variantName = $variant->value->value ?? $variant->value->name ?? 'Default';
                                         $colorHex = $variant->color ?? '';
                                     @endphp
-                                    <tr style="border-bottom: 1px solid #f1f5f9;">
+                                    <tr style="border-bottom: 1px solid #f1f5f9;" data-color-name="{{ $variant->color_name }}">
                                         <td style="font-size: 12px; color: #94a3b8;">{{ $idx + 1 }}</td>
                                         <td>
                                             <img src="{{ $variantImage }}" width="36" height="36" style="object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;" onerror="this.src='https://placehold.co/36x36?text=📦'">
@@ -276,46 +276,6 @@
 
 <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 <script>
-function getColorName(hex) {
-    const colors = {
-        '#2069df': 'Blue', '#df2a2a': 'Red', '#b75c5c': 'Rose', '#2fbc59': 'Green', '#8a8728': 'Olive',
-        '#a73939': 'Maroon', '#1f48a8': 'Navy Blue', '#313f34': 'Dark Green', '#ba2c2c': 'Crimson Red',
-        '#993d3d': 'Brown Red', '#000000': 'Black', '#FFFFFF': 'White', '#FF0000': 'Red', '#00FF00': 'Green',
-        '#0000FF': 'Blue', '#FFFF00': 'Yellow', '#FF00FF': 'Magenta', '#00FFFF': 'Cyan', '#808080': 'Gray',
-        '#800000': 'Maroon', '#808000': 'Olive', '#008000': 'Green', '#800080': 'Purple', '#000080': 'Navy',
-        '#008080': 'Teal', '#C0C0C0': 'Silver', '#FFA500': 'Orange', '#FFC0CB': 'Pink', '#FFD700': 'Gold',
-        '#A52A2A': 'Brown', '#D2691E': 'Chocolate', '#DC143C': 'Crimson', '#EE82EE': 'Violet', '#F08080': 'Light Coral'
-    };
-    
-    const upperHex = hex.toUpperCase();
-    if (colors[upperHex]) {
-        return colors[upperHex];
-    }
-    
-    const hexClean = upperHex.replace('#', '');
-    if (hexClean === '000000') return 'Black';
-    if (hexClean === 'FFFFFF') return 'White';
-    if (hexClean.length === 6) {
-        const r = parseInt(hexClean.substring(0,2), 16);
-        const g = parseInt(hexClean.substring(2,4), 16);
-        const b = parseInt(hexClean.substring(4,6), 16);
-        
-        if (r > 200 && g < 100 && b < 100) return 'Red';
-        if (r < 100 && g > 200 && b < 100) return 'Green';
-        if (r < 100 && g < 100 && b > 200) return 'Blue';
-        if (r > 200 && g > 200 && b < 100) return 'Yellow';
-        if (r > 200 && g < 100 && b > 200) return 'Magenta';
-        if (r < 100 && g > 200 && b > 200) return 'Cyan';
-        if (r > 200 && g > 100 && b < 150) return 'Orange';
-        if (r > 150 && g < 100 && b < 100) return 'Dark Red';
-        if (r < 100 && g > 150 && b < 100) return 'Dark Green';
-        if (r < 100 && g < 100 && b > 150) return 'Dark Blue';
-        if (r > 100 && g > 100 && b > 100 && r < 200 && g < 200 && b < 200) return 'Gray';
-        if (r < 50 && g < 50 && b < 50) return 'Black';
-        if (r > 200 && g > 200 && b > 200) return 'White';
-    }
-    return hex;
-}
 
 document.querySelectorAll('.product-header').forEach(header => {
     header.addEventListener('click', function(e) {
@@ -395,7 +355,7 @@ document.getElementById('exportExcelBtn').addEventListener('click', function() {
                             hex = bgColor;
                         }
                         if (hex) {
-                            colorValue = getColorName(hex);
+                            colorValue = row.getAttribute('data-color-name') || '';
                         } else {
                             colorValue = '';
                         }

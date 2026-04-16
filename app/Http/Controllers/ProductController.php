@@ -17,12 +17,11 @@ use App\Models\Warehouse;
 use App\Models\Variant;
 use App\Models\VariantValue;
 use Illuminate\Support\Str;
-
+use App\Helpers\S3Helper;
 
 
 class ProductController extends Controller
 {
-
 private function isUploadedFile($file): bool
 {
     return $file instanceof \Illuminate\Http\UploadedFile;
@@ -232,17 +231,17 @@ private function isUploadedFile($file): bool
         $productSlug = Str::slug($request->name);
 
             if ($request->hasFile('image_url')) {
-                $data['image_url'] = $request->file('image_url')
-                    ->store("admin/product/{$productSlug}", 's3');
+                $data['image_url'] = S3Helper::store( $request->file('image_url'),
+                    "admin/product/{$productSlug}");
             }
             if ($request->hasFile('gallery_images')) {
                 $gallery = [];
 
                 foreach ($request->file('gallery_images') as $img) {
-                    $gallery[] = $img->store(
-                        "admin/product/{$productSlug}",
-                        's3'
-                    );
+                    $gallery[] = S3Helper::store(
+                            $img,
+                            "admin/product/{$productSlug}"
+                        );
                 }
 
                 $data['gallery_images'] = $gallery;
@@ -325,8 +324,7 @@ private function isUploadedFile($file): bool
         elseif (isset($variant['image_file']) && $this->isUploadedFile($variant['image_file'])) {
             $productSlug = Str::slug($product->slug ?? $product->name);
             $variantSlug = Str::slug(($variant['sku_suffix'] ?? 'variant') . '-' . ($variant['variant_value_id'] ?? uniqid()));
-            $imagePath = $variant['image_file']->store("admin/product/{$productSlug}/variant/{$variantSlug}", 's3');
-        }
+            $imagePath = S3Helper::store($variant['image_file'], "admin/product/{$productSlug}/variant/{$variantSlug}"); }
             $existingVariant = ProductVariant::where([
                 'product_id' => $product->id,
                 'variant_id' => $variantId,
@@ -354,9 +352,9 @@ private function isUploadedFile($file): bool
                 \Log::info("Processing uploaded file for variant $index");
                 $productSlug = Str::slug($product->slug ?? $product->name);
                 $variantSlug = Str::slug(($variant['sku_suffix'] ?? 'variant') . '-' . ($variant['variant_value_id'] ?? uniqid()));
-                $imagePath = $variant['image_url']->store(
-                    "admin/product/{$productSlug}/variant/{$variantSlug}",
-                    's3'
+                $imagePath = S3Helper::store(
+                    $variant['image_url'],
+                    "admin/product/{$productSlug}/variant/{$variantSlug}"
                 );
                 \Log::info("Uploaded file saved to: " . $imagePath);
             } else {
@@ -430,7 +428,7 @@ private function isUploadedFile($file): bool
             
             $path = "admin/product/{$productSlug}/variant/{$variantSlug}/{$filename}";
             
-            Storage::disk('s3')->put($path, $image_base64);
+            S3Helper::put($path, $image_base64);
             
             return $path;
             
@@ -575,8 +573,10 @@ private function isUploadedFile($file): bool
             $productSlug = Str::slug($product->slug ?? $product->name);
 
             if ($request->hasFile('image_url')) {
-                $data['image_url'] = $request->file('image_url')
-                    ->store("admin/product/{$productSlug}", 's3');
+                $data['image_url'] = S3Helper::store(
+                    $request->file('image_url'),
+                    "admin/product/{$productSlug}"
+                );
             }
 
             if ($request->hasFile('gallery_images')) {
@@ -588,10 +588,10 @@ private function isUploadedFile($file): bool
                 $newImages = [];
 
                 foreach ($request->file('gallery_images') as $img) {
-                    $newImages[] = $img->store(
-                        "admin/product/{$productSlug}",
-                        's3'
-                    );
+                    $newImages[] = S3Helper::store(
+                            $img,
+                            "admin/product/{$productSlug}"
+                        );
                 }
 
                 $data['gallery_images'] = array_merge($existingImages, $newImages);
@@ -607,28 +607,27 @@ private function isUploadedFile($file): bool
 
             foreach ($product->variants as $variant) {
 
-                if ($variant->image_url && Storage::disk('s3')->exists($variant->image_url)) {
-                    Storage::disk('s3')->delete($variant->image_url);
+                if ($variant->image_url) {
+                    S3Helper::delete($variant->image_url);
                 }
             }
 
 
-            if ($product->image_url && Storage::disk('s3')->exists($product->image_url)) {
-                Storage::disk('s3')->delete($product->image_url);
-            }
-
-            if (is_array($product->gallery_images)) {
-        foreach ($product->gallery_images as $img) {
-            if (Storage::disk('s3')->exists($img)) {
-                Storage::disk('s3')->delete($img);
-            }
-        }
-    }
-
-        if ($product->image_url && Storage::disk('s3')->exists($product->image_url)) {
-            Storage::disk('s3')->delete($product->image_url);
+           if ($product->image_url) {
+            S3Helper::delete($product->image_url);
         }
 
+        if (is_array($product->gallery_images)) {
+            foreach ($product->gallery_images as $img) {
+                if ($img) {
+                    S3Helper::delete($img);
+                }
+            }
+        }
+
+        if ($product->image_url) {
+            S3Helper::delete($product->image_url);
+        }
 
             $product->variants()->delete();
 
@@ -911,8 +910,7 @@ private function isUploadedFile($file): bool
                 return response()->json(['success' => false]);
             }
 
-            // delete from S3
-            Storage::disk('s3')->delete($images[$index]);
+            S3Helper::delete($images[$index]);
 
             // remove from array
             unset($images[$index]);

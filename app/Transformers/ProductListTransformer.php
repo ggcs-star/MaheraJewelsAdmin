@@ -5,21 +5,19 @@ namespace App\Transformers;
 use App\Models\Product;
 use App\Services\ProductPricingService;
 use Illuminate\Support\Facades\Storage;
-
+use App\Helpers\S3Helper;
 class ProductListTransformer
 {
     public static function transform(Product $product): array
     {
         $bestPricing = ProductPricingService::getBestPricing($product);
-
-        // ✅ PRODUCT IMAGE = gallery_images ka first image
         $imageUrl = null;
 
         if (
             is_array($product->gallery_images) &&
             count($product->gallery_images) > 0
         ) {
-            $imageUrl = Storage::disk('s3')->url(
+           $imageUrl = S3Helper::url(
                 str_replace('\\', '/', $product->gallery_images[0])
             );
         }
@@ -31,7 +29,6 @@ class ProductListTransformer
             'brand' => $product->brand,
             'product_price' => $product->product_price,
 
-            // ⭐ YAHI MAIN CHEEZ HAI
             'image_url' => $imageUrl,
 
             'price' => $bestPricing?->price,

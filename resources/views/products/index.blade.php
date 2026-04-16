@@ -138,17 +138,17 @@
 
     @if(count($images))
         <img
-    src="{{ Storage::disk('s3')->url($images[0]) }}"
-    class="img-thumbnail product-image-preview"
-    data-images='@json(
-        array_map(
-            fn($i) => Storage::disk("s3")->url($i),
-            $images
-        )
-    )'
-    style="width:50px;height:50px;object-fit:cover;cursor:zoom-in;"
-    onclick="event.stopPropagation()"
->
+            src="{{ \App\Helpers\S3Helper::url($images[0]) }}"
+            class="img-thumbnail product-image-preview"
+            data-images='@json(
+                array_map(
+                    fn($i) => \App\Helpers\S3Helper::url($i),
+                    $images
+                )
+            )'
+            style="width:50px;height:50px;object-fit:cover;cursor:zoom-in;"
+            onclick="event.stopPropagation()"
+        >
 
     @else
         <span class="text-muted small">No Image</span>

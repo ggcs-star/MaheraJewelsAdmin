@@ -9,7 +9,7 @@ use Throwable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-
+use App\Helpers\S3Helper;
 class ProfileController extends Controller
 {
     public function show(): JsonResponse
@@ -107,111 +107,111 @@ class ProfileController extends Controller
     }
     
     private function handleAvatar($file, $user): string
-{
-    Log::info('Handling avatar upload', [
-        'user_id' => $user->id,
-        'file_name' => $file->getClientOriginalName()
-    ]);
-
-    if ($user->profile_image) {
-        try {
-            $oldPath = str_replace(Storage::disk('s3')->url(''), '', $user->profile_image);
-            if ($oldPath) {
-                Storage::disk('s3')->delete($oldPath);
-            }
-        } catch (\Exception $e) {
-            Log::warning('Failed to delete old image', ['error' => $e->getMessage()]);
-        }
-    }
-
-    $path = 'admin/profile/user_' . $user->id;
-    $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-
-    try {
-        $uploaded = Storage::disk('s3')->putFileAs(
-            $path,
-            $file,
-            $fileName
-        );
-        
-        if (!$uploaded) {
-            $uploaded = Storage::disk('s3')->putFileAs(
-                $path,
-                $file,
-                $fileName,
-                'public'
-            );
-        }
-        
-        if (!$uploaded) {
-            $uploaded = Storage::disk('s3')->putFileAs(
-                $path,
-                $file,
-                $fileName,
-                [
-                    'visibility' => 'public',
-                    'ContentType' => $file->getMimeType()
-                ]
-            );
-        }
-        
-        if (!$uploaded) {
-            throw new \Exception('S3 upload failed - no path returned');
-        }
-
-        $url = Storage::disk('s3')->url($uploaded);
-        
-        Log::info('S3 upload success', [
-            'path' => $uploaded,
-            'url' => $url
+    {
+        Log::info('Handling avatar upload', [
+            'user_id' => $user->id,
+            'file_name' => $file->getClientOriginalName()
         ]);
-        
-        return $uploaded;
 
-    } catch (\Exception $e) {
-        Log::error('S3 upload failed', [
-            'error' => $e->getMessage(),
-            'path' => $path,
-            'file' => $fileName
-        ]);
-        throw $e;
-    }
-}
-    public function removeImage(): JsonResponse
-{
-    try {
-        $user = auth()->user();
-        
         if ($user->profile_image) {
-            Storage::disk('s3')->delete($user->profile_image);
-            
-            $user->profile_image = null;
-            $user->save();
+            try {
+                $oldPath = str_replace(S3Helper::url(''), '', $user->profile_image);
+                if ($oldPath) {
+                    S3Helper::delete($oldPath);
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to delete old image', ['error' => $e->getMessage()]);
+            }
         }
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Profile image removed successfully',
-            'data' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'mobile' => $user->mobile,
-                'profile_image' => null
-            ]
-        ]);
-        
-    } catch (Throwable $e) {
-        Log::error('Remove profile image error', [
-            'message' => $e->getMessage(),
-            'user_id' => auth()->id()
-        ]);
-        
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to remove image'
-        ], 500);
+
+        $path = 'admin/profile/user_' . $user->id;
+        $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+        try {
+        $uploaded = S3Helper::storeAs(
+                $file,
+                $path,
+                $fileName
+            );
+            
+                if (!$uploaded) {
+                $uploaded = S3Helper::storeAs(
+                    $file,
+                    $path,
+                    $fileName,
+                    'public'
+                );
+            }
+
+            if (!$uploaded) {
+                $uploaded = S3Helper::storeAs(
+                    $file,
+                    $path,
+                    $fileName,
+                    [
+                        'visibility' => 'public',
+                        'ContentType' => $file->getMimeType()
+                    ]
+                );
+            }
+            
+            if (!$uploaded) {
+                throw new \Exception('S3 upload failed - no path returned');
+            }
+
+            $url = S3Helper::url($uploaded);
+            
+            Log::info('S3 upload success', [
+                'path' => $uploaded,
+                'url' => $url
+            ]);
+            
+            return $uploaded;
+
+        } catch (\Exception $e) {
+            Log::error('S3 upload failed', [
+                'error' => $e->getMessage(),
+                'path' => $path,
+                'file' => $fileName
+            ]);
+            throw $e;
+        }
     }
-}
+    public function removeImage(): JsonResponse
+    {
+        try {
+            $user = auth()->user();
+            
+            if ($user->profile_image) {
+                S3Helper::delete($user->profile_image);
+                
+                $user->profile_image = null;
+                $user->save();
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile image removed successfully',
+                'data' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'mobile' => $user->mobile,
+                    'profile_image' => null
+                ]
+            ]);
+            
+        } catch (Throwable $e) {
+            Log::error('Remove profile image error', [
+                'message' => $e->getMessage(),
+                'user_id' => auth()->id()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to remove image'
+            ], 500);
+        }
+    }
 
 }

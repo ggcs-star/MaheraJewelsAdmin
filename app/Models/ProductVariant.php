@@ -9,7 +9,7 @@ class ProductVariant extends Model
     protected $fillable = [
         'product_id',
         'variant_id',
-    'variant_value_id',
+        'variant_value_id',
         'height',
         'width',
         'color',
@@ -36,17 +36,17 @@ class ProductVariant extends Model
         return $this->hasMany(\App\Models\PlatformPricing::class, 'product_variant_id');
     }
     public function variant()
-{
-    return $this->belongsTo(Variant::class);
-}
-public function product()
-{
-    return $this->belongsTo(Product::class, 'product_id');
-}
+    {
+        return $this->belongsTo(Variant::class);
+    }
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_id');
+    }
 
-public function value()
-{
-    return $this->belongsTo(VariantValue::class, 'variant_value_id');
-}
+    public function value()
+    {
+        return $this->belongsTo(VariantValue::class, 'variant_value_id');
+    }
 
-}
+    }

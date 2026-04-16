@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use App\Helpers\S3Helper;
 class Organization extends Model
 {
     protected $table = 'organizations';
@@ -31,7 +31,7 @@ class Organization extends Model
     public function getLogoUrlAttribute(): ?string
     {
         return $this->logo_path
-            ? \Storage::disk('s3')->url($this->logo_path)
+            ? S3Helper::url($this->logo_path)
             : null;
     }
 }

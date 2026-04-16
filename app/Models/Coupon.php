@@ -31,11 +31,10 @@ class Coupon extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
-public function bank()
-{
-    return $this->belongsTo(Bank::class);
-}
-
+    public function bank()
+    {
+        return $this->belongsTo(Bank::class);
+    }
 
     public function platforms()
     {

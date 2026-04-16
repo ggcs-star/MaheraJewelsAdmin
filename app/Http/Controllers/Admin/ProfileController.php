@@ -33,18 +33,14 @@ class ProfileController extends Controller
             'profile_image.max' => 'Image size should be less than 2MB',
         ]);
 
-        // Handle profile image removal
         if ($request->has('remove_profile_image') && $request->remove_profile_image == '1') {
-            // Delete old image if exists
             if ($user->profile_image && Storage::disk('public')->exists($user->profile_image)) {
                 Storage::disk('public')->delete($user->profile_image);
             }
             $user->profile_image = null;
         }
 
-        // Handle new profile image upload
         if ($request->hasFile('profile_image')) {
-            // Delete old image if exists
             if ($user->profile_image && Storage::disk('public')->exists($user->profile_image)) {
                 Storage::disk('public')->delete($user->profile_image);
             }
@@ -53,7 +49,6 @@ class ProfileController extends Controller
             $user->profile_image = $path;
         }
 
-        // Update user details
         $user->name    = $request->name;
         $user->mobile  = $request->mobile;
         $user->address = $request->address ?? '';

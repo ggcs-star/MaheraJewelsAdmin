@@ -7,7 +7,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Support\Facades\Storage;
-
+use App\Helpers\S3Helper;
 class User extends Authenticatable
 {
     use HasApiTokens, HasRoles, Notifiable;
@@ -41,7 +41,7 @@ class User extends Authenticatable
             return $value;
         }
 
-        return Storage::disk('s3')->url($value);
+        return S3Helper::url($value);
     }
         
 }

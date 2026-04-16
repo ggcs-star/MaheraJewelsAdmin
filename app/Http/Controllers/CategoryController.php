@@ -6,96 +6,95 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-
+use App\Helpers\S3Helper;
 
 class CategoryController extends Controller
 {
+    public function index(Request $request)
+    {
+        $categories = Category::with('children')
+            ->whereNull('parent_id')
+        ->when($request->filled('search'), function ($q) use ($request) {
+        $search = $request->search;
 
-  public function index(Request $request)
-{
-    $categories = Category::with('children')
-        ->whereNull('parent_id')
-      ->when($request->filled('search'), function ($q) use ($request) {
-    $search = $request->search;
+        $q->where(function ($query) use ($search) {
+            
+            $query->where('name', 'like', "%{$search}%")
+                ->orWhere('slug', 'like', "%{$search}%")
+                ->orWhereHas('children', function ($childQuery) use ($search) {
+                    $childQuery->where('name', 'like', "%{$search}%")
+                                ->orWhere('slug', 'like', "%{$search}%");
+                });
+        });
+    })
 
-    $q->where(function ($query) use ($search) {
-        
-        $query->where('name', 'like', "%{$search}%")
-              ->orWhere('slug', 'like', "%{$search}%")
-              ->orWhereHas('children', function ($childQuery) use ($search) {
-                  $childQuery->where('name', 'like', "%{$search}%")
-                             ->orWhere('slug', 'like', "%{$search}%");
-              });
-    });
-})
+            ->when($request->filled('status'), function ($q) use ($request) {
+                $q->where('status', $request->status);
+            })
+            ->when($request->filled('visibility'), function ($q) use ($request) {
+                $q->where('visibility', $request->visibility);
+            })
+            ->when($request->filled('parent_id'), function ($q) use ($request) {
+                $q->where('parent_id', $request->parent_id);
+            })
+            ->when(
+                $request->filled('adv_field') && $request->filled('adv_value'),
+                function ($q) use ($request) {
 
-        ->when($request->filled('status'), function ($q) use ($request) {
-            $q->where('status', $request->status);
-        })
-        ->when($request->filled('visibility'), function ($q) use ($request) {
-            $q->where('visibility', $request->visibility);
-        })
-        ->when($request->filled('parent_id'), function ($q) use ($request) {
-            $q->where('parent_id', $request->parent_id);
-        })
-        ->when(
-    $request->filled('adv_field') && $request->filled('adv_value'),
-    function ($q) use ($request) {
+            $allowedFields = ['name', 'slug', 'status', 'visibility'];
 
-        $allowedFields = ['name', 'slug', 'status', 'visibility'];
+            $field = $request->adv_field;
+            $condition = $request->adv_condition;
+            $value = $request->adv_value;
 
-        $field = $request->adv_field;
-        $condition = $request->adv_condition;
-        $value = $request->adv_value;
+            if (!in_array($field, $allowedFields)) {
+                return;
+            }
 
-        if (!in_array($field, $allowedFields)) {
-            return;
-        }
+        $q->where(function ($query) use ($field, $condition, $value) {
 
-       $q->where(function ($query) use ($field, $condition, $value) {
+        if ($condition === 'like') {
 
-    if ($condition === 'like') {
+            $query->where($field, 'LIKE', "%{$value}%")
+                ->orWhereHas('children', function ($child) use ($field, $value) {
+                    $child->where($field, 'LIKE', "%{$value}%");
+                });
 
-        $query->where($field, 'LIKE', "%{$value}%")
-              ->orWhereHas('children', function ($child) use ($field, $value) {
-                  $child->where($field, 'LIKE', "%{$value}%");
-              });
+        } elseif ($condition === 'starts_with') {
 
-    } elseif ($condition === 'starts_with') {
+            $query->where($field, 'LIKE', "{$value}%")
+                ->orWhereHas('children', function ($child) use ($field, $value) {
+                    $child->where($field, 'LIKE', "{$value}%");
+                });
 
-        $query->where($field, 'LIKE', "{$value}%")
-              ->orWhereHas('children', function ($child) use ($field, $value) {
-                  $child->where($field, 'LIKE', "{$value}%");
-              });
+        } elseif ($condition === 'ends_with') {
 
-    } elseif ($condition === 'ends_with') {
+            $query->where($field, 'LIKE', "%{$value}")
+                ->orWhereHas('children', function ($child) use ($field, $value) {
+                    $child->where($field, 'LIKE', "%{$value}");
+                });
 
-        $query->where($field, 'LIKE', "%{$value}")
-              ->orWhereHas('children', function ($child) use ($field, $value) {
-                  $child->where($field, 'LIKE', "%{$value}");
-              });
+        } else {
+            $query->where($field, $condition, $value)
+                ->orWhereHas('children', function ($child) use ($field, $condition, $value) {
+                    $child->where($field, $condition, $value);
+                });
+            }
+            });
+            }
+            )
+            ->orderBy('sort_order')
+            ->paginate(10);
+            $categories->getCollection()->transform(function ($category, $index) use ($categories) {
+                $category->serial = $categories->firstItem() + $index;
+                return $category;
+            });
 
-    } else {
-        $query->where($field, $condition, $value)
-              ->orWhereHas('children', function ($child) use ($field, $condition, $value) {
-                  $child->where($field, $condition, $value);
-              });
+
+        $parents = Category::whereNull('parent_id')->get();
+
+        return view('categories.index', compact('categories', 'parents'));
     }
-});
-}
-)
-        ->orderBy('sort_order')
-        ->paginate(10);
-        $categories->getCollection()->transform(function ($category, $index) use ($categories) {
-    $category->serial = $categories->firstItem() + $index;
-    return $category;
-});
-
-
-    $parents = Category::whereNull('parent_id')->get();
-
-    return view('categories.index', compact('categories', 'parents'));
-}
    public function create()
     {
         return view('categories.create', [
@@ -171,30 +170,30 @@ class CategoryController extends Controller
             'status' => 'required|in:active,inactive',
         ]);
     }    
-private function uploadImage(Request $request): ?string
-{
-    if (!$request->hasFile('image_url')) {
-        return null;
+    private function uploadImage(Request $request): ?string
+    {
+        if (!$request->hasFile('image_url')) {
+            return null;
+        }
+
+        $categorySlug = Str::slug($request->name);
+
+        if ($request->parent_id && $parent = Category::find($request->parent_id)) {
+            $parentSlug = Str::slug($parent->name);
+            $path = "admin/category/{$parentSlug}/{$categorySlug}";
+        } else {
+            $path = "admin/category/{$categorySlug}";
+        }
+
+        return S3Helper::store( $request->file('image_url'),$path);
     }
 
-    $categorySlug = Str::slug($request->name);
-
-    if ($request->parent_id && $parent = Category::find($request->parent_id)) {
-        $parentSlug = Str::slug($parent->name);
-        $path = "admin/category/{$parentSlug}/{$categorySlug}";
-    } else {
-        $path = "admin/category/{$categorySlug}";
+    private function deleteImage(?string $imagePath): void
+    {
+        if ($imagePath) {
+            S3Helper::delete($imagePath);
+        }
     }
-
-    return $request->file('image_url')->store($path, 's3');
-}
-
-   private function deleteImage(?string $imagePath): void
-{
-    if ($imagePath && Storage::disk('s3')->exists($imagePath)) {
-        Storage::disk('s3')->delete($imagePath);
-    }
-}
 
    private function parentCategories($excludeId = null)
     {
@@ -205,35 +204,35 @@ private function uploadImage(Request $request): ?string
             ->orderBy('name')
             ->get();
     }
-public function details(Category $category, Request $request)
-{
-    $category->load('parent', 'children');
+    public function details(Category $category, Request $request)
+    {
+        $category->load('parent', 'children');
 
-    $serial = $request->serial;
+        $serial = $request->serial;
 
-    return view('categories.details', compact('category', 'serial'));
-}
-
-
-public function bulkDelete(Request $request)
-{
-    $ids = $request->input('ids', []);
-    
-    if (empty($ids)) {
-        return back()->with('error', 'No categories selected.');
+        return view('categories.details', compact('category', 'serial'));
     }
-    $categoriesWithChildren = Category::whereIn('id', $ids)
-        ->whereHas('children')
-        ->pluck('id');
+
+
+    public function bulkDelete(Request $request)
+    {
+        $ids = $request->input('ids', []);
         
-    if ($categoriesWithChildren->count() > 0) {
-        return back()->with('error', 'Cannot delete categories that have subcategories.');
+        if (empty($ids)) {
+            return back()->with('error', 'No categories selected.');
+        }
+        $categoriesWithChildren = Category::whereIn('id', $ids)
+            ->whereHas('children')
+            ->pluck('id');
+            
+        if ($categoriesWithChildren->count() > 0) {
+            return back()->with('error', 'Cannot delete categories that have subcategories.');
+        }
+        Category::whereIn('id', $ids)->delete();
+        
+        return redirect()
+            ->to(admin_route('categories.index'))
+            ->with('success', 'Selected categories deleted successfully.');
     }
-    Category::whereIn('id', $ids)->delete();
-    
-    return redirect()
-        ->to(admin_route('categories.index'))
-        ->with('success', 'Selected categories deleted successfully.');
-}
 
 }

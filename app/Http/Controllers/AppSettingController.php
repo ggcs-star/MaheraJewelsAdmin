@@ -6,6 +6,7 @@ use App\Models\AppSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
+use App\Helpers\S3Helper;
 class AppSettingController extends Controller
 {
     public function index()
@@ -50,30 +51,27 @@ class AppSettingController extends Controller
         if ($request->hasFile('app_logo')) {
 
             $data['app_logo'] =
-                $request->file('app_logo')
-                ->store(
-                    'admin/app-settings/applogo',
-                    's3'
+                S3Helper::store(
+                    $request->file('app_logo'),
+                    'admin/app-settings/applogo'
                 );
         }
 
         if ($request->hasFile('splash_logo')) {
 
             $data['splash_logo'] =
-                $request->file('splash_logo')
-                ->store(
-                    'admin/app-settings/splash',
-                    's3'
+                S3Helper::store(
+                    $request->file('splash_logo'),
+                    'admin/app-settings/splash'
                 );
         }
 
         if ($request->hasFile('header_logo')) {
 
-            $data['header_logo'] =
-                $request->file('header_logo')
-                ->store(
-                    'admin/app-settings/header',
-                    's3'
+           $data['header_logo'] =
+                S3Helper::store(
+                    $request->file('header_logo'),
+                    'admin/app-settings/header'
                 );
         }
 
@@ -121,37 +119,40 @@ class AppSettingController extends Controller
         if ($request->hasFile('app_logo')) {
 
             if ($appSetting->app_logo) {
-                Storage::disk('s3')
-                    ->delete($appSetting->app_logo);
+                S3Helper::delete($appSetting->app_logo);
             }
 
             $data['app_logo'] =
-                $request->file('app_logo')
-                ->store('admin/app-settings/applogo', 's3');
+                S3Helper::store(
+                    $request->file('app_logo'),
+                    'admin/app-settings/applogo'
+                );
         }
 
         if ($request->hasFile('splash_logo')) {
 
             if ($appSetting->splash_logo) {
-                Storage::disk('s3')
-                    ->delete($appSetting->splash_logo);
+                S3Helper::delete($appSetting->splash_logo);
             }
 
             $data['splash_logo'] =
-                $request->file('splash_logo')
-                ->store('admin/app-settings/splash', 's3');
+                S3Helper::store(
+                    $request->file('splash_logo'),
+                    'admin/app-settings/splash'
+                );
         }
 
         if ($request->hasFile('header_logo')) {
 
             if ($appSetting->header_logo) {
-                Storage::disk('s3')
-                    ->delete($appSetting->header_logo);
+                S3Helper::delete($appSetting->header_logo);
             }
 
             $data['header_logo'] =
-                $request->file('header_logo')
-                ->store('admin/app-settings/header', 's3');
+                S3Helper::store(
+                    $request->file('header_logo'),
+                    'admin/app-settings/header'
+                );
         }
 
         $appSetting->update($data);
@@ -165,15 +166,15 @@ class AppSettingController extends Controller
     public function destroy(AppSetting $appSetting)
     {
         if ($appSetting->app_logo) {
-            Storage::disk('s3')->delete($appSetting->app_logo);
+            S3Helper::delete($appSetting->app_logo);
         }
 
         if ($appSetting->splash_logo) {
-            Storage::disk('s3')->delete($appSetting->splash_logo);
+            S3Helper::delete($appSetting->splash_logo);
         }
 
         if ($appSetting->header_logo) {
-            Storage::disk('s3')->delete($appSetting->header_logo);
+            S3Helper::delete($appSetting->header_logo);
         }
 
         $appSetting->delete();

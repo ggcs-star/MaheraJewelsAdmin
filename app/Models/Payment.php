@@ -7,34 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 class Payment extends Model
 {
 
-    /*
-    |--------------------------------------------------------------------------
-    | Payment Status Constants
-    |--------------------------------------------------------------------------
-    */
-
     const STATUS_PENDING = 'pending';
     const STATUS_PAID = 'paid';
     const STATUS_FAILED = 'failed';
     const STATUS_REFUNDED = 'refunded';
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Default Attributes
-    |--------------------------------------------------------------------------
-    */
-
     protected $attributes = [
         'gateway' => 'razorpay'
     ];
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Fillable
-    |--------------------------------------------------------------------------
-    */
 
     protected $fillable = [
 
@@ -63,13 +44,6 @@ class Payment extends Model
 
     ];
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Casts
-    |--------------------------------------------------------------------------
-    */
-
     protected $casts = [
 
         'paid_at' => 'datetime',
@@ -79,13 +53,6 @@ class Payment extends Model
         'razorpay_payload' => 'array',
 
     ];
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Relationships
-    |--------------------------------------------------------------------------
-    */
 
     public function user()
     {
@@ -97,13 +64,6 @@ class Payment extends Model
     {
         return $this->belongsTo(Order::class);
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Helper Methods
-    |--------------------------------------------------------------------------
-    */
 
     public function isPending(): bool
     {
@@ -127,13 +87,6 @@ class Payment extends Model
     {
         return $this->payment_status === self::STATUS_REFUNDED;
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Scopes
-    |--------------------------------------------------------------------------
-    */
 
     public function scopePaid($query)
     {

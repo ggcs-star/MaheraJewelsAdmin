@@ -6,7 +6,7 @@ use App\Models\Organization;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-
+use App\Helpers\S3Helper;
 class OrganizationController extends Controller
 {
     public function index(Request $request)
@@ -173,17 +173,17 @@ class OrganizationController extends Controller
         $folder = Str::slug($name);
         $path   = "admin/organization/{$folder}/logo";
 
-        return $request->file('logo')->storeAs(
-            $path,
-            'logo.' . $request->file('logo')->getClientOriginalExtension(),
-            's3'
-        );
+        return S3Helper::storeAs(
+            $request->file('logo'),
+                $path,
+                'logo.' . $request->file('logo')->getClientOriginalExtension()
+            );
     }
 
     private function deleteLogo(?string $path): void
     {
-        if ($path && Storage::disk('s3')->exists($path)) {
-            Storage::disk('s3')->delete($path);
+        if ($path) {
+            S3Helper::delete($path);
         }
     }
 }

@@ -6,8 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
-
-
+use App\Helpers\S3Helper;
 class Product extends Model
 {
     protected $fillable = [
@@ -54,37 +53,37 @@ class Product extends Model
     {
         return $this->belongsTo(Supplier::class);
     }
- public function variants()
-{
-    return $this->hasMany(
-        \App\Models\ProductVariant::class,
-        'product_id', // FK in product_variants table
-        'id'          // PK in products table
-    );
-}
+    public function variants()
+    {
+        return $this->hasMany(
+            \App\Models\ProductVariant::class,
+            'product_id', 
+            'id'          
+        );
+    }
 
-public function platforms()
-{
-    return $this->belongsToMany(Platform::class, 'platform_products')
-        ->withPivot([
-            'platform_sku',
-            'platform_price',
-            'platform_stock',
-            'status'
-        ])
-        ->withTimestamps();
-}
-public function platformListings()
-{
-    return $this->hasMany(PlatformProduct::class);
-}
+    public function platforms()
+    {
+        return $this->belongsToMany(Platform::class, 'platform_products')
+            ->withPivot([
+                'platform_sku',
+                'platform_price',
+                'platform_stock',
+                'status'
+            ])
+            ->withTimestamps();
+    }
+    public function platformListings()
+    {
+        return $this->hasMany(PlatformProduct::class);
+    }
 
-public function warehouse()
-{
-    return $this->belongsTo(Warehouse::class);
-}
+    public function warehouse()
+    {
+        return $this->belongsTo(Warehouse::class);
+    }
 
-protected static function booted()
+    protected static function booted()
     {
         static::creating(function ($product) {
             if (empty($product->slug)) {
@@ -92,28 +91,28 @@ protected static function booted()
             }
         });
     }
-public function getImageUrlPublicAttribute()
-{
-    if (!$this->image_url) return null;
+    public function getImageUrlPublicAttribute()
+    {
+        if (!$this->image_url) return null;
 
-    return Storage::disk('s3')->url(
-        str_replace('\\', '/', $this->image_url)
-    );
-}
-
-public function getGalleryImagesPublicAttribute()
-{
-    if (!$this->gallery_images) return [];
-
-    $images = is_array($this->gallery_images)
-        ? $this->gallery_images
-        : json_decode($this->gallery_images, true);
-
-    return collect($images)->map(function ($path) {
-        return Storage::disk('s3')->url(
-            str_replace('\\', '/', $path)
+        return S3Helper::url(
+            str_replace('\\', '/', $this->image_url)
         );
-    })->toArray();
-}
+    }
+
+    public function getGalleryImagesPublicAttribute()
+    {
+        if (!$this->gallery_images) return [];
+
+        $images = is_array($this->gallery_images)
+            ? $this->gallery_images
+            : json_decode($this->gallery_images, true);
+
+        return collect($images)->map(function ($path) {
+            return S3Helper::url(
+                str_replace('\\', '/', $path)
+            );
+        })->toArray();
+    }
 
 }
