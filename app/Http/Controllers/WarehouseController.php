@@ -110,13 +110,16 @@ class WarehouseController extends Controller
             ->with('success', 'Warehouse updated successfully.');
     }
 
-    public function destroy(Warehouse $warehouse)
+    public function destroy($id)
     {
-        $warehouse->delete();
-
-        return redirect()
-            ->to(admin_route('warehouses.index'))
-            ->with('success', 'Warehouse deleted successfully.');
+        $warehouse = Warehouse::find($id);
+        
+        if($warehouse) {
+            $warehouse->delete();
+            return redirect()->to(admin_route('warehouses.index'))->with('success', 'Warehouse deleted successfully.');
+        }
+        
+        return redirect()->to(admin_route('warehouses.index'))->with('error', 'Warehouse not found.');
     }
 
     public function show(Warehouse $warehouse)

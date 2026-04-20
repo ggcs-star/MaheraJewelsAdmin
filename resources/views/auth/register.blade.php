@@ -2,18 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register | RADIANT JEWEL </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Register | RADIANT JEWEL</title>
     <style>
-        .logo span {
-  margin-left: 8px;
-}
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
         }
         
         body {
@@ -28,9 +24,10 @@
             min-height: 100vh;
         }
         
+        /* IMAGE SECTION */
         .image-section {
             flex: 1;
-            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+            background: linear-gradient(135deg, rgba(107, 26, 58, 0.85) 0%, rgba(75, 15, 38, 0.9) 100%), 
                 url('https://images.pexels.com/photos/1927259/pexels-photo-1927259.jpeg?auto=compress&cs=tinysrgb&w=1600');
             background-size: cover;
             background-position: center;
@@ -46,6 +43,7 @@
             margin-bottom: 20px;
             font-weight: 700;
             line-height: 1.2;
+            letter-spacing: -0.02em;
         }
         
         .image-section p {
@@ -69,16 +67,28 @@
         }
         
         .benefit-icon {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.15);
             width: 40px;
             height: 40px;
-            border-radius: 50%;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 18px;
         }
         
+        .benefit-item h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .benefit-item p {
+            font-size: 13px !important;
+            opacity: 0.8;
+        }
+        
+        /* REGISTER SECTION */
         .register-section {
             flex: 1;
             display: flex;
@@ -94,15 +104,12 @@
         }
         
         .logo {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 800;
-            color: #2563eb;
             margin-bottom: 10px;
             text-align: center;
-        }
-        
-        .logo span {
-            color: #7c3aed;
+            color: #8B2452;
+            letter-spacing: -0.02em;
         }
         
         .register-header {
@@ -114,6 +121,7 @@
             font-size: 28px;
             color: #1e293b;
             margin-bottom: 8px;
+            font-weight: 700;
         }
         
         .register-header p {
@@ -128,26 +136,28 @@
         .form-label {
             display: block;
             color: #475569;
-            font-size: 14px;
-            font-weight: 500;
+            font-size: 13px;
+            font-weight: 600;
             margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         .form-group input {
             width: 100%;
-            padding: 16px 20px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
+            padding: 14px 20px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
             font-size: 15px;
             transition: all 0.3s;
-            background: #f8fafc;
+            background: #ffffff;
         }
         
         .form-group input:focus {
             outline: none;
-            border-color: #2563eb;
+            border-color: #8B2452;
             background: white;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            box-shadow: 0 0 0 3px rgba(139, 36, 82, 0.1);
         }
         
         .password-wrapper {
@@ -178,13 +188,13 @@
         }
         
         .password-toggle:hover .eye-icon {
-            fill: #2563eb;
+            fill: #8B2452;
         }
         
         .error-container {
             background: #fef2f2;
             border: 1px solid #fee2e2;
-            border-radius: 8px;
+            border-radius: 12px;
             padding: 16px;
             margin-bottom: 24px;
         }
@@ -203,11 +213,11 @@
         
         .submit-btn {
             width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+            padding: 14px;
+            background: #8B2452;
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
@@ -216,8 +226,9 @@
         }
         
         .submit-btn:hover {
+            background: #6B1A3A;
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.2);
+            box-shadow: 0 10px 25px rgba(107, 26, 58, 0.2);
         }
         
         .login-section {
@@ -235,46 +246,232 @@
         
         .login-btn {
             display: inline-block;
-            padding: 14px 32px;
+            padding: 12px 32px;
             background: white;
-            border: 2px solid #2563eb;
-            border-radius: 10px;
-            color: #2563eb;
+            border: 2px solid #8B2452;
+            border-radius: 12px;
+            color: #8B2452;
             font-weight: 600;
             text-decoration: none;
             transition: all 0.3s;
         }
         
         .login-btn:hover {
-            background: #2563eb;
+            background: #8B2452;
             color: white;
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.2);
+            box-shadow: 0 8px 20px rgba(139, 36, 82, 0.2);
         }
         
+        .success-message {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            color: #065f46;
+            padding: 14px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        /* ========== RESPONSIVE DESIGN ========== */
+        
+        /* Tablet */
         @media (max-width: 1024px) {
+            .image-section h1 {
+                font-size: 32px;
+            }
+            
+            .image-section p {
+                font-size: 16px;
+            }
+            
+            .benefits {
+                gap: 20px;
+            }
+            
+            .benefit-item h4 {
+                font-size: 14px;
+            }
+            
+            .benefit-item p {
+                font-size: 12px !important;
+            }
+        }
+        
+        /* Mobile - Image section TOP, Form BOTTOM */
+        @media (max-width: 768px) {
             .container {
                 flex-direction: column;
             }
             
             .image-section {
-                padding: 40px;
+                flex: none;
+                padding: 40px 30px;
                 text-align: center;
             }
             
-            .benefits {
-                justify-content: center;
-            }
-        }
-        
-        @media (max-width: 768px) {
             .image-section h1 {
-                font-size: 32px;
+                font-size: 28px;
+                text-align: center;
+            }
+            
+            .image-section p {
+                font-size: 14px;
+                text-align: center;
+                max-width: 100%;
             }
             
             .benefits {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
                 gap: 15px;
+                margin-top: 30px;
+            }
+            
+            .benefit-item {
+                justify-content: center;
+            }
+            
+            .benefit-item h4 {
+                font-size: 13px;
+            }
+            
+            .benefit-item p {
+                font-size: 11px !important;
+            }
+            
+            .benefit-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
+            
+            .register-section {
+                flex: none;
+                padding: 30px 20px;
+            }
+            
+            .register-container {
+                max-width: 100%;
+            }
+            
+            .logo {
+                font-size: 24px;
+            }
+            
+            .register-header h2 {
+                font-size: 24px;
+            }
+            
+            .register-header p {
+                font-size: 13px;
+            }
+            
+            .register-header {
+                margin-bottom: 30px;
+            }
+            
+            .form-group input {
+                padding: 12px 16px;
+                font-size: 14px;
+            }
+            
+            .submit-btn {
+                padding: 12px;
+                font-size: 15px;
+            }
+            
+            .login-btn {
+                padding: 10px 24px;
+                font-size: 14px;
+            }
+            
+            .login-text {
+                font-size: 13px;
+            }
+        }
+        
+        /* Small Mobile (below 480px) */
+        @media (max-width: 480px) {
+            .image-section {
+                padding: 30px 20px;
+            }
+            
+            .image-section h1 {
+                font-size: 24px;
+            }
+            
+            .image-section p {
+                font-size: 13px;
+            }
+            
+            .benefits {
+                gap: 12px;
+                margin-top: 25px;
+            }
+            
+            .benefit-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+            
+            .benefit-item h4 {
+                font-size: 12px;
+            }
+            
+            .benefit-item p {
+                font-size: 10px !important;
+            }
+            
+            .register-section {
+                padding: 25px 16px;
+            }
+            
+            .logo {
+                font-size: 22px;
+            }
+            
+            .register-header h2 {
+                font-size: 22px;
+            }
+            
+            .register-header {
+                margin-bottom: 25px;
+            }
+            
+            .form-group {
+                margin-bottom: 16px;
+            }
+            
+            .form-group input {
+                padding: 10px 14px;
+                font-size: 14px;
+            }
+            
+            .form-label {
+                font-size: 11px;
+                margin-bottom: 4px;
+            }
+            
+            .submit-btn {
+                padding: 10px;
+                font-size: 14px;
+                margin-top: 8px;
+            }
+            
+            .login-section {
+                margin-top: 24px;
+                padding-top: 20px;
+            }
+            
+            .login-btn {
+                padding: 10px 20px;
+                font-size: 13px;
+            }
+            
+            .login-text {
+                font-size: 13px;
+                margin-bottom: 12px;
             }
         }
     </style>
@@ -283,7 +480,7 @@
 <body>
     <div class="container">
         <div class="image-section">
-            <h1>Join ShopNow Today</h1>
+            <h1>Join Radiant Jewel Today</h1>
             <p>Create your account and unlock exclusive benefits, personalized recommendations, and faster checkout experience.</p>
             
             <div class="benefits">
@@ -291,28 +488,28 @@
                     <div class="benefit-icon">🎁</div>
                     <div>
                         <h4>Welcome Bonus</h4>
-                        <p style="font-size: 14px; opacity: 0.8;">Get 20% off on first order</p>
+                        <p>Get 20% off on first order</p>
                     </div>
                 </div>
                 <div class="benefit-item">
                     <div class="benefit-icon">⭐</div>
                     <div>
                         <h4>Exclusive Deals</h4>
-                        <p style="font-size: 14px; opacity: 0.8;">Member-only discounts</p>
+                        <p>Member-only discounts</p>
                     </div>
                 </div>
                 <div class="benefit-item">
                     <div class="benefit-icon">📱</div>
                     <div>
                         <h4>Wishlist</h4>
-                        <p style="font-size: 14px; opacity: 0.8;">Save items for later</p>
+                        <p>Save items for later</p>
                     </div>
                 </div>
                 <div class="benefit-item">
                     <div class="benefit-icon">⚡</div>
                     <div>
                         <h4>Fast Checkout</h4>
-                        <p style="font-size: 14px; opacity: 0.8;">Save shipping details</p>
+                        <p>Save shipping details</p>
                     </div>
                 </div>
             </div>
@@ -320,7 +517,7 @@
         
         <div class="register-section">
             <div class="register-container">
-                <div class="logo">RADIANT <span>JEWEL</span></div>
+                <div class="logo">RADIANT JEWEL</div>
                 <div class="register-header">
                     <h2>Create Account</h2>
                     <p>Join our community of happy shoppers</p>
@@ -328,29 +525,22 @@
                 
                 <form method="POST" action="/register">
                     @csrf
+                    
                     @if(session('success'))
-    <div style="
-        background:#ecfdf5;
-        border:1px solid #a7f3d0;
-        color:#065f46;
-        padding:14px;
-        border-radius:8px;
-        margin-bottom:20px;
-        font-size:14px;
-    ">
-        {{ session('success') }}
-    </div>
-@endif
+                        <div class="success-message">
+                            {{ session('success') }}
+                        </div>
+                    @endif
 
                     @if ($errors->any())
-    <div class="error-container">
-        <ul class="error-list">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
+                        <div class="error-container">
+                            <ul class="error-list">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
 
                     <div class="form-group">
                         <label class="form-label">Full Name</label>
@@ -400,8 +590,7 @@
     <script>
     function togglePassword(fieldId) {
         const passwordInput = document.getElementById(fieldId);
-        const toggleButton = passwordInput.nextElementSibling;
-        const eyeIcon = toggleButton.querySelector('.eye-icon');
+        const eyeIcon = passwordInput.nextElementSibling.querySelector('.eye-icon');
         
         if (passwordInput.type === 'password') {
             passwordInput.type = 'text';

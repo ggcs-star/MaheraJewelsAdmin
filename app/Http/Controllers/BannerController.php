@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Helpers\S3Helper;
+
 class BannerController extends Controller
 {
     public function index()
@@ -54,29 +55,26 @@ class BannerController extends Controller
 
     public function update(Request $request, Banner $banner)
 {
-    $data = $request->validate([
-        'title' => 'nullable|string|max:255',
-        'subtitle' => 'nullable|string|max:255',
-        'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-        'mobile_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-        'button_text' => 'nullable|string|max:50',
-        'button_link' => 'nullable|string|max:255',
-        'page' => 'required|in:home,category,product',
-        'position' => 'required|in:hero,mid,bottom',
-        'layout' => 'required|in:right,left,center',
-        'text_color' => ['required','regex:/^#([A-Fa-f0-9]{6})$/'],
-        'sort_order' => 'nullable|integer|min:0',
-        'status' => 'required|in:0,1',
-    ]);
+    $data = $this->validatedData($request, true);
 
     if ($request->hasFile('image')) {
-        $data['image'] = S3Helper::store($request->file('image'),
-            "admin/banner/desktop/{$banner->title}" );
+        if ($banner->getRawOriginal('image')) {
+            S3Helper::delete($banner->getRawOriginal('image'));
+        }
+        $file = $request->file('image');
+        $folder = "admin/banner/desktop/" . Str::slug($request->title ?? $banner->title ?? 'banner');
+        $path = $file->store($folder, 's3');
+        $data['image'] = $path;
     }
 
     if ($request->hasFile('mobile_image')) {
-        $data['mobile_image'] = S3Helper::store($request->file('mobile_image'),
-            "admin/banner/mobile/{$banner->title}" );
+        if ($banner->getRawOriginal('mobile_image')) {
+            S3Helper::delete($banner->getRawOriginal('mobile_image'));
+        }
+        $file = $request->file('mobile_image');
+        $folder = "admin/banner/mobile/" . Str::slug($request->title ?? $banner->title ?? 'banner');
+        $path = $file->store($folder, 's3');
+        $data['mobile_image'] = $path;
     }
 
     $banner->update($data);
@@ -126,7 +124,7 @@ class BannerController extends Controller
     }
 
     public function show(Banner $banner)
-{
-    return view('banners.show', compact('banner'));
-}
+    {
+        return view('banners.show', compact('banner'));
+    }
 }

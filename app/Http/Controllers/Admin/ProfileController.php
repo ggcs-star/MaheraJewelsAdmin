@@ -23,30 +23,26 @@ class ProfileController extends Controller
             'address'=> 'nullable|string|max:500',
             'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'remove_profile_image' => 'nullable|boolean',
-        ], [
-            'name.required' => 'Name field is required',
-            'mobile.required' => 'Mobile number is required',
-            'mobile.digits' => 'Mobile number must be exactly 10 digits',
-            'mobile.regex' => 'Mobile number must contain only numbers',
-            'profile_image.image' => 'Please upload a valid image file',
-            'profile_image.mimes' => 'Only JPG, JPEG and PNG images are allowed',
-            'profile_image.max' => 'Image size should be less than 2MB',
         ]);
 
         if ($request->has('remove_profile_image') && $request->remove_profile_image == '1') {
-            if ($user->profile_image && Storage::disk('public')->exists($user->profile_image)) {
-                Storage::disk('public')->delete($user->profile_image);
+            if ($user->profile_image) {
+                $oldPath = $user->getOriginal('profile_image');
+                if ($oldPath && Storage::disk('s3')->exists($oldPath)) {
+                    Storage::disk('s3')->delete($oldPath);
+                }
             }
             $user->profile_image = null;
         }
-
         if ($request->hasFile('profile_image')) {
-            if ($user->profile_image && Storage::disk('public')->exists($user->profile_image)) {
-                Storage::disk('public')->delete($user->profile_image);
+            if ($user->profile_image) {
+                $oldPath = $user->getOriginal('profile_image');
+                if ($oldPath && Storage::disk('s3')->exists($oldPath)) {
+                    Storage::disk('s3')->delete($oldPath);
+                }
             }
-            
-            $path = $request->file('profile_image')->store('profile-images', 'public');
-            $user->profile_image = $path;
+            $path = $request->file('profile_image')->store('profile-images', 's3');
+            $user->profile_image = $path; 
         }
 
         $user->name    = $request->name;

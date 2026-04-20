@@ -1,160 +1,132 @@
 @extends('layouts.admin.admin-settings')
 
 @section('settings-content')
-<div class="container-fluid">
-
-    {{-- HEADER --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="space-y-4">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-            <h2 class="fw-bold mb-0">Add Organization</h2>
-            <small class="text-muted">Create new organization</small>
+            <div class="flex items-center gap-2 text-sm text-gray-500 mb-1">
+                <a href="{{ admin_route('organizations.index') }}" class="hover:text-[#8B2452] transition-colors">Organizations</a>
+                <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+                <span class="text-gray-600">Add Organization</span>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-800">Add Organization</h1>
+            <p class="text-sm text-gray-500 mt-0.5">Create new organization</p>
         </div>
-        <a href="{{ admin_route('organizations.index') }}" class="btn btn-outline-secondary">
+        <a href="{{ admin_route('organizations.index') }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all border border-gray-200 text-gray-700 hover:bg-gray-50">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
             Back
         </a>
     </div>
 
-    {{-- GLOBAL ERRORS --}}
     @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul class="mb-0">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
+        <div class="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+            <div class="flex items-start gap-2">
+                <svg class="w-4 h-4 text-red-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                    <p class="text-sm font-medium text-red-700 mb-1">Please fix the following errors:</p>
+                    <ul class="text-xs text-red-600 list-disc list-inside">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
         </div>
     @endif
 
-    <form method="POST"
-          action="{{ admin_route('organizations.store') }}"
-          enctype="multipart/form-data">
+    <form method="POST" action="{{ admin_route('organizations.store') }}" enctype="multipart/form-data">
         @csrf
 
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <div class="row g-4">
-
-                    {{-- Name --}}
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold">
-                            Name <span class="text-danger">*</span>
+        <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+            <div class="p-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                            Name <span class="text-red-500">*</span>
                         </label>
-                        <input type="text"
-                               name="name"
-                               class="form-control @error('name') is-invalid @enderror"
-                               value="{{ old('name') }}"
-                               required>
+                        <input type="text" name="name" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm @error('name') border-red-500 @enderror" value="{{ old('name') }}" required>
                         @error('name')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    {{-- Email --}}
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold">Email</label>
-                        <input type="email"
-                               name="email"
-                               class="form-control @error('email') is-invalid @enderror"
-                               value="{{ old('email') }}">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Email</label>
+                        <input type="email" name="email" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm @error('email') border-red-500 @enderror" value="{{ old('email') }}">
                         @error('email')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    {{-- Mobile --}}
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold">Mobile</label>
-                        <input type="text"
-                               name="mobile"
-                               class="form-control"
-                               value="{{ old('mobile') }}">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Mobile</label>
+                        <input type="text" name="mobile" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm" value="{{ old('mobile') }}">
                     </div>
 
-                    {{-- Website --}}
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold">Website</label>
-                        <input type="url"
-                               name="website"
-                               class="form-control"
-                               value="{{ old('website') }}">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Website</label>
+                        <input type="url" name="website" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm" value="{{ old('website') }}">
                     </div>
 
-                    {{-- Status --}}
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold">
-                            Status <span class="text-danger">*</span>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                            Status <span class="text-red-500">*</span>
                         </label>
-                        <select name="is_active"
-                                class="form-select @error('is_active') is-invalid @enderror"
-                                required>
+                        <select name="is_active" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm bg-white @error('is_active') border-red-500 @enderror" required>
                             <option value="1" {{ old('is_active', 1) == 1 ? 'selected' : '' }}>Active</option>
                             <option value="0" {{ old('is_active') == 0 ? 'selected' : '' }}>Inactive</option>
                         </select>
                         @error('is_active')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    {{-- Address --}}
-                    <div class="col-md-12">
-                        <label class="form-label fw-semibold">Address</label>
-                        <textarea name="address"
-                                  class="form-control"
-                                  rows="2">{{ old('address') }}</textarea>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Address</label>
+                        <textarea name="address" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm" rows="2">{{ old('address') }}</textarea>
                     </div>
 
-                    {{-- City --}}
-                    <div class="col-md-3">
-                        <label class="form-label fw-semibold">City</label>
-                        <input type="text"
-                               name="city"
-                               class="form-control"
-                               value="{{ old('city') }}">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">City</label>
+                        <input type="text" name="city" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm" value="{{ old('city') }}">
                     </div>
 
-                    {{-- State --}}
-                    <div class="col-md-3">
-                        <label class="form-label fw-semibold">State</label>
-                        <input type="text"
-                               name="state"
-                               class="form-control"
-                               value="{{ old('state') }}">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">State</label>
+                        <input type="text" name="state" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm" value="{{ old('state') }}">
                     </div>
 
-                    {{-- Country --}}
-                    <div class="col-md-3">
-                        <label class="form-label fw-semibold">Country</label>
-                        <input type="text"
-                               name="country"
-                               class="form-control"
-                               value="{{ old('country') }}">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Country</label>
+                        <input type="text" name="country" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm" value="{{ old('country') }}">
                     </div>
 
-                    {{-- Pincode --}}
-                    <div class="col-md-3">
-                        <label class="form-label fw-semibold">Pincode</label>
-                        <input type="text"
-                               name="pincode"
-                               class="form-control"
-                               value="{{ old('pincode') }}">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Pincode</label>
+                        <input type="text" name="pincode" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm" value="{{ old('pincode') }}">
                     </div>
 
-                    {{-- Logo --}}
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold">Logo</label>
-                        <input type="file"
-                               name="logo"
-                               class="form-control @error('logo') is-invalid @enderror">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Logo</label>
+                        <input type="file" name="logo" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm file:mr-2 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#8B2452]/10 file:text-[#8B2452] hover:file:bg-[#8B2452]/20 @error('logo') border-red-500 @enderror">
                         @error('logo')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                         @enderror
                     </div>
-
                 </div>
             </div>
 
-            <div class="card-footer text-end">
-                <button class="btn btn-primary px-4">
+            <div class="px-5 py-4 border-t border-gray-100 bg-gray-50/50 flex justify-end">
+                <button type="submit" class="inline-flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all shadow-md" style="background: var(--primary-light); color: white;">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                    </svg>
                     Save Organization
                 </button>
             </div>

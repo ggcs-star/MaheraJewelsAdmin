@@ -262,145 +262,106 @@ private function isUploadedFile($file): bool
     }
 
     private function handleVariants(Request $request, Product $product): array
-    {
-        \Log::info('=== handleVariants START ===');
-        
-        $totalPurchase = 0;
-        $totalSelling  = 0;
+{
+    $totalPurchase = 0;
+    $totalSelling  = 0;
 
-        if (!$request->has('variants')) {
-            \Log::info('No variants in request');
-            return compact('totalPurchase', 'totalSelling');
+    if (!$request->has('variants')) {
+        return compact('totalPurchase', 'totalSelling');
+    }
+
+    $seen = []; 
+    $processedVariantIds = [];
+
+    foreach ($request->variants as $index => $variant) {
+
+        if (empty($variant['variant_id']) || empty($variant['variant_value_id'])) {
+            continue;
         }
 
-        \Log::info('Variants count: ' . count($request->variants));
+        $variantId = (int) $variant['variant_id'];
+        $valueId   = (int) $variant['variant_value_id'];
 
-        $seen = []; 
-        $processedVariantIds = [];
+        $key = $variantId . '-' . $valueId;
+        if (isset($seen[$key])) {
+            continue;
+        }
+        $seen[$key] = true;
 
-        foreach ($request->variants as $index => $variant) {
-            
-            \Log::info("--- Processing variant $index ---");
-            \Log::info("Variant keys: " . json_encode(array_keys($variant)));
+        $qty      = (int) ($variant['quantity'] ?? 0);
+        $purchase = (float) ($variant['purchase_price'] ?? 0);
+        $selling  = (float) ($variant['selling_price'] ?? 0);
+        $color    = !empty($variant['color']) ? $variant['color'] : null;
 
-            if (
-                empty($variant['variant_id']) ||
-                empty($variant['variant_value_id'])
-            ) {
-                \Log::info("Skipping variant $index - missing variant_id or variant_value_id");
-                continue;
+        if ($qty <= 0) continue;
+
+        $imagePath = null;
+        
+        $existingVariant = ProductVariant::where([
+            'product_id' => $product->id,
+            'variant_id' => $variantId,
+            'variant_value_id' => $valueId,
+        ])->first();
+
+        if ($existingVariant && $existingVariant->image_url) {
+            $imagePath = $existingVariant->image_url;
+            if (empty($color) && $existingVariant->color) {
+                $color = $existingVariant->color;
             }
+        }
 
-            $variantId = (int) $variant['variant_id'];
-            $valueId   = (int) $variant['variant_value_id'];
-
-            $key = $variantId . '-' . $valueId;
-            if (isset($seen[$key])) {
-                \Log::info("Skipping duplicate variant $index");
-                continue;
-            }
-            $seen[$key] = true;
-
-            $qty      = (int) ($variant['quantity'] ?? 0);
-            $purchase = (float) ($variant['purchase_price'] ?? 0);
-            $selling = (float) ($variant['selling_price'] ?? 0);
-            
-            $color = !empty($variant['color']) ? $variant['color'] : null;
-
-            if ($qty <= 0) {
-                \Log::info("Skipping variant $index - qty <= 0");
-                continue;
-            }
-
-            $imagePath = null;
-            if (!empty($variant['selected_gallery_image'])) {
+        // Priority 1: Manual file upload (for second, third variants)
+        if (isset($variant['image_file']) && $this->isUploadedFile($variant['image_file'])) {
+            $productSlug = Str::slug($product->slug ?? $product->name);
+            $variantSlug = Str::slug(($variant['sku_suffix'] ?? 'variant') . '-' . ($variant['variant_value_id'] ?? uniqid()));
+            $imagePath = S3Helper::store($variant['image_file'], "admin/product/{$productSlug}/variant/{$variantSlug}");
+        }
+        // Priority 2: Gallery image (for first variant)
+        elseif (!empty($variant['selected_gallery_image'])) {
             $imagePath = $this->saveBase64Image($variant['selected_gallery_image'], $product, $variant);
         }
+        // Priority 3: Direct file upload (fallback)
         elseif (isset($variant['image_url']) && $this->isUploadedFile($variant['image_url'])) {
             $productSlug = Str::slug($product->slug ?? $product->name);
             $variantSlug = Str::slug(($variant['sku_suffix'] ?? 'variant') . '-' . ($variant['variant_value_id'] ?? uniqid()));
-            $imagePath = $variant['image_url']->store("admin/product/{$productSlug}/variant/{$variantSlug}", 's3');
+            $imagePath = S3Helper::store($variant['image_url'], "admin/product/{$productSlug}/variant/{$variantSlug}");
         }
-        elseif (isset($variant['image_file']) && $this->isUploadedFile($variant['image_file'])) {
-            $productSlug = Str::slug($product->slug ?? $product->name);
-            $variantSlug = Str::slug(($variant['sku_suffix'] ?? 'variant') . '-' . ($variant['variant_value_id'] ?? uniqid()));
-            $imagePath = S3Helper::store($variant['image_file'], "admin/product/{$productSlug}/variant/{$variantSlug}"); }
-            $existingVariant = ProductVariant::where([
-                'product_id' => $product->id,
-                'variant_id' => $variantId,
+
+        $variantModel = ProductVariant::updateOrCreate(
+            [
+                'product_id'       => $product->id,
+                'variant_id'       => $variantId,
                 'variant_value_id' => $valueId,
-            ])->first();
-
-            if (!$imagePath && $existingVariant) {
-                $imagePath = $existingVariant->image_url;
-                if (empty($color) && $existingVariant->color) {
-                    $color = $existingVariant->color;
-                }
-                \Log::info("Using existing variant image: " . ($imagePath ?? 'null'));
-            }
-
-            if (!empty($variant['selected_gallery_image'])) {
-                \Log::info("🔥 selected_gallery_image FOUND for variant $index");
-                \Log::info("Image string length: " . strlen($variant['selected_gallery_image']));
-                \Log::info("Image string starts with: " . substr($variant['selected_gallery_image'], 0, 50));
-                
-                $imagePath = $this->saveBase64Image($variant['selected_gallery_image'], $product, $variant);
-                \Log::info('After saveBase64Image, $imagePath = ' . ($imagePath ?? 'NULL')); 
-                \Log::info("Saved image path: " . ($imagePath ?? 'NULL'));
-            }
-            elseif (isset($variant['image_url']) && $this->isUploadedFile($variant['image_url'])) {
-                \Log::info("Processing uploaded file for variant $index");
-                $productSlug = Str::slug($product->slug ?? $product->name);
-                $variantSlug = Str::slug(($variant['sku_suffix'] ?? 'variant') . '-' . ($variant['variant_value_id'] ?? uniqid()));
-                $imagePath = S3Helper::store(
-                    $variant['image_url'],
-                    "admin/product/{$productSlug}/variant/{$variantSlug}"
-                );
-                \Log::info("Uploaded file saved to: " . $imagePath);
-            } else {
-                \Log::info("No image source for variant $index");
-            }
-
-            $variantModel = ProductVariant::updateOrCreate(
-                [
-                    'product_id'       => $product->id,
-                    'variant_id'       => $variantId,
-                    'variant_value_id' => $valueId,
-                ],
-                [
-                    'quantity'         => $qty,
-                    'purchase_price'   => $purchase,
-                    'selling_price'    => $selling,
-                    'total_price'      => $qty * $purchase,
-                    'sku_suffix'       => $variant['sku_suffix'] ?? null,
-                    'sort_order'       => $variant['sort_order'] ?? 0,
-                    'status'           => $variant['status'] ?? 'active',
-                    'color'            => $color,
-                    'height'           => $variant['height'] ?? null,
-                    'width'            => $variant['width'] ?? null,
-                    'image_url'        => $imagePath,
-                ]
-            );
-            
-            \Log::info("Variant $index saved with image_url: " . ($imagePath ?? 'null'));
-            
-            $processedVariantIds[] = $variantModel->id;
-
-            $totalPurchase += $qty * $purchase;
-            $totalSelling  += $qty * $selling;
-        }
+            ],
+            [
+                'quantity'         => $qty,
+                'purchase_price'   => $purchase,
+                'selling_price'    => $selling,
+                'total_price'      => $qty * $purchase,
+                'sku_suffix'       => $variant['sku_suffix'] ?? null,
+                'sort_order'       => $variant['sort_order'] ?? 0,
+                'status'           => $variant['status'] ?? 'active',
+                'color'            => $color,
+                'height'           => $variant['height'] ?? null,
+                'width'            => $variant['width'] ?? null,
+                'image_url'        => $imagePath,
+            ]
+        );
         
-        if (!empty($processedVariantIds)) {
-            ProductVariant::where('product_id', $product->id)
-                ->whereNotIn('id', $processedVariantIds)
-                ->delete();
-            \Log::info("Deleted variants not in processed list");
-        }
+        $processedVariantIds[] = $variantModel->id;
 
-        \Log::info("=== handleVariants END - Total Purchase: $totalPurchase, Total Selling: $totalSelling ===");
-        
-        return compact('totalPurchase', 'totalSelling');
+        $totalPurchase += $qty * $purchase;
+        $totalSelling  += $qty * $selling;
     }
+    
+    if (!empty($processedVariantIds)) {
+        ProductVariant::where('product_id', $product->id)
+            ->whereNotIn('id', $processedVariantIds)
+            ->delete();
+    }
+
+    return compact('totalPurchase', 'totalSelling');
+}
     private function saveBase64Image($base64String, $product, $variant)
     {
         try {

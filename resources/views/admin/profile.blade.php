@@ -73,53 +73,59 @@
                             <input type="hidden" name="remove_profile_image" id="removeProfileImage" value="0">
                             
                             <label for="profileImageInput"
-                                   id="avatarLabel"
-                                   style="cursor: default;">
-                                @if(Auth::user()->profile_image)
-                                <div class="position-relative d-inline-block" id="avatarContainer">
-                                    <img
-                                        id="profileAvatarPreview"
-                                        src="{{ asset('storage/' . Auth::user()->profile_image) }}"
-                                        class="rounded-circle shadow"
-                                        width="140"
-                                        height="140"
-                                        style="object-fit: cover;"
-                                    >
-                                    <div class="position-absolute bottom-0 end-0 bg-primary rounded-circle p-2 border border-3 border-white">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-                                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                                        </svg>
-                                    </div>
-                                </div>
-                                @else
-                                <div class="position-relative d-inline-block" id="avatarContainer">
-                                    <div
-                                        id="profileAvatarPreview"
-                                        class="d-flex align-items-center justify-content-center
-                                               rounded-circle shadow
-                                               text-white fw-bold"
-                                        style="
-                                            width:140px;
-                                            height:140px;
-                                            font-size: 3rem;
-                                            background: linear-gradient(135deg,#4f46e5,#7c3aed);
-                                        "
-                                    >
-                                        {{ strtoupper(
-                                            collect(explode(' ', Auth::user()->name))
-                                                ->map(fn($w) => substr($w,0,1))
-                                                ->take(2)
-                                                ->implode('')
-                                        ) }}
-                                    </div>
-                                    <div class="position-absolute bottom-0 end-0 bg-primary rounded-circle p-2 border border-3 border-white">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-                                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-                                        </svg>
-                                    </div>
-                                </div>
-                                @endif
-                            </label>
+       id="avatarLabel"
+       style="cursor: default;">
+    @php
+        $profileImage = Auth::user()->profile_image;
+        $imageUrl = $profileImage ? $profileImage . '?t=' . time() : null;
+    @endphp
+    
+    @if($imageUrl)
+    <div class="position-relative d-inline-block" id="avatarContainer">
+        <img
+            id="profileAvatarPreview"
+            src="{{ $imageUrl }}"
+            class="rounded-circle shadow"
+            width="140"
+            height="140"
+            style="object-fit: cover;"
+            onerror="this.onerror=null; this.parentElement.innerHTML = `<div id='profileAvatarPreview' class='d-flex align-items-center justify-content-center rounded-circle shadow text-white fw-bold' style='width:140px;height:140px;font-size:3rem;background:linear-gradient(135deg,#4f46e5,#7c3aed);'>{{ strtoupper(collect(explode(' ', Auth::user()->name))->map(fn($w)=>substr($w,0,1))->take(2)->implode('')) }}</div>`;"
+        >
+        <div class="position-absolute bottom-0 end-0 bg-primary rounded-circle p-2 border border-3 border-white">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+            </svg>
+        </div>
+    </div>
+    @else
+    <div class="position-relative d-inline-block" id="avatarContainer">
+        <div
+            id="profileAvatarPreview"
+            class="d-flex align-items-center justify-content-center
+                   rounded-circle shadow
+                   text-white fw-bold"
+            style="
+                width:140px;
+                height:140px;
+                font-size: 3rem;
+                background: linear-gradient(135deg,#4f46e5,#7c3aed);
+            "
+        >
+            {{ strtoupper(
+                collect(explode(' ', Auth::user()->name))
+                    ->map(fn($w) => substr($w,0,1))
+                    ->take(2)
+                    ->implode('')
+            ) }}
+        </div>
+        <div class="position-absolute bottom-0 end-0 bg-primary rounded-circle p-2 border border-3 border-white">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+            </svg>
+        </div>
+    </div>
+    @endif
+</label>
                             
                             <div class="mt-3">
                                 <p class="text-muted small mb-2 d-none" id="avatarHint">

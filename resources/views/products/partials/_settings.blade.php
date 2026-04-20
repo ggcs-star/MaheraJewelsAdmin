@@ -2,114 +2,80 @@
     /** @var \App\Models\Product|null $product */
 @endphp
 
-<div class="card mb-4 shadow-sm">
-    <div class="card-header bg-white fw-semibold d-flex align-items-center gap-2">
-        <span class="text-primary fs-5">⚙️</span>
-        <span>Product Settings</span>
+<div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-5">
+    <div class="px-5 py-3 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-[#8B2452]/10 flex items-center justify-center">
+                <svg class="w-4 h-4 text-[#8B2452]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                </svg>
+            </div>
+            <h3 class="text-base font-bold text-gray-800">Product Settings</h3>
+            <span class="ml-auto text-xs text-gray-400">Configure product options</span>
+        </div>
     </div>
 
-    <div class="card-body">
-        <div class="row g-3">
-
-            <!-- Sort Order -->
-            <div class="col-md-3">
-                <label class="form-label fw-semibold">
-                    Sort Order<span class="text-danger">*</span>
+    <div class="p-5">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-5">
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                    Sort Order <span class="text-red-500">*</span>
                 </label>
                 <input type="number"
                        name="sort_order"
-                       class="form-control"
+                       class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm"
                        min="0"
                        value="{{ old('sort_order', $product->sort_order ?? 0) }}">
-                <div class="form-text">
-                    Lower value appears first.
-                </div>
+                <p class="text-xs text-gray-400 mt-1">Lower value appears first.</p>
             </div>
 
-            <!-- Featured -->
-            <div class="col-md-3">
-                <label class="form-label fw-semibold">
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
                     Featured
                 </label>
-                <select name="is_featured" class="form-select">
-                    <option value="0"
-                        {{ old('is_featured', $product->is_featured ?? 0) == 0 ? 'selected' : '' }}>
-                        No
-                    </option>
-                    <option value="1"
-                        {{ old('is_featured', $product->is_featured ?? 0) == 1 ? 'selected' : '' }}>
-                        Yes
-                    </option>
+                <select name="is_featured" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm bg-white">
+                    <option value="0" {{ old('is_featured', $product->is_featured ?? 0) == 0 ? 'selected' : '' }}>No</option>
+                    <option value="1" {{ old('is_featured', $product->is_featured ?? 0) == 1 ? 'selected' : '' }}>Yes</option>
                 </select>
-                <div class="form-text">
-                    Show on homepage featured section.
-                </div>
+                <p class="text-xs text-gray-400 mt-1">Show on homepage featured section.</p>
             </div>
 
-            <!-- Top Selling -->
-            <div class="col-md-3">
-                <label class="form-label fw-semibold">
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
                     Top Selling
                 </label>
-                <select name="is_top_selling" class="form-select">
-                    <option value="0"
-                        {{ old('is_top_selling', $product->is_top_selling ?? 0) == 0 ? 'selected' : '' }}>
-                        No
-                    </option>
-                    <option value="1"
-                        {{ old('is_top_selling', $product->is_top_selling ?? 0) == 1 ? 'selected' : '' }}>
-                        Yes
-                    </option>
+                <select name="is_top_selling" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm bg-white">
+                    <option value="0" {{ old('is_top_selling', $product->is_top_selling ?? 0) == 0 ? 'selected' : '' }}>No</option>
+                    <option value="1" {{ old('is_top_selling', $product->is_top_selling ?? 0) == 1 ? 'selected' : '' }}>Yes</option>
                 </select>
-                <div class="form-text">
-                    Highlight as best seller.
-                </div>
+                <p class="text-xs text-gray-400 mt-1">Highlight as best seller.</p>
             </div>
 
-            <!-- Status -->
-            <div class="col-md-3">
-                <label class="form-label fw-semibold">
-                    Status <span class="text-danger">*</span>
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                    Status <span class="text-red-500">*</span>
                 </label>
                 <select name="status"
-                        class="form-select"
+                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm bg-white"
                         required>
-                    <option value="active"
-                        {{ old('status', $product->status ?? 'active') === 'active' ? 'selected' : '' }}>
-                        Active
-                    </option>
-                    <option value="inactive"
-                        {{ old('status', $product->status ?? 'active') === 'inactive' ? 'selected' : '' }}>
-                        Inactive
-                    </option>
+                    <option value="active" {{ old('status', $product->status ?? 'active') === 'active' ? 'selected' : '' }}>Active</option>
+                    <option value="inactive" {{ old('status', $product->status ?? 'active') === 'inactive' ? 'selected' : '' }}>Inactive</option>
                 </select>
-                <div class="form-text">
-                    Control product availability.
-                </div>
+                <p class="text-xs text-gray-400 mt-1">Control product availability.</p>
             </div>
 
-            <!-- Visibility -->
-            <div class="col-md-3">
-                <label class="form-label fw-semibold">
-                    Visibility <span class="text-danger">*</span>
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                    Visibility <span class="text-red-500">*</span>
                 </label>
                 <select name="visibility"
-                        class="form-select"
+                        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm bg-white"
                         required>
-                    <option value="public"
-                        {{ old('visibility', $product->visibility ?? 'public') === 'public' ? 'selected' : '' }}>
-                        Public
-                    </option>
-                    <option value="private"
-                        {{ old('visibility', $product->visibility ?? 'public') === 'private' ? 'selected' : '' }}>
-                        Private
-                    </option>
+                    <option value="public" {{ old('visibility', $product->visibility ?? 'public') === 'public' ? 'selected' : '' }}>Public</option>
+                    <option value="private" {{ old('visibility', $product->visibility ?? 'public') === 'private' ? 'selected' : '' }}>Private</option>
                 </select>
-                <div class="form-text">
-                    Public = visible to users.
-                </div>
+                <p class="text-xs text-gray-400 mt-1">Public = visible to users.</p>
             </div>
-
         </div>
     </div>
 </div>
