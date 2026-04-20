@@ -87,23 +87,28 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const rows = tableBody.querySelectorAll('tr.variant-row');
         rows.forEach((row, idx) => {
-            const hiddenField = row.querySelector('.selected-gallery-image');
-            const fileInput = row.querySelector('.variant-image-file');
-            const chooseBtn = row.querySelector('.choose-file-btn');
-            const autoText = row.querySelector('.auto-text');
-            
-            if(idx === 0) {
-                if(hiddenField) hiddenField.style.display = '';
-                if(fileInput) fileInput.style.display = 'none';
-                if(chooseBtn) chooseBtn.style.display = 'none';
-                if(autoText) autoText.style.display = 'inline';
-            } else {
-                if(hiddenField) hiddenField.style.display = 'none';
-                if(fileInput) fileInput.style.display = 'none';
-                if(chooseBtn) chooseBtn.style.display = 'inline-block';
-                if(autoText) autoText.style.display = 'none';
-            }
-        });
+    const hiddenField = row.querySelector('.selected-gallery-image');
+    const fileInput = row.querySelector('.variant-image-file');
+    const chooseBtn = row.querySelector('.choose-file-btn');
+    const autoText = row.querySelector('.auto-text');
+    const manualUpload = row.querySelector('.manual-upload');
+    
+    if(idx === 0) {
+        if(hiddenField) hiddenField.style.display = '';
+        if(fileInput) fileInput.style.display = 'none';
+        if(chooseBtn) chooseBtn.style.display = 'none';
+        if(autoText) autoText.style.display = 'inline-block';
+        if(manualUpload) manualUpload.style.display = 'none';
+    } else {
+        if(hiddenField) hiddenField.style.display = 'none';
+        if(fileInput) fileInput.style.display = 'none';
+        if(chooseBtn) chooseBtn.style.display = 'inline-block';
+        if(autoText) autoText.style.display = 'none';
+        if(manualUpload) manualUpload.style.display = 'inline-block';
+    }
+});
+
+setupFileUpload();
         
         setupFileUpload();
         syncSelectedImageToVariants();

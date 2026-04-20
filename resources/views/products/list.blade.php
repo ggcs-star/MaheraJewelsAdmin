@@ -12,9 +12,9 @@
                 <p class="text-gray-600 mt-1">Products that have been synced to external platforms and marketplaces</p>
             </div>
             <a href="{{ admin_route('products.push') }}"
-               class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors duration-200">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-md" style="background: var(--primary-light); color: white;">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
                 </svg>
                 Push Product
             </a>
@@ -33,7 +33,6 @@
     </div>
 
     @php
-        // Group by platform
         $platformGroups = [];
         $totalProducts = 0;
         $totalStock = 0;
@@ -51,9 +50,8 @@
                 ];
             }
             
-$itemStock = $item->pricing->sum('quantity');
-$itemValue = $item->pricing->sum(fn($p) => $p->quantity * $p->final_price);
-
+            $itemStock = $item->pricing->sum('quantity');
+            $itemValue = $item->pricing->sum(fn($p) => $p->quantity * $p->final_price);
             
             $platformGroups[$platformId]['items'][] = $item;
             $platformGroups[$platformId]['platform_stock'] += $itemStock;
@@ -71,8 +69,8 @@ $itemValue = $item->pricing->sum(fn($p) => $p->quantity * $p->final_price);
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
             <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-12 h-12 rounded-lg flex items-center justify-center" style="background: var(--primary-bg);">
+                    <svg class="w-6 h-6" style="color: var(--primary-light);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
                     </svg>
                 </div>
@@ -85,8 +83,8 @@ $itemValue = $item->pricing->sum(fn($p) => $p->quantity * $p->final_price);
 
         <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
             <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-12 h-12 rounded-lg flex items-center justify-center" style="background: rgba(16, 185, 129, 0.1);">
+                    <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </div>
@@ -99,8 +97,8 @@ $itemValue = $item->pricing->sum(fn($p) => $p->quantity * $p->final_price);
 
         <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
             <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-12 h-12 rounded-lg flex items-center justify-center" style="background: rgba(139, 36, 82, 0.1);">
+                    <svg class="w-6 h-6" style="color: var(--primary-light);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </div>
@@ -137,63 +135,38 @@ $itemValue = $item->pricing->sum(fn($p) => $p->quantity * $p->final_price);
                     @endphp
 
                     <!-- PLATFORM ROW -->
-                    <tr class="bg-blue-50 hover:bg-blue-100 cursor-pointer transition-colors"
+                    <tr class="cursor-pointer transition-colors" style="background: var(--primary-bg); hover:bg-opacity-20"
                         @click="openPlatform === {{ $platformId }} ? (openPlatform = null, openProduct = null) : (openPlatform = {{ $platformId }}, openProduct = null)">
                         <td colspan="4" class="p-0">
                             <div class="py-4 px-6">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-3">
-                                 @php
-    $platformName = strtolower(trim($platform->display_name));
-@endphp
-
-<div class="w-16 h-10 flex items-center">
-
-    {{-- AMAZON --}}
-    @if(str_contains($platformName,'amazon'))
-        <svg viewBox="0 0 200 60" class="h-6 w-auto" preserveAspectRatio="xMidYMid meet">
-            <text x="0" y="42" font-size="38" font-weight="700" fill="#111" font-family="Arial, Helvetica, sans-serif">
-                amazon
-            </text>
-            <path d="M10 50 C40 70, 120 70, 150 50"
-                  stroke="#FF9900" stroke-width="5"
-                  fill="none" stroke-linecap="round"/>
-        </svg>
-
-    {{-- FLIPKART --}}
-    @elseif(str_contains($platformName,'flipkart'))
-        <svg viewBox="0 0 64 64" class="h-8 w-auto" preserveAspectRatio="xMidYMid meet">
-            <rect width="64" height="64" rx="14" fill="#2874F0"/>
-            <text x="32" y="44" text-anchor="middle"
-                  font-size="40" font-weight="800"
-                  fill="#FFD700"
-                  font-family="Arial, Helvetica, sans-serif">F</text>
-        </svg>
-{{-- WEBSITE --}}
-@elseif(str_contains($platformName,'website'))
-
-<span class="text-xl leading-none">🌐</span>
-
-{{-- DEFAULT --}}
-@else
-    <div class="w-8 h-8 bg-gray-200 rounded-full"></div>
-@endif
-    
-
-</div>
-
+                                        @php
+                                            $platformName = strtolower(trim($platform->display_name));
+                                        @endphp
+                                        <div class="w-16 h-10 flex items-center">
+                                            @if(str_contains($platformName,'amazon'))
+                                                <svg viewBox="0 0 200 60" class="h-6 w-auto" preserveAspectRatio="xMidYMid meet">
+                                                    <text x="0" y="42" font-size="38" font-weight="700" fill="#111" font-family="Arial, Helvetica, sans-serif">amazon</text>
+                                                    <path d="M10 50 C40 70, 120 70, 150 50" stroke="#FF9900" stroke-width="5" fill="none" stroke-linecap="round"/>
+                                                </svg>
+                                            @elseif(str_contains($platformName,'flipkart'))
+                                                <svg viewBox="0 0 64 64" class="h-8 w-auto" preserveAspectRatio="xMidYMid meet">
+                                                    <rect width="64" height="64" rx="14" fill="#2874F0"/>
+                                                    <text x="32" y="44" text-anchor="middle" font-size="40" font-weight="800" fill="#FFD700" font-family="Arial, Helvetica, sans-serif">F</text>
+                                                </svg>
+                                            @elseif(str_contains($platformName,'website'))
+                                                <span class="text-xl leading-none">🌐</span>
+                                            @else
+                                                <div class="w-8 h-8 rounded-full" style="background: var(--primary-bg);"></div>
+                                            @endif
+                                        </div>
                                         <div>
                                             <h3 class="font-semibold text-gray-900">{{ $platform->display_name }}</h3>
                                             <div class="flex items-center gap-2 mt-1">
-                                                <span class="text-xs text-gray-600 bg-white px-2 py-0.5 rounded border">
-                                                    {{ $platformProductCount }} product(s)
-                                                </span>
-                                                <span class="text-xs text-gray-600 bg-white px-2 py-0.5 rounded border">
-                                                    {{ $platformStock }} units
-                                                </span>
-                                                <span class="text-xs font-medium text-emerald-600 bg-white px-2 py-0.5 rounded border">
-                                                    ₹{{ number_format($platformValue, 2) }}
-                                                </span>
+                                                <span class="text-xs text-gray-600 bg-white px-2 py-0.5 rounded border">{{ $platformProductCount }} product(s)</span>
+                                                <span class="text-xs text-gray-600 bg-white px-2 py-0.5 rounded border">{{ $platformStock }} units</span>
+                                                <span class="text-xs font-medium text-emerald-600 bg-white px-2 py-0.5 rounded border">₹{{ number_format($platformValue, 2) }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -224,9 +197,8 @@ $itemValue = $item->pricing->sum(fn($p) => $p->quantity * $p->final_price);
                                     <tbody class="divide-y divide-gray-100">
                                         @foreach($platformItems as $item)
                                         @php
-$itemStock = $item->pricing->sum('quantity');
-$itemValue = $item->pricing->sum(fn($p) => $p->quantity * $p->final_price);
-
+                                            $itemStock = $item->pricing->sum('quantity');
+                                            $itemValue = $item->pricing->sum(fn($p) => $p->quantity * $p->final_price);
                                         @endphp
 
                                         <!-- PRODUCT ROW -->
@@ -234,8 +206,8 @@ $itemValue = $item->pricing->sum(fn($p) => $p->quantity * $p->final_price);
                                             @click="openProduct === {{ $item->id }} ? openProduct = null : openProduct = {{ $item->id }}">
                                             <td class="py-4 px-6">
                                                 <div class="flex items-center gap-3">
-                                                    <div class="w-10 h-10 bg-green-50 rounded-lg border border-green-200 flex items-center justify-center flex-shrink-0">
-                                                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <div class="w-10 h-10 rounded-lg border flex items-center justify-center flex-shrink-0" style="background: var(--primary-bg); border-color: rgba(139,36,82,0.2);">
+                                                        <svg class="w-5 h-5" style="color: var(--primary-light);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
                                                         </svg>
                                                     </div>
@@ -260,7 +232,7 @@ $itemValue = $item->pricing->sum(fn($p) => $p->quantity * $p->final_price);
                                             </td>
                                             <td class="py-4 px-6 align-top">
                                                 <div class="flex flex-col">
-                                                    <span class="text-lg font-semibold text-blue-700">{{ $itemStock }}</span>
+                                                    <span class="text-lg font-semibold" style="color: var(--primary-light);">{{ $itemStock }}</span>
                                                     <span class="text-xs text-gray-500">units</span>
                                                 </div>
                                             </td>
@@ -273,10 +245,10 @@ $itemValue = $item->pricing->sum(fn($p) => $p->quantity * $p->final_price);
                                             <td class="py-4 px-6 align-top">
                                                 @php
                                                     $statusColors = [
-                                                        'active' => 'bg-green-100 text-green-800',
+                                                        'active' => 'bg-emerald-100 text-emerald-800',
                                                         'inactive' => 'bg-gray-100 text-gray-800',
-                                                        'pending' => 'bg-yellow-100 text-yellow-800',
-                                                        'synced' => 'bg-blue-100 text-blue-800',
+                                                        'pending' => 'bg-amber-100 text-amber-800',
+                                                        'synced' => 'bg-indigo-100 text-indigo-800',
                                                     ];
                                                     $statusClass = $statusColors[strtolower($item->status)] ?? 'bg-gray-100 text-gray-800';
                                                 @endphp
@@ -284,7 +256,7 @@ $itemValue = $item->pricing->sum(fn($p) => $p->quantity * $p->final_price);
                                                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                                                     </svg>
-{{ ucfirst($item->platform->pivot->status ?? $item->status ?? 'synced') }}
+                                                    {{ ucfirst($item->platform->pivot->status ?? $item->status ?? 'synced') }}
                                                 </span>
                                             </td>
                                         </tr>
@@ -295,12 +267,12 @@ $itemValue = $item->pricing->sum(fn($p) => $p->quantity * $p->final_price);
                                             x-transition:enter-start="opacity-0"
                                             x-transition:enter-end="opacity-100">
                                             <td colspan="4" class="p-0">
-                                                <div class="px-6 pb-4 bg-blue-50/30">
-                                                    <div class="bg-white rounded-lg border border-blue-100 shadow-sm overflow-hidden">
-                                                        <div class="px-4 py-3 bg-blue-50 border-b border-blue-100">
+                                                <div class="px-6 pb-4" style="background: var(--primary-bg);">
+                                                    <div class="bg-white rounded-lg shadow-sm overflow-hidden" style="border: 1px solid rgba(139,36,82,0.1);">
+                                                        <div class="px-4 py-3 border-b" style="background: var(--primary-bg); border-color: rgba(139,36,82,0.1);">
                                                             <div class="flex items-center justify-between">
                                                                 <div class="flex items-center gap-2">
-                                                                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <svg class="w-4 h-4" style="color: var(--primary-light);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                                                                     </svg>
                                                                     <span class="text-sm font-medium text-gray-700">Variant Details</span>
@@ -312,108 +284,56 @@ $itemValue = $item->pricing->sum(fn($p) => $p->quantity * $p->final_price);
                                                         <div class="overflow-x-auto">
                                                             <table class="w-full text-sm">
                                                                 <thead class="bg-gray-50">
-                                                        
-                                                             <tr>
-    <th class="py-2 px-4 text-left text-xs font-medium text-gray-700">Variant</th>
-    <th class="py-2 px-4 text-left text-xs font-medium text-gray-700">Unit Price</th>
-    <th class="py-2 px-4 text-left text-xs font-medium text-gray-700">Quantity</th>
-    <th class="py-2 px-4 text-left text-xs font-medium text-gray-700">Final Price</th>
-        <th class="py-2 px-4 text-left text-xs font-medium text-gray-700">Discount</th>
-
-    <th class="py-2 px-4 text-left text-xs font-medium text-gray-700">Total Value</th>
-</tr>
-
+                                                                    <tr>
+                                                                        <th class="py-2 px-4 text-left text-xs font-medium text-gray-700">Variant</th>
+                                                                        <th class="py-2 px-4 text-left text-xs font-medium text-gray-700">Unit Price</th>
+                                                                        <th class="py-2 px-4 text-left text-xs font-medium text-gray-700">Quantity</th>
+                                                                        <th class="py-2 px-4 text-left text-xs font-medium text-gray-700">Final Price</th>
+                                                                        <th class="py-2 px-4 text-left text-xs font-medium text-gray-700">Discount</th>
+                                                                        <th class="py-2 px-4 text-left text-xs font-medium text-gray-700">Total Value</th>
+                                                                    </tr>
                                                                 </thead>
-   <tbody class="divide-y divide-gray-100 text-sm">
-@foreach($item->pricing as $pricing)
-
-@php
-$unitPrice     = $pricing->price;
-$platformQty  = $pricing->quantity; // pushed qty
-  // remaining stock
-
-$preDiscountTotal = $unitPrice * $platformQty;
-
-
-// Discount
-$discountAmount = 0;
-
-if($pricing->discount_type === 'percentage'){
-    $discountAmount = ($preDiscountTotal * $pricing->discount_value) / 100;
-} elseif($pricing->discount_type === 'fixed'){
-    $discountAmount = $pricing->discount_value;
-}
-
-// Final payable
-$finalTotal = $preDiscountTotal - $discountAmount;
-@endphp
-
-<tr class="hover:bg-gray-50/60 transition">
-
-    {{-- Variant --}}
-<td class="py-3 px-4">
-    @if($pricing->variant && $pricing->variant->variant && $pricing->variant->value)
-        <div class="font-medium text-gray-900">
-            {{ $pricing->variant->variant->name }}
-        </div>
-        <div class="text-xs text-gray-500">
-            {{ $pricing->variant->value->value }}
-        </div>
-    @else
-        <div class="text-xs font-medium text-red-600">Variant Missing</div>
-    @endif
-</td>
-
-
-    {{-- Unit Price --}}
-    <td class="py-3 px-4 font-medium text-gray-800">
-        ₹{{ number_format($unitPrice,2) }}
-    </td>
-
-    {{-- Quantity --}}
-<td class="py-3 px-4">
-    <div class="flex flex-col">
-        <!-- <span class="px-2 py-1 bg-blue-50 text-blue-700 font-medium rounded"> -->
-            {{ $platformQty }}
-        </span>
-        <!-- <span class="text-xs text-gray-500">pushed to platform</span> -->
-    </div>
-</td>
-
-
-
-
-    {{-- Final Before Discount --}}
-    <td class="py-3 px-4 text-gray-700 font-medium">
-        ₹{{ number_format($preDiscountTotal,2) }}
-    </td>
-
-    {{-- Discount --}}
-<td class="py-3 px-4 text-red-600 font-semibold">
-    @if($pricing->discount_value)
-
-        @if($pricing->discount_type === 'percentage')
-            {{ $pricing->discount_value }}%
-        @else
-            ₹{{ number_format($pricing->discount_value, 2) }}
-        @endif
-
-    @else
-        —
-    @endif
-</td>
-
-
-    {{-- Final Payable --}}
-    <td class="py-3 px-4 text-emerald-700 font-bold">
-        ₹{{ number_format($finalTotal,2) }}
-    </td>
-
-</tr>
-@endforeach
-</tbody>
-
-
+                                                                <tbody class="divide-y divide-gray-100 text-sm">
+                                                                    @foreach($item->pricing as $pricing)
+                                                                    @php
+                                                                        $unitPrice = $pricing->price;
+                                                                        $platformQty = $pricing->quantity;
+                                                                        $preDiscountTotal = $unitPrice * $platformQty;
+                                                                        $discountAmount = 0;
+                                                                        if($pricing->discount_type === 'percentage'){
+                                                                            $discountAmount = ($preDiscountTotal * $pricing->discount_value) / 100;
+                                                                        } elseif($pricing->discount_type === 'fixed'){
+                                                                            $discountAmount = $pricing->discount_value;
+                                                                        }
+                                                                        $finalTotal = $preDiscountTotal - $discountAmount;
+                                                                    @endphp
+                                                                    <tr class="hover:bg-gray-50/60 transition">
+                                                                        <td class="py-3 px-4">
+                                                                            @if($pricing->variant && $pricing->variant->variant && $pricing->variant->value)
+                                                                                <div class="font-medium text-gray-900">{{ $pricing->variant->variant->name }}</div>
+                                                                                <div class="text-xs text-gray-500">{{ $pricing->variant->value->value }}</div>
+                                                                            @else
+                                                                                <div class="text-xs font-medium text-red-600">Variant Missing</div>
+                                                                            @endif
+                                                                        </td>
+                                                                        <td class="py-3 px-4 font-medium text-gray-800">₹{{ number_format($unitPrice,2) }}</td>
+                                                                        <td class="py-3 px-4">{{ $platformQty }}</td>
+                                                                        <td class="py-3 px-4 text-gray-700 font-medium">₹{{ number_format($preDiscountTotal,2) }}</td>
+                                                                        <td class="py-3 px-4 text-red-600 font-semibold">
+                                                                            @if($pricing->discount_value)
+                                                                                @if($pricing->discount_type === 'percentage')
+                                                                                    {{ $pricing->discount_value }}%
+                                                                                @else
+                                                                                    ₹{{ number_format($pricing->discount_value, 2) }}
+                                                                                @endif
+                                                                            @else
+                                                                                —
+                                                                            @endif
+                                                                        </td>
+                                                                        <td class="py-3 px-4 text-emerald-700 font-bold">₹{{ number_format($finalTotal,2) }}</td>
+                                                                    </tr>
+                                                                    @endforeach
+                                                                </tbody>
                                                             </table>
                                                         </div>
                                                     </div>
@@ -430,44 +350,26 @@ $finalTotal = $preDiscountTotal - $discountAmount;
                 </tbody>
             </table>
         </div>
-
-        @if($pushedProducts->isEmpty())
-        <div class="py-12 text-center">
-            <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-            </svg>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">No Products Found</h3>
-            <p class="text-gray-500 mb-6">Push your first product to get started</p>
-            <a href="{{ admin_route('products.push') }}" 
-               class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                Push First Product
-            </a>
-        </div>
-        @endif
     </div>
     @else
     <!-- EMPTY STATE -->
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center">
-        <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4" style="background: var(--primary-bg);">
+            <svg class="w-10 h-10" style="color: var(--primary-light);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
             </svg>
         </div>
         <h3 class="text-xl font-semibold text-gray-900 mb-2">No Products Pushed Yet</h3>
         <p class="text-gray-600 mb-6 max-w-md mx-auto">Start by pushing your first product to external platforms to see them listed here.</p>
         <a href="{{ admin_route('products.push') }}"
-           class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2.5 rounded-lg transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+           class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-md" style="background: var(--primary-light); color: white;">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
             </svg>
             Push Your First Product
         </a>
     </div>
     @endif
-
 </div>
 
 <style>
@@ -484,12 +386,10 @@ $finalTotal = $preDiscountTotal - $discountAmount;
         display: none !important; 
     }
     
-    /* Perfect alignment for table cells */
     .align-top {
         vertical-align: top;
     }
     
-    /* Custom scrollbar for tables */
     .overflow-x-auto::-webkit-scrollbar {
         height: 6px;
     }

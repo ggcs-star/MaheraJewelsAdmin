@@ -1,71 +1,58 @@
-<div class="card mb-4 shadow-sm">
-    <div class="card-header bg-white fw-semibold d-flex align-items-center gap-2">
-        <span class="text-primary fs-5">🗂️</span>
-        <span>Category</span>
+<div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-5">
+    <div class="px-5 py-3 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-[#8B2452]/10 flex items-center justify-center">
+                <svg class="w-4 h-4 text-[#8B2452]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+            </div>
+            <h3 class="text-base font-bold text-gray-800">Category</h3>
+            <span class="ml-auto text-xs text-gray-400">Organize your product</span>
+        </div>
     </div>
 
-    <div class="card-body">
-        <div class="row g-3">
-
-            <!-- Main Category -->
-            <div class="col-md-4">
-                <label class="form-label fw-semibold">
-                     Category <span class="text-danger">*</span>
+    <div class="p-5">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                    Category <span class="text-red-500">*</span>
                 </label>
-                <select id="mainCategory" class="form-select">
-                    <option value="">Select  category</option>
+                <select id="mainCategory" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm bg-white">
+                    <option value="">Select category</option>
                     @foreach ($categories->whereNull('parent_id') as $cat)
                         <option value="{{ $cat->id }}">{{ $cat->name }}</option>
                     @endforeach
                 </select>
-                <div class="form-text">
-                    Choose the primary category for this product.
-                </div>
+                <p class="text-xs text-gray-400 mt-1">Choose the primary category for this product.</p>
             </div>
 
-            <!-- Sub Category -->
-            <div class="col-md-4">
-                <label class="form-label fw-semibold">
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
                     Sub Category
                 </label>
-                <select id="subCategory" class="form-select" disabled>
+                <select id="subCategory" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm bg-white" disabled>
                     <option value="">Select sub category</option>
                 </select>
-                <div class="form-text">
-                    Available after selecting main category.
-                </div>
+                <p class="text-xs text-gray-400 mt-1">Available after selecting main category.</p>
             </div>
 
-            <!-- Hidden final category -->
-            <input type="hidden"
-       name="category_id"
-       id="finalCategoryId"
-       value="{{ old('category_id', $product->category_id ?? '') }}">
-
-
-            <!-- Brand -->
-            <div class="col-md-4">
-                <label class="form-label fw-semibold">
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
                     Brand
                 </label>
-
                 <input type="text"
                        name="brand"
-                       class="form-control"
+                       class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm"
                        placeholder="e.g. Samsung, Nike"
                        value="{{ old('brand', $product->brand ?? '') }}">
-
-                <div class="form-text">
-                    Optional – helps with filtering & search.
-                </div>
+                <p class="text-xs text-gray-400 mt-1">Optional – helps with filtering & search.</p>
             </div>
 
-            <!-- Hidden final category -->
-            <!-- <input type="hidden"
+            <!-- Hidden final category - EXACTLY as original, just moved inside -->
+            <input type="hidden"
                    name="category_id"
                    id="finalCategoryId"
-                   value="{{ old('category_id', $product->category_id ?? '') }}"> -->
-
+                   value="{{ old('category_id', $product->category_id ?? '') }}">
         </div>
     </div>
 </div>

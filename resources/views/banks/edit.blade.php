@@ -1,88 +1,79 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="container">
-
-    <div class="d-flex justify-content-between mb-3">
-        <h2>Edit Bank</h2>
-        <a href="{{ admin_route('banks.index') }}" class="btn btn-secondary">
-            ← Back
+<div class="space-y-4">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div>
+            <h1 class="text-xl font-bold text-gray-800">Edit Bank</h1>
+            <p class="text-gray-500 text-xs mt-0.5">Update bank information</p>
+        </div>
+        <a href="{{ admin_route('banks.index') }}" class="inline-flex items-center gap-1.5 px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back
         </a>
     </div>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
+    <div class="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
+        <div class="p-5">
             <form method="POST" action="{{ admin_route('banks.update', $bank) }}">
                 @csrf
                 @method('PUT')
 
-               <div class="mb-3 position-relative">
-                    <label class="form-label">
-                        Bank Name <span class="text-danger">*</span>
+                <div class="mb-4">
+                    <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                        Bank Name <span class="text-red-500">*</span>
                     </label>
-
                     <input type="text"
                         name="name"
                         value="{{ old('name', $bank->name) }}"
-                        class="form-control @error('name') is-invalid @enderror">
-
+                        class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-1 focus:ring-[#8B2452] transition-all text-sm @error('name') border-red-500 @enderror"
+                        placeholder="e.g. State Bank of India">
                     @error('name')
-                        <div class="invalid-feedback">
-                            {{ $message }}
-                        </div>
+                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                     @enderror
                 </div>
-                <div class="mb-3 position-relative">
-                    <label class="form-label">
-                        Bank Code <span class="text-danger">*</span>
-                    </label>
 
+                <div class="mb-4">
+                    <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                        Bank Code <span class="text-red-500">*</span>
+                    </label>
                     <input type="text"
                         name="code"
                         value="{{ old('code', $bank->code) }}"
-                        class="form-control @error('code') is-invalid @enderror">
-
+                        class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-1 focus:ring-[#8B2452] transition-all text-sm @error('code') border-red-500 @enderror"
+                        placeholder="e.g. SBI">
                     @error('code')
-                        <div class="invalid-feedback">
-                            {{ $message }}
-                        </div>
+                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <div class="mb-4 position-relative">
-                    <label class="form-label">
-                        Status <span class="text-danger">*</span>
+                <div class="mb-5">
+                    <label class="block text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                        Status <span class="text-red-500">*</span>
                     </label>
-
                     <select name="status"
-                            class="form-select @error('status') is-invalid @enderror">
+                            class="w-full px-3 py-1.5 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-1 focus:ring-[#8B2452] transition-all text-sm bg-white @error('status') border-red-500 @enderror">
                         <option value="">Select status</option>
-                        <option value="1"
-                            {{ old('status', (string)$bank->status) === '1' ? 'selected' : '' }}>
-                            Active
-                        </option>
-                        <option value="0"
-                            {{ old('status', (string)$bank->status) === '0' ? 'selected' : '' }}>
-                            Inactive
-                        </option>
+                        <option value="1" {{ old('status', (string)$bank->status) === '1' ? 'selected' : '' }}>Active</option>
+                        <option value="0" {{ old('status', (string)$bank->status) === '0' ? 'selected' : '' }}>Inactive</option>
                     </select>
-
                     @error('status')
-                        <div class="invalid-feedback">
-                            {{ $message }}
-                        </div>
+                        <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
-                {{-- Actions --}}
-                <div class="d-flex justify-content-end">
-                    <button class="btn btn-success px-4">
+                <div class="flex justify-end pt-2">
+                    <button type="submit" class="inline-flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm" style="background: #8B2452; color: white;">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                        </svg>
                         Update Bank
                     </button>
                 </div>
             </form>
         </div>
     </div>
-
 </div>
 @endsection

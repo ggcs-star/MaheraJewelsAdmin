@@ -8,6 +8,7 @@ use App\Models\Organization;
 use Illuminate\Http\Request;
 use App\Models\ProductVariant;
 use App\Models\StockMovement;
+use App\Helpers\S3Helper;
 class OrderController extends Controller
 {
 
@@ -39,20 +40,29 @@ class OrderController extends Controller
     }
 
 
-    public function show($id)
-    {
-        $order = Order::with([
-            'items.product',
-            'items.variant',
-            'user',
-            'shippingAddress',
-            'billingAddress',
-            'payment'
-        ])->findOrFail($id);
+   public function show($id)
+{
+    $order = Order::with([
+        'items.product',
+        'items.variant',
+        'user',
+        'shippingAddress',
+        'billingAddress',
+        'payment'
+    ])->findOrFail($id);
 
-        return view('admin.orders.show', compact('order'));
-    }
+    
+    $order->items->transform(function ($item) {
+        if ($item->image && !str_starts_with($item->image, 'http')) {
+            $item->image = S3Helper::url($item->image);
+        } elseif (optional($item->product)->image_url) {
+            $item->image = S3Helper::url($item->product->image_url);
+        }
+        return $item;
+    });
 
+    return view('admin.orders.show', compact('order'));
+}
 
     public function updateStatus(Request $request, $id)
     {

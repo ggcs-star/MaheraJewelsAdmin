@@ -1,78 +1,77 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="container-fluid px-4 py-4" style="background: #f1f5f9; min-height: 100vh;">
-    <div class="mb-4">
-        <h1 class="h3 mb-1" style="color: #0f172a; font-weight: 700;">Stock Management</h1>
-        <p class="text-muted small mb-0">Monitor inventory and stock levels across platforms</p>
+<div class="space-y-4">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-800">Stock Management</h1>
+        <p class="text-sm text-gray-500 mt-0.5">Monitor inventory and stock levels across platforms</p>
     </div>
 
-    <div class="row g-4 mb-4">
-        <div class="col-md-6">
-            <div class="card" style="border: none; border-radius: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p class="mb-1" style="color: rgba(255,255,255,0.8); font-size: 13px; font-weight: 500;">Total Products</p>
-                            <h2 class="mb-0 fw-bold text-white" style="font-size: 32px;">{{ $products->total() }}</h2>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); border-radius: 16px; padding: 12px;">
-                            <i class="fas fa-boxes" style="color: white; font-size: 22px;"></i>
-                        </div>
-                    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl p-5 shadow-sm hover:shadow-md transition-all border border-indigo-200">
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-xs font-bold text-indigo-700 uppercase tracking-wider mb-1">Total Products</p>
+                    <p class="text-3xl font-bold text-gray-800">{{ $products->total() }}</p>
+                </div>
+                <div class="w-10 h-10 rounded-lg bg-indigo-200 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-indigo-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card" style="border: none; border-radius: 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p class="mb-1" style="color: rgba(255,255,255,0.8); font-size: 13px; font-weight: 500;">Total Stock</p>
-                            <h2 class="mb-0 fw-bold text-white" style="font-size: 32px;">{{ $products->sum(fn($p) => $p->variants->sum('total_qty')) }}</h2>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); border-radius: 16px; padding: 12px;">
-                            <i class="fas fa-cubes" style="color: white; font-size: 22px;"></i>
-                        </div>
-                    </div>
+        <div class="bg-gradient-to-br from-rose-50 to-rose-100 rounded-xl p-5 shadow-sm hover:shadow-md transition-all border border-rose-200">
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-xs font-bold text-rose-700 uppercase tracking-wider mb-1">Total Stock</p>
+                    <p class="text-3xl font-bold text-gray-800">{{ $products->sum(fn($p) => $p->variants->sum('total_qty')) }}</p>
+                </div>
+                <div class="w-10 h-10 rounded-lg bg-rose-200 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-rose-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+                    </svg>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="card" style="border: none; border-radius: 24px; background: #ffffff;">
-        <div class="card-header" style="background: #ffffff; border-bottom: 1px solid #e2e8f0; border-radius: 24px 24px 0 0; padding: 20px 24px;">
-            <div class="row align-items-center">
-                <div class="col-md-5">
-                    <div class="d-flex align-items-center gap-2">
-                        <div style="background: #eef2ff; padding: 8px; border-radius: 12px;">
-                            <i class="fas fa-store" style="color: #4f46e5; font-size: 16px;"></i>
-                        </div>
-                        <h5 class="mb-0 fw-bold" style="color: #0f172a;">Our Website</h5>
-                        <span class="badge" style="background: #eef2ff; color: #4f46e5; padding: 4px 12px; border-radius: 30px; font-size: 11px;">{{ $products->total() }} products</span>
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-[#8B2452]/10 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-[#8B2452]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
                     </div>
+                    <h3 class="text-base font-bold text-gray-800">Our Website</h3>
+                    <span class="inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-100 text-indigo-700">{{ $products->total() }} products</span>
                 </div>
-                <div class="col-md-7">
-                    <div class="d-flex gap-3 justify-content-end">
-                        <div class="position-relative" style="width: 260px;">
-                            <i class="fas fa-search position-absolute" style="left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 14px;"></i>
-                            <input type="text" id="productSearch" class="form-control" placeholder="Search product..." style="padding-left: 42px; border-radius: 12px; border: 1px solid #e2e8f0; font-size: 13px; height: 42px;">
-                        </div>
-                        <select id="stockStatusFilter" class="form-select" style="border-radius: 12px; border: 1px solid #e2e8f0; width: 140px; font-size: 13px; height: 42px; cursor: pointer;">
-                            <option value="all">All Stock</option>
-                            <option value="low">Low Stock</option>
-                            <option value="out">Out of Stock</option>
-                            <option value="normal">In Stock</option>
-                        </select>
-                        <button id="exportExcelBtn" class="btn" style="background: #10b981; color: white; border-radius: 12px; padding: 0 18px; font-size: 13px; font-weight: 500; height: 42px; display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-file-excel"></i> Excel
-                        </button>
+                <div class="flex flex-wrap gap-3">
+                    <div class="relative">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <input type="text" id="productSearch" class="pl-10 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm w-64" placeholder="Search product...">
                     </div>
+                    <select id="stockStatusFilter" class="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm bg-white cursor-pointer">
+                        <option value="all">All Stock</option>
+                        <option value="low">Low Stock</option>
+                        <option value="out">Out of Stock</option>
+                        <option value="normal">In Stock</option>
+                    </select>
+                    <button id="exportExcelBtn" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-sm" style="background: #10b981; color: white;">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Excel
+                    </button>
                 </div>
             </div>
         </div>
 
-        <div class="card-body p-0">
+        <div class="divide-y divide-gray-100">
             @forelse($products as $product)
             @php
                 $totalQty = $product->variants->sum('total_qty');
@@ -89,60 +88,62 @@
                 }
             @endphp
             
-            <div class="product-item border-bottom" style="border-color: #f1f5f9 !important;" data-product-name="{{ strtolower($product->name) }}" data-stock-status="{{ $stockStatus }}" data-product-id="{{ $product->id }}">
-                <div class="product-header" style="padding: 16px 24px; cursor: pointer;">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center gap-3" style="flex: 1;">
-                            <div class="expand-icon" style="width: 24px; color: #94a3b8; font-size: 12px;">
-                                <i class="fas fa-chevron-right"></i>
+            <div class="product-item" data-product-name="{{ strtolower($product->name) }}" data-stock-status="{{ $stockStatus }}" data-product-id="{{ $product->id }}">
+                <div class="product-header px-5 py-3 cursor-pointer hover:bg-gray-50 transition-colors">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-3 flex-1">
+                            <div class="expand-icon w-6 text-gray-400 text-xs">
+                                <svg class="w-3 h-3 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
                             </div>
-                            <div style="width: 52px; height: 52px; background: #f8fafc; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e8f0;">
-                                <img src="{{ $productImage }}" width="48" height="48" style="object-fit: cover; border-radius: 10px;" onerror="this.src='https://placehold.co/48x48?text=📦'">
+                            <div class="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center border border-gray-200">
+                                <img src="{{ $productImage }}" width="48" height="48" class="object-cover rounded-lg" onerror="this.src='https://placehold.co/48x48?text=📦'">
                             </div>
                             <div>
-                                <div class="fw-bold" style="color: #0f172a; font-size: 15px;">{{ $product->name }}</div>
-                                <div class="text-muted" style="font-size: 12px;">{{ $productVariants->count() }} variants</div>
+                                <div class="text-base font-bold text-gray-800">{{ $product->name }}</div>
+                                <div class="text-xs text-gray-400">{{ $productVariants->count() }} variants</div>
                             </div>
                         </div>
-                        <div class="d-flex gap-4 align-items-center">
-                            <div class="text-center" style="min-width: 60px;">
-                                <div style="font-size: 10px; color: #64748b;">Total</div>
-                                <div class="fw-bold" style="color: #0f172a; font-size: 16px;">{{ number_format($totalQty) }}</div>
+                        <div class="flex gap-6 items-center">
+                            <div class="text-center min-w-[60px]">
+                                <div class="text-[10px] text-gray-400 uppercase tracking-wider">Total</div>
+                                <div class="text-base font-bold text-gray-800">{{ number_format($totalQty) }}</div>
                             </div>
-                            <div class="text-center" style="min-width: 60px;">
-                                <div style="font-size: 10px; color: #64748b;">Sold</div>
-                                <div class="fw-bold" style="color: #ef4444; font-size: 16px;">{{ number_format($soldQty) }}</div>
+                            <div class="text-center min-w-[60px]">
+                                <div class="text-[10px] text-gray-400 uppercase tracking-wider">Sold</div>
+                                <div class="text-base font-bold text-rose-600">{{ number_format($soldQty) }}</div>
                             </div>
-                            <div class="text-center" style="min-width: 70px;">
-                                <div style="font-size: 10px; color: #64748b;">Remaining</div>
-                                <div class="fw-bold" style="color: {{ $remainingQty <= 0 ? '#94a3b8' : ($remainingQty <= 5 ? '#f97316' : '#10b981') }}; font-size: 16px;">{{ number_format($remainingQty) }}</div>
+                            <div class="text-center min-w-[70px]">
+                                <div class="text-[10px] text-gray-400 uppercase tracking-wider">Remaining</div>
+                                <div class="text-base font-bold {{ $remainingQty <= 0 ? 'text-gray-400' : ($remainingQty <= 5 ? 'text-amber-600' : 'text-emerald-600') }}">{{ number_format($remainingQty) }}</div>
                             </div>
                             <div>
                                 @if($remainingQty <= 0)
-                                    <span style="background: #fef2f2; color: #dc2626; padding: 4px 12px; border-radius: 30px; font-size: 11px; font-weight: 600;">Out of Stock</span>
+                                    <span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-700">Out of Stock</span>
                                 @elseif($remainingQty <= 5)
-                                    <span style="background: #fff7ed; color: #ea580c; padding: 4px 12px; border-radius: 30px; font-size: 11px; font-weight: 600;">Low Stock</span>
+                                    <span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">Low Stock</span>
                                 @else
-                                    <span style="background: #f0fdf4; color: #16a34a; padding: 4px 12px; border-radius: 30px; font-size: 11px; font-weight: 600;">In Stock</span>
+                                    <span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">In Stock</span>
                                 @endif
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <div class="product-variants" style="display: none; background: #fafcff; border-top: 1px solid #f1f5f9;">
-                    <div class="px-4 py-3">
-                        <div class="table-responsive">
-                            <table class="table mb-0">
+                <div class="product-variants hidden bg-gray-50/30 border-t border-gray-100">
+                    <div class="px-5 py-3">
+                        <div class="overflow-x-auto">
+                            <table class="w-full min-w-[600px]">
                                 <thead>
-                                    <tr style="border-bottom: 1px solid #e2e8f0;">
-                                        <th width="50" style="font-size: 11px; color: #64748b;">#</th>
-                                        <th width="60" style="font-size: 11px; color: #64748b;"></th>
-                                        <th style="font-size: 11px; color: #64748b;">Variant</th>
-                                        <th width="120" style="font-size: 11px; color: #64748b;">Color</th>
-                                        <th class="text-center" width="80" style="font-size: 11px; color: #64748b;">Total</th>
-                                        <th class="text-center" width="80" style="font-size: 11px; color: #64748b;">Sold</th>
-                                        <th class="text-center" width="100" style="font-size: 11px; color: #64748b;">Remaining</th>
+                                    <tr class="border-b border-gray-200">
+                                        <th class="py-2 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider w-12">#</th>
+                                        <th class="py-2 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider w-16"></th>
+                                        <th class="py-2 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Variant</th>
+                                        <th class="py-2 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider w-24">Color</th>
+                                        <th class="py-2 text-center text-[10px] font-bold text-gray-500 uppercase tracking-wider w-20">Total</th>
+                                        <th class="py-2 text-center text-[10px] font-bold text-gray-500 uppercase tracking-wider w-20">Sold</th>
+                                        <th class="py-2 text-center text-[10px] font-bold text-gray-500 uppercase tracking-wider w-24">Remaining</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -160,32 +161,30 @@
                                         $variantName = $variant->value->value ?? $variant->value->name ?? 'Default';
                                         $colorHex = $variant->color ?? '';
                                     @endphp
-                                    <tr style="border-bottom: 1px solid #f1f5f9;" data-color-name="{{ $variant->color_name }}">
-                                        <td style="font-size: 12px; color: #94a3b8;">{{ $idx + 1 }}</td>
-                                        <td>
-                                            <img src="{{ $variantImage }}" width="36" height="36" style="object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;" onerror="this.src='https://placehold.co/36x36?text=📦'">
+                                    <tr class="border-b border-gray-100" data-color-name="{{ $variant->color_name }}">
+                                        <td class="py-2 text-xs text-gray-400">{{ $idx + 1 }}</td>
+                                        <td class="py-2">
+                                            <img src="{{ $variantImage }}" width="36" height="36" class="object-cover rounded-lg border border-gray-200" onerror="this.src='https://placehold.co/36x36?text=📦'">
                                         </td>
-                                        <td>
-                                            <span style="background: #ffffff; padding: 4px 12px; border-radius: 20px; font-size: 12px; border: 1px solid #e2e8f0;">
-                                                {{ $variantName }}
-                                            </span>
+                                        <td class="py-2">
+                                            <span class="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-white border border-gray-200">{{ $variantName }}</span>
                                         </td>
-                                        <td>
+                                        <td class="py-2">
                                             @if($colorHex)
-                                                <span style="display: inline-block; width: 28px; height: 28px; border-radius: 8px; background: {{ $colorHex }}; border: 1px solid #cbd5e1;"></span>
+                                                <span class="inline-block w-7 h-7 rounded-lg" style="background: {{ $colorHex }}; border: 1px solid #cbd5e1;"></span>
                                             @else
-                                                <span style="color: #cbd5e1;">—</span>
+                                                <span class="text-xs text-gray-300">—</span>
                                             @endif
                                         </td>
-                                        <td class="text-center">{{ number_format($variant->total_qty) }}</td>
-                                        <td class="text-center" style="color: #ef4444;">{{ number_format($variant->sold_qty) }}</td>
-                                        <td class="text-center">
+                                        <td class="py-2 text-center text-sm text-gray-700">{{ number_format($variant->total_qty) }}</td>
+                                        <td class="py-2 text-center text-sm text-rose-600">{{ number_format($variant->sold_qty) }}</td>
+                                        <td class="py-2 text-center text-sm">
                                             @if($variant->remaining_qty <= 0)
-                                                <span style="color: #94a3b8;">{{ number_format($variant->remaining_qty) }}</span>
+                                                <span class="text-gray-400">{{ number_format($variant->remaining_qty) }}</span>
                                             @elseif($variant->remaining_qty <= 5)
-                                                <span style="color: #f97316; font-weight: 500;">{{ number_format($variant->remaining_qty) }}</span>
+                                                <span class="text-amber-600 font-semibold">{{ number_format($variant->remaining_qty) }}</span>
                                             @else
-                                                <span style="color: #10b981; font-weight: 500;">{{ number_format($variant->remaining_qty) }}</span>
+                                                <span class="text-emerald-600 font-semibold">{{ number_format($variant->remaining_qty) }}</span>
                                             @endif
                                         </td>
                                     </tr>
@@ -197,25 +196,30 @@
                 </div>
             </div>
             @empty
-            <div class="text-center py-5">
-                <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
-                <p class="text-muted">No stock data found</p>
+            <div class="text-center py-12">
+                <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+                <p class="text-gray-500 text-sm">No stock data found</p>
             </div>
             @endforelse
         </div>
 
-        <div class="card-footer" style="background: #ffffff; border-top: 1px solid #e2e8f0; border-radius: 0 0 24px 24px; padding: 14px 24px;">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                <div style="font-size: 12px; color: #64748b;">
-                    <i class="fas fa-database me-1"></i> {{ $products->total() }} products | {{ $products->sum(fn($p) => $p->variants->sum('total_qty')) }} units
+        <div class="px-5 py-3 border-t border-gray-100 bg-gray-50/50">
+            <div class="flex justify-between items-center flex-wrap gap-3">
+                <div class="text-sm font-medium text-gray-500">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+                    </svg>
+                    {{ $products->total() }} products | {{ $products->sum(fn($p) => $p->variants->sum('total_qty')) }} units
                 </div>
-                <div class="d-flex justify-content-center">
+                <div>
                     {{ $products->links('pagination::bootstrap-5') }}
                 </div>
-                <div class="d-flex gap-3">
-                    <span style="font-size: 11px;"><span style="display: inline-block; width: 10px; height: 10px; background: #10b981; border-radius: 50%; margin-right: 6px;"></span> In Stock</span>
-                    <span style="font-size: 11px;"><span style="display: inline-block; width: 10px; height: 10px; background: #f97316; border-radius: 50%; margin-right: 6px;"></span> Low Stock</span>
-                    <span style="font-size: 11px;"><span style="display: inline-block; width: 10px; height: 10px; background: #ef4444; border-radius: 50%; margin-right: 6px;"></span> Out of Stock</span>
+                <div class="flex gap-3">
+                    <span class="text-xs flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> In Stock</span>
+                    <span class="text-xs flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Low Stock</span>
+                    <span class="text-xs flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Out of Stock</span>
                 </div>
             </div>
         </div>
@@ -223,60 +227,46 @@
 </div>
 
 <style>
-    .product-header:hover {
-        background-color: #f8fafc;
-    }
-    .expand-icon {
-        transition: transform 0.2s ease;
-    }
-    .product-item.open .expand-icon {
-        transform: rotate(90deg);
-    }
-    .product-item.open .product-header {
-        background-color: #f8fafc;
-        border-bottom: 1px solid #e2e8f0;
-    }
-    .form-control:focus, .form-select:focus {
-        border-color: #4f46e5;
-        box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
-        outline: none;
-    }
-    .table td, .table th {
-        vertical-align: middle;
-        padding: 10px 8px;
-    }
-    #exportExcelBtn:hover {
-        background: #059669;
-        transition: 0.2s;
-    }
-    .pagination {
-        margin-bottom: 0;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-    .pagination .page-link {
-        border-radius: 10px;
-        margin: 0 3px;
-        color: #4f46e5;
-        border: 1px solid #e2e8f0;
-        font-size: 13px;
-        padding: 6px 12px;
-    }
-    .pagination .page-item.active .page-link {
-        background: #4f46e5;
-        border-color: #4f46e5;
-        color: white;
-    }
-    .pagination .page-link:hover {
-        background: #eef2ff;
-        border-color: #c7d2fe;
-        color: #4f46e5;
-    }
+.product-header:hover {
+    background-color: #f9fafb;
+}
+.expand-icon svg {
+    transition: transform 0.2s ease;
+}
+.product-item.open .expand-icon svg {
+    transform: rotate(90deg);
+}
+.product-item.open .product-header {
+    background-color: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
+.pagination {
+    margin-bottom: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.pagination .page-link {
+    border-radius: 8px;
+    margin: 0 2px;
+    color: #8B2452;
+    border: 1px solid #e2e8f0;
+    font-size: 13px;
+    padding: 6px 12px;
+}
+.pagination .page-item.active .page-link {
+    background: #8B2452;
+    border-color: #8B2452;
+    color: white;
+}
+.pagination .page-link:hover {
+    background: #f3e8ff;
+    border-color: #8B2452;
+    color: #8B2452;
+}
 </style>
 
 <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 <script>
-
 document.querySelectorAll('.product-header').forEach(header => {
     header.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -324,7 +314,7 @@ document.getElementById('exportExcelBtn').addEventListener('click', function() {
     const allProductItems = document.querySelectorAll('.product-item');
     
     allProductItems.forEach(productItem => {
-        const productNameElem = productItem.querySelector('.product-header .fw-bold');
+        const productNameElem = productItem.querySelector('.product-header .text-base');
         const productName = productNameElem ? productNameElem.innerText : '';
         
         const variantsTable = productItem.querySelector('.product-variants table tbody');
@@ -332,7 +322,7 @@ document.getElementById('exportExcelBtn').addEventListener('click', function() {
             const variantRows = variantsTable.querySelectorAll('tr');
             variantRows.forEach(row => {
                 const cells = row.querySelectorAll('td');
-                if (cells.length >= 6) {
+                if (cells.length >= 7) {
                     let variantName = '';
                     let colorValue = '';
                     let totalQty = '';

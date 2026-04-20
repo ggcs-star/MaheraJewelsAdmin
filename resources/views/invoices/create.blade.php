@@ -1,13 +1,13 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="container-fluid px-4 py-3" style="background: #f5faff; min-height: 100vh; font-family: 'Inter', 'SF Pro Display', -apple-system, sans-serif;">
+<div class="container-fluid px-4 py-3" style="background: #f8fafc; min-height: 100vh; font-family: 'Inter', 'SF Pro Display', -apple-system, sans-serif;">
 
-{{-- ================ PREMIUM HEADER ================ --}}
+{{-- ================ HEADER ================ --}}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div class="d-flex align-items-center gap-3">
         <div class="position-relative">
-            <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #2463eb, #0a4caf); border-radius: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 16px -4px rgba(36,99,235,0.3);">
+            <div style="width: 44px; height: 44px; background: var(--primary-light); border-radius: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 16px -4px rgba(139,36,82,0.3);">
                 <i class="fas fa-file-invoice text-white" style="font-size: 1.3rem;"></i>
             </div>
             <span style="position: absolute; top: -4px; right: -4px; width: 12px; height: 12px; background: #10b981; border: 2px solid white; border-radius: 50%;"></span>
@@ -15,7 +15,7 @@
         <div>
             <h1 style="font-size: 1.6rem; font-weight: 700; color: #0a1e2f; letter-spacing: -0.03em; margin-bottom: 0;">New Invoice</h1>
             <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-                <span style="background: #e8f0fe; padding: 4px 10px; border-radius: 30px; font-size: 0.7rem; color: #2463eb; font-weight: 600; letter-spacing: 0.5px;">
+                <span style="background: #e8f0fe; padding: 4px 10px; border-radius: 30px; font-size: 0.7rem; color: var(--primary-light); font-weight: 600; letter-spacing: 0.5px;">
                     <i class="fas fa-plus-circle me-1"></i> Create New
                 </span>
                 <span style="background: #fff4e5; padding: 4px 10px; border-radius: 30px; font-size: 0.7rem; color: #b85e00; font-weight: 600;">
@@ -25,7 +25,7 @@
         </div>
     </div>
     <a href="{{ admin_route('invoices.index') }}" style="background: white; padding: 10px 24px; border-radius: 60px; color: #1e3a5f; font-weight: 600; font-size: 0.85rem; text-decoration: none; display: flex; align-items: center; gap: 8px; border: 1.5px solid #e2ecf5; transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
-        <i class="fas fa-arrow-left" style="color: #2463eb;"></i> Back
+        <i class="fas fa-arrow-left" style="color: var(--primary-light);"></i> Back
     </a>
 </div>
 
@@ -40,11 +40,11 @@
     {{-- ================ CUSTOMER PROFILE CARD ================ --}}
     <div style="background: white; border-radius: 28px; padding: 24px; margin-bottom: 24px; box-shadow: 0 12px 28px -12px rgba(0,20,40,0.06); border: 1px solid rgba(255,255,255,0.6);">
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
-            <div style="width: 5px; height: 28px; background: linear-gradient(180deg, #2463eb, #7fa9f0); border-radius: 10px;"></div>
+            <div style="width: 5px; height: 28px; background: var(--primary-light); border-radius: 10px;"></div>
             <h3 style="font-size: 1.1rem; font-weight: 700; color: #0a1e2f; letter-spacing: -0.01em; margin-bottom: 0;">
-                <i class="fas fa-user-circle me-2" style="color: #2463eb;"></i> Customer Details
+                <i class="fas fa-user-circle me-2" style="color: var(--primary-light);"></i> Customer Details
             </h3>
-            <span style="background: #e9f2fa; padding: 4px 14px; border-radius: 40px; font-size: 0.65rem; font-weight: 600; color: #2463eb; margin-left: auto;">
+            <span style="background: #e9f2fa; padding: 4px 14px; border-radius: 40px; font-size: 0.65rem; font-weight: 600; color: var(--primary-light); margin-left: auto;">
                 <i class="fas fa-check-circle me-1"></i> Verified
             </span>
         </div>
@@ -66,7 +66,7 @@
 
                         @endforeach
                     </select>
-                    <button type="button" id="openCustomerModal" style="background: #2463eb; border: none; border-radius: 18px; padding: 0 18px; color: white; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 6px 14px -6px #2463eb;">
+                    <button type="button" id="openCustomerModal" style="background: var(--primary-light); border: none; border-radius: 18px; padding: 0 18px; color: white; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 6px 14px -6px var(--primary-light);">
                         <i class="fas fa-plus"></i>
                     </button>
                 </div>
@@ -92,15 +92,14 @@
         </div>
     </div>
 
-    {{-- ================ PERFECT ITEMS SECTION - NO SCROLL, FIXED WIDTH ================ --}}
+    {{-- ================ ITEMS SECTION ================ --}}
     <div style="background: white; border-radius: 28px; overflow: hidden; box-shadow: 0 12px 28px -12px rgba(0,20,40,0.06); border: 1px solid rgba(255,255,255,0.6);">
         
-        {{-- HEADER --}}
         <div style="padding: 20px 24px 12px; background: white; border-bottom: 1px solid #f0f6fa;">
             <div style="display: flex; align-items: center; justify-content: space-between;">
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <div style="width: 40px; height: 40px; background: #eef7ff; border-radius: 14px; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-boxes" style="color: #2463eb; font-size: 1.1rem;"></i>
+                        <i class="fas fa-boxes" style="color: var(--primary-light); font-size: 1.1rem;"></i>
                     </div>
                     <div>
                         <h3 style="font-size: 1.1rem; font-weight: 700; color: #0a1e2f; letter-spacing: -0.01em; margin-bottom: 2px;">Order Items</h3>
@@ -110,18 +109,15 @@
                     </div>
                 </div>
                 <div style="background: #f5faff; padding: 6px 14px; border-radius: 40px; border: 1px solid #e2ecf5; display: flex; align-items: center; gap: 6px;">
-                    <i class="fas fa-calculator" style="color: #2463eb; font-size: 0.8rem;"></i>
+                    <i class="fas fa-calculator" style="color: var(--primary-light); font-size: 0.8rem;"></i>
                     <span style="font-weight: 600; color: #1e3a5f; font-size: 0.7rem;">Auto-calc</span>
                 </div>
             </div>
         </div>
 
-        {{-- PERFECT TABLE - FIXED LAYOUT, NO SCROLL, EVERYTHING VISIBLE --}}
         <div style="padding: 12px 20px 20px;">
             <div style="background: #fafdff; border-radius: 20px; border: 1px solid #ecf3f8;">
                 <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
-                    
-                    {{-- TABLE HEADER - PERFECTLY PROPORTIONED --}}
                     <thead>
                         <tr style="background: white; border-bottom: 2px solid #e2eef5;">
                             <th style="width: 22%; padding: 14px 10px 14px 18px; text-align: left; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #3e6579;">Product</th>
@@ -133,12 +129,7 @@
                             <th style="width: 10%; padding: 14px 18px 14px 10px; text-align: center; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #3e6579;">Action</th>
                         </tr>
                     </thead>
-                    
-                    <tbody id="invoiceItems">
-                        {{-- DYNAMIC ROWS FROM JS - PERFECT FIT --}}
-                    </tbody>
-                    
-                    {{-- SUMMARY ROW - CLEAN BOTTOM --}}
+                    <tbody id="invoiceItems"></tbody>
                     <tfoot>
                         <tr style="background: #f8fcff; border-top: 2px solid #e2eef5;">
                             <td colspan="2" style="padding: 14px 18px;">
@@ -157,7 +148,6 @@
             </div>
         </div>
 
-        {{-- ADD ITEM BUTTON --}}
         <div style="padding: 0 24px 24px;">
             <button type="button" id="addRow" style="background: linear-gradient(95deg, #1a1e2b, #2a2f3f); border: none; border-radius: 60px; padding: 12px 28px; color: white; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 10px 20px -8px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1);">
                 <i class="fas fa-plus-circle"></i> Add New Item
@@ -169,7 +159,6 @@
 {{-- ================ RIGHT COLUMN - PAYMENT & SUMMARY ================ --}}
 <div class="col-lg-5 col-xl-4">
 
-    {{-- PAYMENT CARD --}}
     <div style="background: white; border-radius: 28px; padding: 24px; margin-bottom: 20px; box-shadow: 0 12px 28px -12px rgba(0,20,40,0.06); border: 1px solid rgba(255,255,255,0.6);">
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
             <div style="width: 44px; height: 44px; background: linear-gradient(145deg, #fff9e6, #fff3d4); border-radius: 16px; display: flex; align-items: center; justify-content: center;">
@@ -196,19 +185,18 @@
                 Amount Received
             </label>
             <div style="display: flex; align-items: center; background: white; border: 1.8px solid #e9f0f5; border-radius: 18px; overflow: hidden;">
-                <span style="background: #f5faff; padding: 12px 16px; color: #2463eb; font-weight: 700; border-right: 1.8px solid #e9f0f5; font-size: 0.9rem;">₹</span>
+                <span style="background: #f5faff; padding: 12px 16px; color: var(--primary-light); font-weight: 700; border-right: 1.8px solid #e9f0f5; font-size: 0.9rem;">₹</span>
                 <input type="number" name="paid_amount" placeholder="0.00" style="flex: 1; border: none; padding: 12px 18px; font-size: 0.9rem; font-weight: 500; color: #0a1e2f; outline: none;">
             </div>
         </div>
     </div>
 
-{{-- ================ INVOICE SUMMARY - CONDENSED & CLEAN ================ --}}
 <div style="background: white; border-radius: 28px; padding: 22px; box-shadow: 0 12px 28px -12px rgba(0,20,40,0.06); border: 1px solid rgba(255,255,255,0.6);">
     
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
         <div style="display: flex; align-items: center; gap: 10px;">
             <div style="width: 40px; height: 40px; background: #eef7ff; border-radius: 14px; display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-receipt" style="color: #2463eb; font-size: 1rem;"></i>
+                <i class="fas fa-receipt" style="color: var(--primary-light); font-size: 1rem;"></i>
             </div>
             <div>
                 <h3 style="font-size: 1rem; font-weight: 700; color: #0a1e2f; margin-bottom: 2px;">Summary</h3>
@@ -222,8 +210,7 @@
         </span>
     </div>
 
-    {{-- GRAND TOTAL - COMPACT --}}
-    <div style="background: linear-gradient(145deg, #f8fcff, #f0f7ff); border-radius: 20px; padding: 18px 20px; margin-bottom: 18px; border: 1px solid rgba(36,99,235,0.1);">
+    <div style="background: linear-gradient(145deg, #f8fcff, #f0f7ff); border-radius: 20px; padding: 18px 20px; margin-bottom: 18px; border: 1px solid rgba(139,36,82,0.1);">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
                 <span style="color: #547087; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 2px;">Grand Total</span>
@@ -233,7 +220,6 @@
         </div>
     </div>
 
-    {{-- DETAIL ROWS - COMPACT GRID LAYOUT --}}
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; background: #fafdff; border-radius: 18px; padding: 14px 16px;">
         
         <div style="display: flex; flex-direction: column; gap: 2px;">
@@ -260,7 +246,7 @@
         <div style="display: flex; flex-direction: column; gap: 2px;">
             <span style="color: #3a6579; display: flex; align-items: center; gap: 6px; font-size: 0.75rem;">
                 <span style="width: 24px; height: 24px; background: #e8f0fe; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-credit-card" style="color: #2463eb; font-size: 0.6rem;"></i>
+                    <i class="fas fa-credit-card" style="color: var(--primary-light); font-size: 0.6rem;"></i>
                 </span>
                 Paid
             </span>
@@ -268,8 +254,7 @@
         </div>
     </div>
 
-    {{-- NET TOTAL - COMPACT BLUE CARD --}}
-    <div style="background: linear-gradient(105deg, #2463eb 0%, #4098ff 100%); border-radius: 20px; padding: 16px 20px; margin-bottom: 18px; box-shadow: 0 8px 20px -8px rgba(36,99,235,0.3);">
+    <div style="background: var(--primary-light); border-radius: 20px; padding: 16px 20px; margin-bottom: 18px; box-shadow: 0 8px 20px -8px var(--primary-light);">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
                 <span style="color: rgba(255,255,255,0.9); font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 2px;">NET PAYABLE</span>
@@ -279,46 +264,43 @@
         </div>
     </div>
 
-    {{-- DUE & CHANGE - COMPACT ROW --}}
     <div style="display: flex; gap: 12px; margin-bottom: 20px;">
         <div style="flex: 1; background: #fff8e8; border-radius: 18px; padding: 12px 14px; border: 1px solid #ffebc8;">
             <span style="color: #b85e00; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; display: block; margin-bottom: 4px;">Due</span>
             <span style="font-weight: 800; color: #b85e00; font-size: 1.1rem;" id="dueAmount">0.00</span>
         </div>
         <div style="flex: 1; background: #e8f0fe; border-radius: 18px; padding: 12px 14px; border: 1px solid #d4e2f0;">
-            <span style="color: #2463eb; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; display: block; margin-bottom: 4px;">Change</span>
-            <span style="font-weight: 800; color: #2463eb; font-size: 1.1rem;" id="changeAmount">0.00</span>
+            <span style="color: var(--primary-light); font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; display: block; margin-bottom: 4px;">Change</span>
+            <span style="font-weight: 800; color: var(--primary-light); font-size: 1.1rem;" id="changeAmount">0.00</span>
         </div>
     </div>
 
-    {{-- ACTION BUTTONS - COMPACT --}}
     <div style="display: flex; gap: 10px;">
-        <button type="submit" style="flex: 1; background: linear-gradient(105deg, #2463eb, #1a4fba); border: none; border-radius: 60px; padding: 12px; color: white; font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 8px 18px -6px #2463eb;">
+        <button type="submit" style="flex: 1; background: var(--primary-light); border: none; border-radius: 60px; padding: 12px; color: white; font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 8px 18px -6px var(--primary-light);">
             <i class="fas fa-check-circle"></i> Submit
         </button>
     </div>
 </div>
 
     <div style="margin-top: 20px; padding: 16px 8px 4px; display: flex; justify-content: space-between; border-top: 1.5px solid #e2ecf5; color: #6b8a9c; font-size: 0.6rem;">
-        <span><i class="fas fa-copyright me-1"></i> 2026 GGCs</span>
+        <span><i class="fas fa-copyright me-1"></i> 2026 Radiant Jewel</span>
         <span>v3.0 · EN</span>
     </div>
 </div>
 
-</div> {{-- row --}}
+</div>
 </form>
-</div> {{-- container --}}
+</div>
 
-{{-- ================ ADD CUSTOMER MODAL - FIXED, NO SCRIPT ================ --}}
+{{-- ================ ADD CUSTOMER MODAL ================ --}}
 <div class="modal fade" id="customerModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
 <div class="modal-dialog modal-dialog-centered modal-md">
 <div style="background: white; border-radius: 32px; overflow: hidden; box-shadow: 0 40px 60px -20px rgba(0,0,0,0.2); border: 2px solid white;">
 
-    {{-- MODAL HEADER --}}
     <div style="padding: 24px 24px 8px; display: flex; align-items: center; justify-content: space-between; background: white; border-bottom: 1px solid #f0f6fa;">
         <div style="display: flex; align-items: center; gap: 12px;">
             <div style="width: 44px; height: 44px; background: #eef7ff; border-radius: 16px; display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-user-plus" style="color: #2463eb; font-size: 1.1rem;"></i>
+                <i class="fas fa-user-plus" style="color: var(--primary-light); font-size: 1.1rem;"></i>
             </div>
             <div>
                 <h3 style="font-size: 1.1rem; font-weight: 700; color: #0a1e2f; margin-bottom: 2px;">Add New Customer</h3>
@@ -330,9 +312,7 @@
         </button>
     </div>
 
-    {{-- MODAL BODY - 100% CLICKABLE --}}
     <div style="padding: 24px; background: white;">
-        {{-- FULL NAME --}}
         <div style="margin-bottom: 20px;">
             <label style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #547087; margin-bottom: 6px; display: block;">
                 Full Name <span style="color: #dc2626;">*</span>
@@ -344,18 +324,17 @@
                 value=""
                 autocomplete="off"
                 style="width: 100%; background: white; border: 2px solid #e9f0f5; border-radius: 18px; padding: 14px 20px; font-size: 0.95rem; color: #0a1e2f; outline: none; transition: all 0.2s;"
-                onfocus="this.style.borderColor='#2463eb'"
+                onfocus="this.style.borderColor='var(--primary-light)'"
                 onblur="this.style.borderColor='#e9f0f5'"
             >
         </div>
         
-        {{-- MOBILE NUMBER --}}
         <div style="margin-bottom: 20px;">
             <label style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #547087; margin-bottom: 6px; display: block;">
                 Mobile Number <span style="color: #dc2626;">*</span>
             </label>
             <div style="display: flex; align-items: center; background: white; border: 2px solid #e9f0f5; border-radius: 18px; overflow: hidden;">
-                <span style="background: #f5faff; padding: 14px 16px; color: #2463eb; font-weight: 700; border-right: 2px solid #e9f0f5; font-size: 0.9rem;">+91</span>
+                <span style="background: #f5faff; padding: 14px 16px; color: var(--primary-light); font-weight: 700; border-right: 2px solid #e9f0f5; font-size: 0.9rem;">+91</span>
               
               <input 
     id="newCustomerMobile" 
@@ -371,7 +350,6 @@
             </div>
         </div>
         
-        {{-- ADDRESS --}}
         <div style="margin-bottom: 8px;">
             <label style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #547087; margin-bottom: 6px; display: block;">
                 Complete Address
@@ -381,20 +359,18 @@
                 placeholder="House / Shop No., Street, Landmark, City, Pincode" 
                 rows="3"
                 style="width: 100%; background: white; border: 2px solid #e9f0f5; border-radius: 18px; padding: 14px 20px; font-size: 0.95rem; color: #0a1e2f; outline: none; resize: none; transition: all 0.2s;"
-                onfocus="this.style.borderColor='#2463eb'"
+                onfocus="this.style.borderColor='var(--primary-light)'"
                 onblur="this.style.borderColor='#e9f0f5'"
             ></textarea>
         </div>
         
-        {{-- HINT TEXT --}}
         <div style="margin-top: 16px; padding: 10px 16px; background: #f8fcff; border-radius: 14px; border: 1px solid #e2ecf5;">
             <span style="color: #547087; font-size: 0.7rem; display: flex; align-items: center; gap: 8px;">
-                <i class="fas fa-info-circle" style="color: #2463eb;"></i> Customer will be saved and auto-selected
+                <i class="fas fa-info-circle" style="color: var(--primary-light);"></i> Customer will be saved and auto-selected
             </span>
         </div>
     </div>
 
-    {{-- MODAL FOOTER --}}
     <div style="padding: 8px 24px 24px; display: flex; gap: 14px; justify-content: flex-end; background: white; border-top: 1px solid #f0f6fa;">
         <button 
             type="button" 
@@ -408,9 +384,9 @@
         <button 
             type="button" 
             id="saveCustomer" 
-            style="background: linear-gradient(105deg, #2463eb, #1a4fba); border: none; border-radius: 60px; padding: 12px 32px; color: white; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 20px -6px rgba(36,99,235,0.4); cursor: pointer; transition: all 0.2s; border: 1px solid rgba(255,255,255,0.2);"
-            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 16px 24px -8px rgba(36,99,235,0.5)'"
-            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 20px -6px rgba(36,99,235,0.4)'"
+            style="background: var(--primary-light); border: none; border-radius: 60px; padding: 12px 32px; color: white; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; box-shadow: 0 10px 20px -6px var(--primary-light); cursor: pointer; transition: all 0.2s; border: 1px solid rgba(255,255,255,0.2);"
+            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 16px 24px -8px var(--primary-light)'"
+            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 20px -6px var(--primary-light)'"
         >
             <i class="fas fa-check-circle" style="font-size: 0.9rem;"></i> Save
         </button>
@@ -420,21 +396,17 @@
 </div>
 </div>
 
-{{-- EXTRA FIX - SIRF 2 LINES CSS, KOI SCRIPT NAHI --}}
 <style>
-/* Sirf modal proper click ke liye - koi logic nahi */
 .modal-backdrop { z-index: 1040 !important; }
 .modal { z-index: 1050 !important; }
 #customerModal input, #customerModal textarea, #customerModal button { 
     position: relative; 
     z-index: 1060; 
 }
-/* Popup band nahi hoga ab */
 .modal-dialog { pointer-events: auto; }
 .modal.fade .modal-dialog { transform: none; }
 </style>
 
-{{-- PRODUCT OPTIONS TEMPLATE --}}
 <select id="productOptionsTemplate" class="d-none">
     <option value="">Select Product</option>
     @foreach($products as $product)
