@@ -60,10 +60,20 @@
                         @forelse($order->items as $item)
                             <div class="p-4 flex gap-4 hover:bg-gray-50/50 transition-colors">
                                 <div class="flex-shrink-0">
-                                    <img src="{{ $item->image ? (str_starts_with($item->image, 'http') ? $item->image : S3Helper::url($item->image)) : (optional($item->product)->image_url ? S3Helper::url($item->product->image_url) : asset('images/no-image.png')) }}" 
-                                         class="w-16 h-16 rounded-lg border border-gray-200 object-cover shadow-sm" 
-                                         alt="{{ $item->product_name ?? 'Product' }}" 
-                                         onerror="this.src='{{ asset('images/no-image.png') }}'">
+                                  @php
+                                        $imgUrl = $item->image 
+                                            ?? ($item->variant->image_url 
+                                            ?? ($item->product->image_url ?? null));
+
+                                        if ($imgUrl) {
+                                            if (!str_starts_with($imgUrl, 'http')) {
+                                                $imgUrl = S3Helper::url($imgUrl);
+                                            }
+                                        } else {
+                                            $imgUrl = asset('images/no-image.png');
+                                        }
+                                    @endphp
+                                    <img src="{{ $imgUrl }}" class="w-16 h-16 rounded-lg border border-gray-200 object-cover shadow-sm" alt="{{ $item->product_name ?? 'Product' }}">
                                 </div>
                                 <div class="flex-1">
                                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
