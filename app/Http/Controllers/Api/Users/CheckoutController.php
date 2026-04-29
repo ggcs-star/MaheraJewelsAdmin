@@ -23,7 +23,10 @@ class CheckoutController extends Controller
     {
         try {
             $cart = Cart::where('user_id', auth()->id())
-            ->with(['items.product:id,name'])
+                ->with([
+                    'items.product:id,name,image_url',
+                    'items.variant:id,image_url'
+                ])
                 ->firstOrFail();
 
             if ($cart->items->isEmpty()) {
@@ -115,9 +118,12 @@ class CheckoutController extends Controller
 
             $userId = auth()->id();
 
-            $cart = Cart::where('user_id', $userId)
-            ->with(['items.product:id,name'])
-                ->firstOrFail();
+           $cart = Cart::where('user_id', $userId)
+            ->with([
+                'items.product:id,name,image_url',
+                'items.variant:id,image_url'
+            ])
+            ->firstOrFail();
 
             if ($cart->items->isEmpty()) {
                 abort(422, 'Cart is empty');
@@ -166,8 +172,10 @@ class CheckoutController extends Controller
                     'price' => $item->price,
                     'quantity' => $item->quantity,
                     'subtotal' => $item->subtotal,
-                    'image' => $item->image
-                ]);
+                    'image' => $item->variant->image_url 
+                        ?? $item->product->image_url 
+                        ?? $item->image
+                    ]);
             }
 
             
@@ -242,9 +250,12 @@ class CheckoutController extends Controller
     try {
         $userId = auth()->id();
 
-        $cart = Cart::where('user_id', $userId)
-    ->with(['items.product:id,name'])
-            ->firstOrFail();
+        $cart = Cart::where('user_id',$userId)
+        ->with([
+            'items.product:id,name,image_url',
+            'items.variant:id,image_url'
+        ])
+        ->firstOrFail();
 
         if ($cart->items->isEmpty()) {
             return response()->json([
@@ -398,9 +409,12 @@ class CheckoutController extends Controller
     ]);
 }
 
-        $cart = Cart::where('user_id',$userId)
-    ->with(['items.product:id,name'])
-            ->firstOrFail();
+       $cart = Cart::where('user_id',$userId)
+        ->with([
+            'items.product:id,name,image_url',
+            'items.variant:id,image_url'
+        ])
+        ->firstOrFail();
 
         if ($cart->items->isEmpty()) {
             throw new \Exception('Cart empty');
@@ -453,7 +467,9 @@ class CheckoutController extends Controller
                 'price'=>$item->price,
                 'quantity'=>$item->quantity,
                 'subtotal'=>$item->subtotal,
-                'image' => $item->image
+                'image' => $item->variant->image_url 
+                    ?? $item->product->image_url 
+                    ?? $item->image
             ]);
         }
 

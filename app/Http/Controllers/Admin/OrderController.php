@@ -53,13 +53,15 @@ class OrderController extends Controller
 
     
     $order->items->transform(function ($item) {
-        if ($item->image && !str_starts_with($item->image, 'http')) {
-            $item->image = S3Helper::url($item->image);
-        } elseif (optional($item->product)->image_url) {
-            $item->image = S3Helper::url($item->product->image_url);
-        }
-        return $item;
-    });
+    if ($item->image && !str_starts_with($item->image, 'http')) {
+        $item->image = S3Helper::url($item->image);
+    } elseif ($item->variant && $item->variant->image_url && !str_starts_with($item->variant->image_url, 'http')) {
+        $item->image = S3Helper::url($item->variant->image_url);
+    } elseif ($item->product && $item->product->image_url && !str_starts_with($item->product->image_url, 'http')) {
+        $item->image = S3Helper::url($item->product->image_url);
+    }
+    return $item;
+});
 
     return view('admin.orders.show', compact('order'));
 }
