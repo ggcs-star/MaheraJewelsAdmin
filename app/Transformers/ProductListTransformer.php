@@ -30,7 +30,7 @@ class ProductListTransformer
             'product_price' => $product->product_price,
 
             'image_url' => $imageUrl,
-
+            'gallery_images' => $product->getGalleryImagesPublicAttribute(),
             'price' => $bestPricing?->price,
             'final_price' => $bestPricing?->final_price,
 
