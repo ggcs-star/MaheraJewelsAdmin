@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\DashboardController;
+
 use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
@@ -27,6 +27,7 @@ use App\Http\Controllers\AppSettingController;
 use App\Http\Controllers\Admin\ReelController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockSettingController;
+use App\Http\Controllers\Admin\DashboardController;
 
 
 
@@ -90,8 +91,8 @@ Route::post('/reels/{reel}/share', [ReelController::class, 'addShare'])
 Route::get('/reels/{reel}/stats', [ReelController::class, 'stats'])
     ->name('reels.stats');
 
-        Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
-
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.admin');
+Route::get('/dashboard-data', [DashboardController::class, 'getChartData'])->name('dashboard.admin.data');
         Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
 
         Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
