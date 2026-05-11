@@ -72,27 +72,18 @@ Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:admin']
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
-       
-  // Reels CRUD
 Route::resource('reels', ReelController::class);
-
-// Comments
 Route::post('/reels/{reel}/comment', [ReelController::class, 'addComment'])
     ->name('reels.comment');
-
 Route::delete('/reels/comment/{comment}', [ReelController::class, 'deleteComment'])
     ->name('reels.comment.delete');
-
-// Share
 Route::post('/reels/{reel}/share', [ReelController::class, 'addShare'])
     ->name('reels.share');
-
-// Stats API (modal / ajax)
 Route::get('/reels/{reel}/stats', [ReelController::class, 'stats'])
     ->name('reels.stats');
 
-        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.admin');
-Route::get('/dashboard-data', [DashboardController::class, 'getChartData'])->name('dashboard.admin.data');
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dashboard-data', [DashboardController::class, 'getChartData'])->name('dashboard.admin.data');
         Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
 
         Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
