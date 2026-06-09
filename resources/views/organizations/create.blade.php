@@ -73,7 +73,19 @@
                         <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Website</label>
                         <input type="url" name="website" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm" value="{{ old('website') }}">
                     </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                            Business Hours
+                        </label>
 
+                        <input
+                            type="text"
+                            name="business_hours"
+                            value="{{ old('business_hours') }}"
+                            placeholder="Mon-Sat : 10 AM - 7 PM"
+                            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452]"
+                        >
+                    </div>
                     <div>
                         <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
                             Status <span class="text-red-500">*</span>

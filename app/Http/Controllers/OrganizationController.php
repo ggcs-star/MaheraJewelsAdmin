@@ -158,7 +158,7 @@ class OrganizationController extends Controller
             'website'   => 'nullable|url|max:255',
 
             'logo'      => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-
+            'business_hours' => 'nullable|string|max:255',
             'address'   => 'nullable|string',
             'city'      => 'nullable|string|max:100',
             'state'     => 'nullable|string|max:100',

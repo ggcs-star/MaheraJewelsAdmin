@@ -151,6 +151,15 @@
                             <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Address</p>
                             <p class="text-sm font-semibold text-gray-800">{{ $organization->address ?? '—' }}</p>
                         </div>
+                        <div class="p-3 rounded-lg border border-gray-100 bg-gray-50/50">
+                            <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                                Business Hours
+                            </p>
+
+                            <p class="text-sm font-semibold text-gray-800">
+                                {{ $organization->business_hours ?? '—' }}
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>

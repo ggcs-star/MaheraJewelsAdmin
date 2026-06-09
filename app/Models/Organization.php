@@ -14,7 +14,7 @@ class Organization extends Model
         'mobile',
         'website',
         'logo_path',
-
+        'business_hours',
         'address',
         'city',
         'state',

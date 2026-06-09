@@ -9,16 +9,21 @@
     :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
     style="scrollbar-width: thin; scrollbar-color: #e2e8f0 #f1f5f9"
 >
-    <div class="h-[64px] flex items-center px-5 bg-gradient-to-r from-white to-gray-50 border-b border-gray-100">
+  @php
+    $organization = \App\Models\Organization::where('is_active', 1)->first();
+@endphp
+
+@if($organization && $organization->logo_url)
+<div class="h-[64px] flex items-center px-5 bg-gradient-to-r from-white to-gray-50 border-b border-gray-100">
     <div class="flex items-center justify-center w-full">
         <img
-            src="{{ asset('assets/logo/logo.png') }}"
-            alt="Radiant Jewel Logo"
+            src="{{ $organization->logo_url }}"
+            alt="{{ $organization->name }}"
             class="h-10 w-auto object-contain"
-            onerror="this.src='{{ asset('assets/logo/logo.png') }}'"
         >
     </div>
 </div>
+@endif
 
     <nav class="px-3 py-4 space-y-0.5">
         <a href="{{ route('dashboard') }}"
