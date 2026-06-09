@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Login | RADIANT JEWEL</title>
+    <title>Login | MAHERA JEWELS</title>
     <style>
         * {
             margin: 0;
@@ -485,7 +485,7 @@
 <body>
     <div class="container">
         <div class="image-section">
-            <h1>Join Radiant Jewel Today</h1>
+            <h1>Join Mahera Jewels Today</h1>
             <p>Create your account and unlock exclusive benefits, personalized recommendations, and faster checkout experience.</p>
             
             <div class="features">
@@ -522,7 +522,7 @@
         
         <div class="login-section">
             <div class="login-container">
-                <div class="logo">RADIANT JEWEL</div>
+                <div class="logo">MAHERA JEWELS</div>
                 
                 <div class="login-header">
                     <h2>Sign In</h2>

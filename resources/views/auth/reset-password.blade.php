@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Reset Password | RADIANT JEWEL</title>
+        <title>Reset Password | MAHERA JEWELS</title>
     <style>
         * {
             margin: 0;
@@ -533,7 +533,7 @@
         
         <div class="reset-section">
             <div class="reset-container">
-                <div class="logo">RADIANT JEWEL</div>
+                <div class="logo">MAHERA JEWELS</div>
                 
                 <div class="back-section">
                     <a href="/forgot-password" class="back-link">
