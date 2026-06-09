@@ -40,7 +40,7 @@
         </main>
 
         <footer class="p-4 text-center text-sm text-gray-500 border-t bg-white">
-            &copy; {{ date('Y') }} Inventory Management System.
+            &copy; {{ date('Y') }} Mahera Jewels. All rights reserved.
         </footer>
 
     </div>

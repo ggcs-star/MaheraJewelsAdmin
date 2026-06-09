@@ -151,7 +151,7 @@ window.showToast = function(message, type="error") {
             
             <footer class="mt-auto py-6 text-center text-sm text-gray-500 border-t border-gray-200 bg-white">
                 <div class="container mx-auto px-6">
-                    &copy; {{ date('Y') }} Radiant Jewel. All rights reserved.
+                    &copy; {{ date('Y') }} Mahera Jewels. All rights reserved.
                 </div>
             </footer>
         </div>
