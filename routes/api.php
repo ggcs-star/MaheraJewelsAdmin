@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\Users\BannerController;
 use App\Http\Controllers\Api\Users\UserCategoryController;
 use App\Http\Controllers\Api\Users\AppSettingController;
 use App\Http\Controllers\Api\LikeController;
+use App\Http\Controllers\Api\Users\OrganizationController;
 use App\Http\Controllers\Api\CommentController;
 
 Route::post('/like', [LikeController::class, 'store']);
@@ -161,6 +162,8 @@ Route::get(
     [CategoryController::class, 'products']
 );
 
+
+Route::get('/organization/footer-details', [OrganizationController::class, 'footerDetails']);
 Route::get('/products/top-selling', [ProductController::class, 'topSelling']);
 Route::get('/products/suggestions', [ProductController::class, 'searchSuggestions'])
     ->middleware('throttle:30,1');
