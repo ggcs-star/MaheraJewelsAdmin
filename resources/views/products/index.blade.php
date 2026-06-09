@@ -348,8 +348,8 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.85);
-    z-index: 1100;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 9999;
     align-items: center;
     justify-content: center;
 }
@@ -360,12 +360,18 @@
     position: relative;
     max-width: 90%;
     max-height: 90%;
+    background: transparent;
+    overflow: hidden;  
 }
+
 .modal-content img {
-    max-width: 100%;
-    max-height: 90vh;
-    object-fit: contain;
-    border-radius: 12px;
+    width: 100%;
+    height: auto;
+    max-height: 85vh;
+    object-fit: contain; 
+    border-radius: 8px;
+    display: block;
+    margin: 0 auto;
 }
 .modal-close {
     position: absolute;
