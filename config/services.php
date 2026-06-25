@@ -37,4 +37,15 @@ return [
 
     ],
 
+    'firebase' => [
+
+    'project_id' => env('FIREBASE_PROJECT_ID'),
+
+    'credentials' => storage_path(
+        'app/firebase/firebase-service-account.json'
+    ),
+
+    'vapid_key' => env('FIREBASE_VAPID_KEY'),
+
+],
 ];
