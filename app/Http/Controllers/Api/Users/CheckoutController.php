@@ -16,7 +16,7 @@ use Razorpay\Api\Api;
 use Razorpay\Api\Errors\SignatureVerificationError;
 use Illuminate\Support\Facades\DB;
 use Throwable;
-
+use App\Services\ActivityLogService;
 class CheckoutController extends Controller
 {
     public function summary(Request $request): JsonResponse
@@ -104,109 +104,129 @@ class CheckoutController extends Controller
     }
         }
 
-    public function placeOrder(Request $request): JsonResponse
-    {
-        $request->validate([
-            'shipping_address_id' => 'required|integer',
-            'billing_address_id' => 'required|integer',
-            'payment_method_id' => 'required|integer',
-            'coupon_code' => 'nullable|string',
-        ]);
+public function placeOrder(Request $request): JsonResponse
+{
+    $request->validate([
+        'shipping_address_id' => 'required|integer',
+        'billing_address_id' => 'required|integer',
+        'payment_method_id' => 'required|integer',
+        'coupon_code' => 'nullable|string',
+    ]);
 
-        try {
-            DB::beginTransaction();
+    try {
 
-            $userId = auth()->id();
+        DB::beginTransaction();
 
-           $cart = Cart::where('user_id', $userId)
+        $userId = auth()->id();
+
+        $cart = Cart::where('user_id', $userId)
             ->with([
                 'items.product:id,name,image_url',
                 'items.variant:id,image_url'
             ])
             ->firstOrFail();
 
-            if ($cart->items->isEmpty()) {
-                abort(422, 'Cart is empty');
-            }
-
-            $subtotal = $cart->items->sum('subtotal');
-            $settings = DeliverySetting::getSettings();
-
-            $discount = $this->calculateDiscount($request->coupon_code, $subtotal);
-
-            $afterDiscount = max($subtotal - $discount, 0);
-
-            $shipping = $settings->delivery_fee;
-
-            if ($settings->free_delivery_above && $afterDiscount >= $settings->free_delivery_above) {
-                $shipping = 0;
-            }
-
-            $platformFee = $settings->platform_fee;
-
-            $tax = ($afterDiscount * $settings->tax_percent) / 100;
-
-            $total = round($afterDiscount + $shipping + $platformFee + $tax, 2);
-            $order = Order::create([
-                'user_id' => $userId,
-                'order_number' => 'ORD-' . now()->format('Ymd') . '-' . rand(100, 999),
-                'status' => 'pending',
-                'payment_status' => 'pending',
-                'subtotal' => round($subtotal, 2),
-                'tax' => round($tax,2),
-                'shipping' => $shipping,
-                'discount' => round($discount, 2),
-                'platform_fee' => $platformFee,
-                'total' => $total,
-                'coupon_code' => $request->coupon_code,
-                'shipping_address_id' => $request->shipping_address_id,
-                'billing_address_id' => $request->billing_address_id,
-                'payment_method_id' => $request->payment_method_id,
-            ]);
-            foreach ($cart->items as $item) {
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $item->product_id,
-                    'product_name' => $item->product->name ?? 'Product',
-                    'variant_id' => $item->product_variant_id,
-                    'price' => $item->price,
-                    'quantity' => $item->quantity,
-                    'subtotal' => $item->subtotal,
-                    'image' => $item->variant->image_url 
-                        ?? $item->product->image_url 
-                        ?? $item->image
-                    ]);
-            }
-
-            
-            $cart->items()->delete();
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Order placed successfully',
-                'data' => [
-                    'order' => [
-                        'id' => $order->id,
-                        'order_number' => $order->order_number,
-                        'status' => $order->status,
-                        'total' => $order->total,
-                        'payment_status' => $order->payment_status,
-                        'created_at' => $order->created_at,
-                    ]
-                ]
-            ]);
-
-        } catch (Throwable $e) {
-            DB::rollBack();
-
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
+        if ($cart->items->isEmpty()) {
+            abort(422, 'Cart is empty');
         }
+
+        $subtotal = $cart->items->sum('subtotal');
+
+        $settings = DeliverySetting::getSettings();
+
+        $discount = $this->calculateDiscount($request->coupon_code, $subtotal);
+
+        $afterDiscount = max($subtotal - $discount, 0);
+
+        $shipping = $settings->delivery_fee;
+
+        if ($settings->free_delivery_above && $afterDiscount >= $settings->free_delivery_above) {
+            $shipping = 0;
+        }
+
+        $platformFee = $settings->platform_fee;
+
+        $tax = ($afterDiscount * $settings->tax_percent) / 100;
+
+        $total = round($afterDiscount + $shipping + $platformFee + $tax, 2);
+
+        $order = Order::create([
+            'user_id' => $userId,
+            'order_number' => 'ORD-' . now()->format('Ymd') . '-' . rand(100, 999),
+            'status' => 'pending',
+            'payment_status' => 'pending',
+            'subtotal' => round($subtotal, 2),
+            'tax' => round($tax, 2),
+            'shipping' => $shipping,
+            'discount' => round($discount, 2),
+            'platform_fee' => $platformFee,
+            'total' => $total,
+            'coupon_code' => $request->coupon_code,
+            'shipping_address_id' => $request->shipping_address_id,
+            'billing_address_id' => $request->billing_address_id,
+            'payment_method_id' => $request->payment_method_id,
+        ]);
+
+        foreach ($cart->items as $item) {
+
+            OrderItem::create([
+                'order_id' => $order->id,
+                'product_id' => $item->product_id,
+                'product_name' => $item->product->name ?? 'Product',
+                'variant_id' => $item->product_variant_id,
+                'price' => $item->price,
+                'quantity' => $item->quantity,
+                'subtotal' => $item->subtotal,
+                'image' => $item->variant->image_url
+                    ?? $item->product->image_url
+                    ?? $item->image,
+            ]);
+        }
+
+        // Activity Log
+        ActivityLogService::log(
+            auth()->user(),
+            'order',
+            $order->id,
+            'success',
+            [
+                'payment_method' => 'COD',
+                'order_number' => $order->order_number,
+                'amount' => $order->total,
+            ]
+        );
+
+        $cart->items()->delete();
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Order placed successfully',
+            'data' => [
+                'order' => [
+                    'id' => $order->id,
+                    'order_number' => $order->order_number,
+                    'status' => $order->status,
+                    'total' => $order->total,
+                    'payment_status' => $order->payment_status,
+                    'created_at' => $order->created_at,
+                ]
+            ]
+        ]);
+
+    } catch (Throwable $e) {
+
+        DB::rollBack();
+
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage()
+        ], 500);
     }
+}
+
+
     private function calculateDiscount(?string $couponCode, float $subtotal): float
     {
         if (!$couponCode) {
@@ -300,6 +320,7 @@ class CheckoutController extends Controller
             ],
         ]);
 
+        
         $razorpay = new Api(
             config('services.razorpay.key'),
             config('services.razorpay.secret')
@@ -481,7 +502,32 @@ class CheckoutController extends Controller
 'razorpay_payload' => $paymentDetails->toArray(),   
          'paid_at'=>now()
         ]);
+// Payment Activity
+ActivityLogService::log(
+    auth()->user(),
+    'payment',
+    $payment->id,
+    'success',
+    [
+        'payment_method' => 'Razorpay',
+        'transaction_id' => $request->razorpay_payment_id,
+        'amount' => $payment->amount,
+        'order_number' => $order->order_number,
+    ]
+);
 
+// Order Activity
+ActivityLogService::log(
+    auth()->user(),
+    'order',
+    $order->id,
+    'success',
+    [
+        'payment_method' => 'Razorpay',
+        'order_number' => $order->order_number,
+        'amount' => $order->total,
+    ]
+);
         $cart->items()->delete();
 
         DB::commit();
