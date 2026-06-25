@@ -13,7 +13,10 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Throwable;
+use App\Services\ActivityLogService;
 
+use Illuminate\Support\Facades\Http;
+use UAParser\Parser;
 class AuthController extends Controller
 {
 
@@ -215,10 +218,36 @@ class AuthController extends Controller
                 ]
             ], 403);
         }
+$parser = Parser::create();
 
+$result = $parser->parse($request->userAgent());
+
+// Localhost test ke liye
+$ip = app()->environment('local')
+    ? '8.8.8.8'
+    : $request->ip();
+
+$response = Http::timeout(5)->get("https://ipwho.is/{$ip}");
+
+$location = $response->json();
+
+$user->update([
+    'last_login_ip' => $request->ip(),
+    'country'       => $location['country'] ?? null,
+    'state'         => $location['region'] ?? null,
+    'city'          => $location['city'] ?? null,
+'device'   => $result->device->family,
+'browser'  => $result->ua->family,
+'platform' => $result->os->family,
+    'last_login_at' => now(),
+]);
         $token = $user->createToken(
             $user->hasRole('user') ? 'user-token' : 'admin-token'
         )->plainTextToken;
+        ActivityLogService::log(
+    $user,
+    'login'
+);
 
         return response()->json([
             'status' => true,
