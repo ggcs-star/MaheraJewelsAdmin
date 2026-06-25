@@ -28,12 +28,14 @@ use App\Http\Controllers\Admin\ReelController;
 use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockSettingController;
 use App\Http\Controllers\Admin\DashboardController;
-
-
-
+use App\Http\Controllers\NotificationController;
+use Google\Client;
+Route::get('/test-notification', [NotificationController::class, 'testNotification'])
+    ->name('test.notification');
 Route::get('/', function () {
     return redirect()->route('login');
 });
+
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'create'])->name('register');
@@ -390,7 +392,61 @@ Route::post('/orders/{id}/cancel', [OrderController::class,'cancel'])
 Route::get('/stock-management',[StockController::class, 'index'])->name('stock.index');
 Route::get('/stock-settings', [StockSettingController::class, 'index'])->name('stock.settings');
 Route::post('/stock-settings', [StockSettingController::class, 'update'])->name('stock.settings.update');
-    });
+   
+/*
+|--------------------------------------------------------------------------
+| Firebase Notifications
+|--------------------------------------------------------------------------
+*/
+
+Route::post('/notification/save-token', [NotificationController::class, 'saveToken'])
+    ->name('notification.save-token');
+
+Route::post('/notification/send-all', [NotificationController::class, 'sendToAll'])
+    ->name('notification.send-all');
+
+Route::post('/notification/send-user', [NotificationController::class, 'sendToUser'])
+    ->name('notification.send-user');
+
+Route::get('/notifications', [NotificationController::class, 'index'])
+    ->name('notification.index');
+
+Route::post('/notification/read/{id}', [NotificationController::class, 'markAsRead'])
+    ->name('notification.read');
+
+Route::delete('/notification/{id}', [NotificationController::class, 'destroy'])
+    ->name('notification.destroy');
+
+/*
+|--------------------------------------------------------------------------
+| Firebase Test
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/firebase-test', function (\App\Services\FirebaseService $firebase) {
+
+    $token = \App\Models\NotificationToken::first();
+
+    if (!$token) {
+        return "No FCM Token Found";
+    }
+
+    $firebase->sendToToken(
+        $token->fcm_token,
+        'Mahera Jewels',
+        'Firebase Working Successfully',
+        [
+            'type' => 'test'
+        ]
+    );
+
+    return "Notification Sent";
+
+})->name('firebase.test');
+
+
+
+});
 // 💰 GST & TAXES
 Route::get('/taxes', [\App\Http\Controllers\TaxController::class, 'index'])
     ->name('taxes.index');
