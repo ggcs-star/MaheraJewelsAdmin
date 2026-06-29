@@ -1,10 +1,10 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
 import {
     getMessaging,
     getToken,
     onMessage,
     isSupported
-} from "firebase/messaging";
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging.js";
 
 console.log("Firebase JS Loaded");
 
@@ -20,9 +20,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 async function initFCM() {
-
     try {
-
         console.log("STEP 1");
 
         if (!("Notification" in window)) {
@@ -81,16 +79,15 @@ async function initFCM() {
         const oldToken = localStorage.getItem("fcm_token");
 
         if (oldToken !== token) {
-
             localStorage.setItem("fcm_token", token);
 
             const response = await fetch("/admin/notification/save-token", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": document
-                        .querySelector('meta[name="csrf-token"]')
-                        .content
+                    "X-CSRF-TOKEN": document.querySelector(
+                        'meta[name="csrf-token"]'
+                    ).content
                 },
                 body: JSON.stringify({
                     fcm_token: token,
@@ -101,36 +98,25 @@ async function initFCM() {
 
             console.log("Token Saved");
             console.log(await response.text());
-
         } else {
-
             console.log("Token Already Saved");
-
         }
 
         onMessage(messaging, (payload) => {
-
             console.log("Foreground Notification");
             console.log(payload);
 
             if (payload.notification) {
-
                 new Notification(payload.notification.title, {
                     body: payload.notification.body,
                     icon: payload.notification.icon || "/favicon.ico"
                 });
-
             }
-
         });
-
     } catch (error) {
-
         console.error("FCM Error");
         console.error(error);
-
     }
-
 }
 
 window.addEventListener("load", initFCM);
