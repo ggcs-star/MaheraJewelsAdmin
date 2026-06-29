@@ -120,9 +120,35 @@
 
     <div class="flex items-center gap-2">
         <button class="relative p-2 text-gray-500 hover:text-[#8B2452] hover:bg-[#8B2452]/5 rounded-lg transition-all duration-200">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
+        <a
+    href="{{ route('admin.notifications.index') }}"
+    class="relative p-2 text-gray-500 hover:text-[#8B2452]"
+>
+    <svg class="w-5 h-5">
+        ....
+    </svg>
+
+    @php
+        $count = \App\Models\Notification::where(
+            'user_id',
+            auth()->id()
+        )
+        ->where('is_read', false)
+        ->count();
+    @endphp
+
+    @if($count)
+        <span
+            class="absolute top-1 right-1
+                   bg-red-500 text-white
+                   rounded-full text-xs
+                   min-w-[18px] h-[18px]
+                   flex items-center justify-center"
+        >
+            {{ $count }}
+        </span>
+    @endif
+</a>
             <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-[#8B2452] rounded-full border-2 border-white"></span>
         </button>
 
