@@ -30,8 +30,7 @@ use App\Http\Controllers\StockSettingController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\NotificationController;
 use Google\Client;
-Route::get('/test-notification', [NotificationController::class, 'testNotification'])
-    ->name('test.notification');
+
 Route::get('/', function () {
     return redirect()->route('login');
 });
@@ -41,7 +40,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'create'])->name('register');
     Route::post('/register', [RegisterController::class, 'store'])
         ->middleware('throttle:3,1');
-  
+
     Route::get('/login', [LoginController::class, 'create'])->name('login');
     Route::post('/login', [LoginController::class, 'store'])
         ->middleware('throttle:5,1');
@@ -74,15 +73,15 @@ Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:admin']
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
-Route::resource('reels', ReelController::class);
-Route::post('/reels/{reel}/comment', [ReelController::class, 'addComment'])
-    ->name('reels.comment');
-Route::delete('/reels/comment/{comment}', [ReelController::class, 'deleteComment'])
-    ->name('reels.comment.delete');
-Route::post('/reels/{reel}/share', [ReelController::class, 'addShare'])
-    ->name('reels.share');
-Route::get('/reels/{reel}/stats', [ReelController::class, 'stats'])
-    ->name('reels.stats');
+        Route::resource('reels', ReelController::class);
+        Route::post('/reels/{reel}/comment', [ReelController::class, 'addComment'])
+            ->name('reels.comment');
+        Route::delete('/reels/comment/{comment}', [ReelController::class, 'deleteComment'])
+            ->name('reels.comment.delete');
+        Route::post('/reels/{reel}/share', [ReelController::class, 'addShare'])
+            ->name('reels.share');
+        Route::get('/reels/{reel}/stats', [ReelController::class, 'stats'])
+            ->name('reels.stats');
 
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('/dashboard-data', [DashboardController::class, 'getChartData'])->name('dashboard.admin.data');
@@ -99,44 +98,44 @@ Route::get('/reels/{reel}/stats', [ReelController::class, 'stats'])
         Route::get('/suppliers/{supplier}/details', [SupplierController::class, 'details'])->name('suppliers.details');
         Route::post('/suppliers/bulk-delete', [SupplierController::class, 'bulkDelete'])->name('suppliers.bulk-delete');
         Route::get(
-'/delivery-settings',
-[DeliverySettingController::class,'index']
-)->name('delivery-settings.index');
+            '/delivery-settings',
+            [DeliverySettingController::class, 'index']
+        )->name('delivery-settings.index');
 
-Route::get(
-'/delivery-settings/create',
-[DeliverySettingController::class,'create']
-)->name('delivery-settings.create');
+        Route::get(
+            '/delivery-settings/create',
+            [DeliverySettingController::class, 'create']
+        )->name('delivery-settings.create');
 
-Route::post(
-'/delivery-settings',
-[DeliverySettingController::class,'store']
-)->name('delivery-settings.store');
+        Route::post(
+            '/delivery-settings',
+            [DeliverySettingController::class, 'store']
+        )->name('delivery-settings.store');
 
-Route::post(
-'/delivery-settings/bulk-delete',
-[DeliverySettingController::class,'bulkDelete']
-)->name('delivery-settings.bulk-delete');
+        Route::post(
+            '/delivery-settings/bulk-delete',
+            [DeliverySettingController::class, 'bulkDelete']
+        )->name('delivery-settings.bulk-delete');
 
-Route::get(
-'/delivery-settings/{deliverySetting}/edit',
-[DeliverySettingController::class,'edit']
-)->name('delivery-settings.edit');
+        Route::get(
+            '/delivery-settings/{deliverySetting}/edit',
+            [DeliverySettingController::class, 'edit']
+        )->name('delivery-settings.edit');
 
-Route::put(
-'/delivery-settings/{deliverySetting}',
-[DeliverySettingController::class,'update']
-)->name('delivery-settings.update');
+        Route::put(
+            '/delivery-settings/{deliverySetting}',
+            [DeliverySettingController::class, 'update']
+        )->name('delivery-settings.update');
 
-Route::delete(
-'/delivery-settings/{deliverySetting}',
-[DeliverySettingController::class,'destroy']
-)->name('delivery-settings.destroy');
+        Route::delete(
+            '/delivery-settings/{deliverySetting}',
+            [DeliverySettingController::class, 'destroy']
+        )->name('delivery-settings.destroy');
 
-Route::get(
-'/delivery-settings/{deliverySetting}',
-[DeliverySettingController::class,'show']
-)->name('delivery-settings.show');
+        Route::get(
+            '/delivery-settings/{deliverySetting}',
+            [DeliverySettingController::class, 'show']
+        )->name('delivery-settings.show');
         Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
         Route::get('/categories/create', [CategoryController::class, 'create'])->name('categories.create');
         Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
@@ -145,36 +144,34 @@ Route::get(
         Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
         Route::get('/categories/{category}/details', [CategoryController::class, 'details'])->name('categories.details');
         Route::post('/categories/bulk-delete', [CategoryController::class, 'bulkDelete'])->name('categories.bulk-delete');
-// =====================
-// BANNERS (AJIO STYLE)
-// =====================
-Route::get('/banners', [BannerController::class, 'index'])
-    ->name('banners.index');
+    
+        Route::get('/banners', [BannerController::class, 'index'])
+            ->name('banners.index');
 
-Route::get('/banners/create', [BannerController::class, 'create'])
-    ->name('banners.create');
+        Route::get('/banners/create', [BannerController::class, 'create'])
+            ->name('banners.create');
 
-Route::post('/banners', [BannerController::class, 'store'])
-    ->name('banners.store');
+        Route::post('/banners', [BannerController::class, 'store'])
+            ->name('banners.store');
 
-Route::get('/banners/{banner}/edit', [BannerController::class, 'edit'])
-    ->name('banners.edit');
+        Route::get('/banners/{banner}/edit', [BannerController::class, 'edit'])
+            ->name('banners.edit');
 
-Route::put('/banners/{banner}', [BannerController::class, 'update'])
-    ->name('banners.update');
-Route::get('/banners/{banner}', [BannerController::class, 'show'])
-    ->name('banners.show');
-Route::delete('/banners/{banner}', [BannerController::class, 'destroy'])
-    ->name('banners.destroy');
+        Route::put('/banners/{banner}', [BannerController::class, 'update'])
+            ->name('banners.update');
+        Route::get('/banners/{banner}', [BannerController::class, 'show'])
+            ->name('banners.show');
+        Route::delete('/banners/{banner}', [BannerController::class, 'destroy'])
+            ->name('banners.destroy');
         Route::get(
             '/products/{product}/invoice',
             [ProductInvoiceController::class, 'view']
         )->name('products.invoice.view');
 
         Route::get(
-    '/products/{product}/invoice/download',
-    [ProductInvoiceController::class, 'download']
-)->name('products.invoice.download');
+            '/products/{product}/invoice/download',
+            [ProductInvoiceController::class, 'download']
+        )->name('products.invoice.download');
 
 
         Route::get(
@@ -187,10 +184,10 @@ Route::delete('/banners/{banner}', [BannerController::class, 'destroy'])
             [ProductInvoiceController::class, 'image']
         )->name('products.invoice.image');
         Route::delete(
-    'products/{product}/image/{index}',
-    [ProductController::class, 'deleteImage']
-)->name('products.image.delete');
-     
+            'products/{product}/image/{index}',
+            [ProductController::class, 'deleteImage']
+        )->name('products.image.delete');
+
         Route::get('/warehouses', [WarehouseController::class, 'index'])->name('warehouses.index');
         Route::get('/warehouses/create', [WarehouseController::class, 'create'])->name('warehouses.create');
         Route::post('/warehouses', [WarehouseController::class, 'store'])->name('warehouses.store');
@@ -200,34 +197,34 @@ Route::delete('/banners/{banner}', [BannerController::class, 'destroy'])
         Route::get('/warehouses/{warehouse}', [WarehouseController::class, 'show'])->name('warehouses.show');
         Route::post('/warehouses/bulk-delete', [WarehouseController::class, 'bulkDelete'])->name('warehouses.bulk-delete');
 
-       // Variants master (add / edit / delete)
-Route::resource('variants', VariantController::class);
+        // Variants master (add / edit / delete)
+        Route::resource('variants', VariantController::class);
 
-// Variant values
-Route::post(
-    'variants/{variant}/values',
-    [VariantController::class, 'storeValue']
-)->name('variants.values.store');
+        // Variant values
+        Route::post(
+            'variants/{variant}/values',
+            [VariantController::class, 'storeValue']
+        )->name('variants.values.store');
 
-Route::delete(
-    'variant-values/{value}',
-    [VariantController::class, 'destroyValue']
-)->name('variants.values.destroy');
+        Route::delete(
+            'variant-values/{value}',
+            [VariantController::class, 'destroyValue']
+        )->name('variants.values.destroy');
 
-Route::put(
-    'variant-values/{value}',
-    [VariantController::class, 'updateValue']
-)->name('variants.values.update');
+        Route::put(
+            'variant-values/{value}',
+            [VariantController::class, 'updateValue']
+        )->name('variants.values.update');
 
-Route::get(
-    'variants/{variant}/values',
-    [VariantController::class, 'getValues']
-)->name('admin.variants.values.list');
+        Route::get(
+            'variants/{variant}/values',
+            [VariantController::class, 'getValues']
+        )->name('admin.variants.values.list');
 
         Route::get('/products', [ProductController::class, 'index'])->name('products.index');
         Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
         Route::post('/products', [ProductController::class, 'store'])->name('products.store');
-        
+
         Route::get('/products/list', [ProductController::class, 'list'])->name('products.list');
         Route::get('/products/push', [ProductController::class, 'push'])->name('products.push');
         Route::post('/products/push', [ProductController::class, 'pushStore'])->name('products.push.store');
@@ -238,216 +235,183 @@ Route::get(
         Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
         Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
         Route::get('/platform/{platform}/products', [ProductController::class, 'platformProducts'])
-    ->name('platform.products');
-    // Bulk delete banks
-Route::post('/banks/bulk-delete',[BankController::class, 'bulkDelete'])->name('banks.bulk-delete');
+            ->name('platform.products');
+        // Bulk delete banks
+        Route::post('/banks/bulk-delete', [BankController::class, 'bulkDelete'])->name('banks.bulk-delete');
 
- Route::get('/banks', [BankController::class, 'index'])->name('banks.index');
-Route::get('/banks/create', [BankController::class, 'create'])->name('banks.create');
-Route::post('/banks', [BankController::class, 'store'])->name('banks.store');
-Route::get('/banks/{bank}/edit', [BankController::class, 'edit'])->name('banks.edit');
-Route::put('/banks/{bank}', [BankController::class, 'update'])->name('banks.update');
-Route::delete('/banks/{bank}', [BankController::class, 'destroy'])->name('banks.destroy');
- Route::get('/coupons', [CouponController::class, 'index'])->name('coupons.index');
+        Route::get('/banks', [BankController::class, 'index'])->name('banks.index');
+        Route::get('/banks/create', [BankController::class, 'create'])->name('banks.create');
+        Route::post('/banks', [BankController::class, 'store'])->name('banks.store');
+        Route::get('/banks/{bank}/edit', [BankController::class, 'edit'])->name('banks.edit');
+        Route::put('/banks/{bank}', [BankController::class, 'update'])->name('banks.update');
+        Route::delete('/banks/{bank}', [BankController::class, 'destroy'])->name('banks.destroy');
+        Route::get('/coupons', [CouponController::class, 'index'])->name('coupons.index');
         Route::post('/coupons', [CouponController::class, 'store'])->name('coupons.store');
-Route::get('/coupons/push', [CouponController::class, 'create'])
-    ->name('coupons.push');
-Route::post('/coupons/bulk-delete',[CouponController::class, 'bulkDelete'])->name('coupons.bulk-delete');
-// routes/admin.php
-Route::get('coupons/{coupon}', [CouponController::class, 'show'])
-    ->name('coupons.show');
+        Route::get('/coupons/push', [CouponController::class, 'create'])
+            ->name('coupons.push');
+        Route::post('/coupons/bulk-delete', [CouponController::class, 'bulkDelete'])->name('coupons.bulk-delete');
+        // routes/admin.php
+        Route::get('coupons/{coupon}', [CouponController::class, 'show'])
+            ->name('coupons.show');
 
         Route::get('/coupons/{coupon}', [CouponController::class, 'show'])->name('coupons.show');
         Route::get('/coupons/{coupon}/edit', [CouponController::class, 'edit'])->name('coupons.edit');
         Route::put('/coupons/{coupon}', [CouponController::class, 'update'])->name('coupons.update');
         Route::delete('/coupons/{coupon}', [CouponController::class, 'destroy'])->name('coupons.destroy');
-       Route::get('/organizations', [OrganizationController::class, 'index'])
-    ->name('organizations.index');
+        Route::get('/organizations', [OrganizationController::class, 'index'])
+            ->name('organizations.index');
 
-Route::get('/organizations/create', [OrganizationController::class, 'create'])
-    ->name('organizations.create');
-Route::get('/organizations/{organization}', 
-    [OrganizationController::class, 'show']
-)->name('organizations.show');
+        Route::get('/organizations/create', [OrganizationController::class, 'create'])
+            ->name('organizations.create');
+        Route::get(
+            '/organizations/{organization}',
+            [OrganizationController::class, 'show']
+        )->name('organizations.show');
 
-Route::post('/organizations', [OrganizationController::class, 'store'])
-    ->name('organizations.store');
+        Route::post('/organizations', [OrganizationController::class, 'store'])
+            ->name('organizations.store');
 
-Route::get('/organizations/{organization}/edit', [OrganizationController::class, 'edit'])
-    ->name('organizations.edit');
+        Route::get('/organizations/{organization}/edit', [OrganizationController::class, 'edit'])
+            ->name('organizations.edit');
 
-Route::put('/organizations/{organization}', [OrganizationController::class, 'update'])
-    ->name('organizations.update');
+        Route::put('/organizations/{organization}', [OrganizationController::class, 'update'])
+            ->name('organizations.update');
 
-Route::delete('/organizations/{organization}', [OrganizationController::class, 'destroy'])
-    ->name('organizations.destroy');
+        Route::delete('/organizations/{organization}', [OrganizationController::class, 'destroy'])
+            ->name('organizations.destroy');
 
-Route::post('/organizations/bulk-delete', [OrganizationController::class, 'bulkDelete'])
-    ->name('organizations.bulk-delete');
+        Route::post('/organizations/bulk-delete', [OrganizationController::class, 'bulkDelete'])
+            ->name('organizations.bulk-delete');
 
-Route::get(
-    '/app-settings',
-    [AppSettingController::class, 'index']
-)->name('app-settings.index');
+        Route::get(
+            '/app-settings',
+            [AppSettingController::class, 'index']
+        )->name('app-settings.index');
 
-Route::get(
-    '/app-settings/create',
-    [AppSettingController::class, 'create']
-)->name('app-settings.create');
+        Route::get(
+            '/app-settings/create',
+            [AppSettingController::class, 'create']
+        )->name('app-settings.create');
 
-Route::post(
-    '/app-settings',
-    [AppSettingController::class, 'store']
-)->name('app-settings.store');
+        Route::post(
+            '/app-settings',
+            [AppSettingController::class, 'store']
+        )->name('app-settings.store');
 
-Route::get(
-    '/app-settings/{appSetting}',
-    [AppSettingController::class, 'show']
-)->name('app-settings.show');
+        Route::get(
+            '/app-settings/{appSetting}',
+            [AppSettingController::class, 'show']
+        )->name('app-settings.show');
 
-Route::get(
-    '/app-settings/{appSetting}/edit',
-    [AppSettingController::class, 'edit']
-)->name('app-settings.edit');
+        Route::get(
+            '/app-settings/{appSetting}/edit',
+            [AppSettingController::class, 'edit']
+        )->name('app-settings.edit');
 
-Route::put(
-    '/app-settings/{appSetting}',
-    [AppSettingController::class, 'update']
-)->name('app-settings.update');
+        Route::put(
+            '/app-settings/{appSetting}',
+            [AppSettingController::class, 'update']
+        )->name('app-settings.update');
 
-Route::delete(
-    '/app-settings/{appSetting}',
-    [AppSettingController::class, 'destroy']
-)->name('app-settings.destroy');
-// Customers CRUD
-Route::get('/customers', [CustomerController::class, 'index'])
-    ->name('customers.index');
+        Route::delete(
+            '/app-settings/{appSetting}',
+            [AppSettingController::class, 'destroy']
+        )->name('app-settings.destroy');
+        // Customers CRUD
+        Route::get('/customers', [CustomerController::class, 'index'])
+            ->name('customers.index');
 
-Route::get('/customers/create', [CustomerController::class, 'create'])
-    ->name('customers.create');
+        Route::get('/customers/create', [CustomerController::class, 'create'])
+            ->name('customers.create');
 
-Route::post('/customers', [CustomerController::class, 'store'])
-    ->name('customers.store');
+        Route::post('/customers', [CustomerController::class, 'store'])
+            ->name('customers.store');
 
-Route::get('/customers/{customer}', [CustomerController::class, 'show'])
-    ->name('customers.show');
+        Route::get('/customers/{customer}', [CustomerController::class, 'show'])
+            ->name('customers.show');
 
-Route::get('/customers/{customer}/edit', [CustomerController::class, 'edit'])
-    ->name('customers.edit');
+        Route::get('/customers/{customer}/edit', [CustomerController::class, 'edit'])
+            ->name('customers.edit');
 
-Route::put('/customers/{customer}', [CustomerController::class, 'update'])
-    ->name('customers.update');
+        Route::put('/customers/{customer}', [CustomerController::class, 'update'])
+            ->name('customers.update');
 
-Route::delete('/customers/{customer}', [CustomerController::class, 'destroy'])
-    ->name('customers.destroy');
+        Route::delete('/customers/{customer}', [CustomerController::class, 'destroy'])
+            ->name('customers.destroy');
 
-Route::post('/customers/bulk-delete', [CustomerController::class, 'bulkDelete'])
-    ->name('customers.bulk-delete');
-// Invoice
-Route::get('/invoices/create', [InvoiceController::class, 'create'])
-    ->name('invoices.create');
+        Route::post('/customers/bulk-delete', [CustomerController::class, 'bulkDelete'])
+            ->name('customers.bulk-delete');
+        // Invoice
+        Route::get('/invoices/create', [InvoiceController::class, 'create'])
+            ->name('invoices.create');
 
-Route::post('/invoices', [InvoiceController::class, 'store'])
-    ->name('invoices.store');
+        Route::post('/invoices', [InvoiceController::class, 'store'])
+            ->name('invoices.store');
 
-    Route::get('/invoices', [InvoiceController::class, 'index'])
-        ->name('invoices.index');
-         Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])
-        ->name('invoices.show');
+        Route::get('/invoices', [InvoiceController::class, 'index'])
+            ->name('invoices.index');
+        Route::get('/invoices/{invoice}', [InvoiceController::class, 'show'])
+            ->name('invoices.show');
 
-    // Print / Download invoice
-    Route::get('/invoices/{invoice}/print', [InvoiceController::class, 'print'])
-        ->name('invoices.print');
-         Route::get('/invoices/{invoice}/edit', [InvoiceController::class, 'edit'])
-        ->name('invoices.edit');
-    Route::put('/invoices/{invoice}', [InvoiceController::class, 'update'])
-        ->name('invoices.update');
+        // Print / Download invoice
+        Route::get('/invoices/{invoice}/print', [InvoiceController::class, 'print'])
+            ->name('invoices.print');
+        Route::get('/invoices/{invoice}/edit', [InvoiceController::class, 'edit'])
+            ->name('invoices.edit');
+        Route::put('/invoices/{invoice}', [InvoiceController::class, 'update'])
+            ->name('invoices.update');
         Route::delete('/invoices/{invoice}', [InvoiceController::class, 'destroy'])
-    ->name('invoices.destroy');
-Route::get(
-    '/products/{product}/variants',
-    [InvoiceController::class, 'productVariants']
-)->name('products.variants');
+            ->name('invoices.destroy');
+        Route::get(
+            '/products/{product}/variants',
+            [InvoiceController::class, 'productVariants']
+        )->name('products.variants');
 
-// Customer ajax
-Route::post(
-    '/customers/ajax-store',
-    [CustomerController::class, 'ajaxStore']
-)->name('customers.ajax.store');
-
-
-
-Route::get('/orders', [OrderController::class,'index'])->name('orders.index');
-
-Route::get('/orders/{id}', [OrderController::class,'show'])->name('orders.show');
-
-Route::post('/orders/{id}/status', [OrderController::class,'updateStatus'])
-    ->name('orders.updateStatus'); // ✅ FIXED NAME
-
-Route::get('/orders/{id}/invoice', [OrderController::class,'invoice'])
-    ->name('orders.invoice');
-
-Route::post('/orders/{id}/cancel', [OrderController::class,'cancel'])
-    ->name('orders.cancel');
-Route::get('/stock-management',[StockController::class, 'index'])->name('stock.index');
-Route::get('/stock-settings', [StockSettingController::class, 'index'])->name('stock.settings');
-Route::post('/stock-settings', [StockSettingController::class, 'update'])->name('stock.settings.update');
-   
-/*
-|--------------------------------------------------------------------------
-| Firebase Notifications
-|--------------------------------------------------------------------------
-*/
-
-Route::post('/notification/save-token', [NotificationController::class, 'saveToken'])
-    ->name('notification.save-token');
-
-Route::post('/notification/send-all', [NotificationController::class, 'sendToAll'])
-    ->name('notification.send-all');
-
-Route::post('/notification/send-user', [NotificationController::class, 'sendToUser'])
-    ->name('notification.send-user');
-
-Route::get('/notifications', [NotificationController::class, 'index'])
-    ->name('notification.index');
-
-Route::post('/notification/read/{id}', [NotificationController::class, 'markAsRead'])
-    ->name('notification.read');
-
-Route::delete('/notification/{id}', [NotificationController::class, 'destroy'])
-    ->name('notification.destroy');
-
-/*
-|--------------------------------------------------------------------------
-| Firebase Test
-|--------------------------------------------------------------------------
-*/
-
-Route::get('/firebase-test', function (\App\Services\FirebaseService $firebase) {
-
-    $token = \App\Models\NotificationToken::first();
-
-    if (!$token) {
-        return "No FCM Token Found";
-    }
-
-    $firebase->sendToToken(
-        $token->fcm_token,
-        'Mahera Jewels',
-        'Firebase Working Successfully',
-        [
-            'type' => 'test'
-        ]
-    );
-
-    return "Notification Sent";
-
-})->name('firebase.test');
+        // Customer ajax
+        Route::post(
+            '/customers/ajax-store',
+            [CustomerController::class, 'ajaxStore']
+        )->name('customers.ajax.store');
 
 
 
-});
-// 💰 GST & TAXES
+        Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+
+        Route::get('/orders/{id}', [OrderController::class, 'show'])->name('orders.show');
+
+        Route::post('/orders/{id}/status', [OrderController::class, 'updateStatus'])
+            ->name('orders.updateStatus'); // ✅ FIXED NAME
+    
+        Route::get('/orders/{id}/invoice', [OrderController::class, 'invoice'])
+            ->name('orders.invoice');
+
+        Route::post('/orders/{id}/cancel', [OrderController::class, 'cancel'])
+            ->name('orders.cancel');
+        Route::get('/stock-management', [StockController::class, 'index'])->name('stock.index');
+        Route::get('/stock-settings', [StockSettingController::class, 'index'])->name('stock.settings');
+        Route::post('/stock-settings', [StockSettingController::class, 'update'])->name('stock.settings.update');
+
+     
+        Route::post('/notification/save-token', [NotificationController::class, 'saveToken'])
+            ->name('notification.save-token');
+
+        Route::post('/notification/send-all', [NotificationController::class, 'sendToAll'])
+            ->name('notification.send-all');
+
+        Route::post('/notification/send-user', [NotificationController::class, 'sendToUser'])
+            ->name('notification.send-user');
+
+        Route::get('/notifications', [NotificationController::class, 'index'])
+            ->name('notification.index');
+
+        Route::post('/notification/read/{id}', [NotificationController::class, 'markAsRead'])
+            ->name('notification.read');
+
+        Route::delete('/notification/{id}', [NotificationController::class, 'destroy'])
+            ->name('notification.destroy');
+
+
+    });
 Route::get('/taxes', [\App\Http\Controllers\TaxController::class, 'index'])
     ->name('taxes.index');
 

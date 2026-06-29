@@ -106,17 +106,31 @@ class NotificationController extends Controller
         ]);
     }
 
-    /**
-     * Notification History
-     */
-    public function index()
-    {
-        return Notification::latest()->paginate(20);
-    }
+    
+public function index()
+{
+    Notification::where(function ($query) {
+        $query->where('user_id', Auth::id())
+              ->orWhereNull('user_id');
+    })
+    ->where('is_read', false)
+    ->update([
+        'is_read' => true
+    ]);
 
-    /**
-     * Mark Notification As Read
-     */
+    $notifications = Notification::where(function ($query) {
+        $query->where('user_id', Auth::id())
+              ->orWhereNull('user_id');
+    })
+    ->latest()
+    ->paginate(20);
+
+    return view(
+        'admin.notifications.index',
+        compact('notifications')
+    );
+}
+   
     public function markAsRead($id)
     {
         $notification = Notification::findOrFail($id);
