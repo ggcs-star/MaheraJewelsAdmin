@@ -29,6 +29,7 @@ use App\Http\Controllers\StockController;
 use App\Http\Controllers\StockSettingController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\NotificationSettingController;
 use Google\Client;
 
 Route::get('/', function () {
@@ -283,6 +284,33 @@ Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:admin']
         Route::post('/organizations/bulk-delete', [OrganizationController::class, 'bulkDelete'])
             ->name('organizations.bulk-delete');
 
+
+
+
+// Route::get('/notification-settings', [OrganizationController::class, 'notificationSettings'])
+//     ->name('notification-settings.index');
+
+
+
+    // Notification Settings
+Route::get('/notification-settings', [NotificationSettingController::class, 'index'])
+    ->name('notification-settings.index');
+
+Route::get('/notification-settings/create', [NotificationSettingController::class, 'create'])
+    ->name('notification-settings.create');
+
+Route::post('/notification-settings', [NotificationSettingController::class, 'store'])
+    ->name('notification-settings.store');
+
+Route::get('/notification-settings/{notificationSetting}/edit', [NotificationSettingController::class, 'edit'])
+    ->name('notification-settings.edit');
+
+Route::put('/notification-settings/{notificationSetting}', [NotificationSettingController::class, 'update'])
+    ->name('notification-settings.update');
+
+Route::delete('/notification-settings/{notificationSetting}', [NotificationSettingController::class, 'destroy'])
+    ->name('notification-settings.destroy');
+            
         Route::get(
             '/app-settings',
             [AppSettingController::class, 'index']
@@ -378,7 +406,8 @@ Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:admin']
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
 
         Route::get('/orders/{id}', [OrderController::class, 'show'])->name('orders.show');
-
+Route::get('/orders/{id}/confirm', [OrderController::class, 'confirm'])
+    ->name('orders.confirm');
         Route::post('/orders/{id}/status', [OrderController::class, 'updateStatus'])
             ->name('orders.updateStatus'); // ✅ FIXED NAME
     
@@ -403,7 +432,8 @@ Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:admin']
 
         Route::get('/notifications', [NotificationController::class, 'index'])
             ->name('notification.index');
-
+Route::get('/test-notification', [NotificationController::class, 'testNotification'])
+    ->name('notification.test');
         Route::post('/notification/read/{id}', [NotificationController::class, 'markAsRead'])
             ->name('notification.read');
 

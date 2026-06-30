@@ -192,14 +192,18 @@ class DeliverySettingController extends Controller
     {
         return $request->validate([
 
-            'delivery_fee' => 'required|numeric|min:0|max:999999',
+    'delivery_fee' => 'required|numeric|min:0|max:999999',
 
-            'platform_fee' => 'required|numeric|min:0|max:999999',
+    'platform_fee' => 'required|numeric|min:0|max:999999',
 
-            'tax_percent' => 'required|numeric|min:0|max:100',
+    'tax_percent' => 'required|numeric|min:0|max:100',
 
-            'free_delivery_above' => 'nullable|numeric|min:0|max:999999',
+    'free_delivery_above' => 'nullable|numeric|min:0|max:999999',
 
-        ]);
+    'auto_confirm_enabled' => 'nullable|boolean',
+
+    'auto_confirm_minutes' => 'required|integer|min:1|max:10080',
+
+]);
     }
 }

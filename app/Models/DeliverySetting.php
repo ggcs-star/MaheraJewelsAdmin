@@ -10,7 +10,9 @@ class DeliverySetting extends Model
         'delivery_fee',
         'platform_fee',
         'tax_percent',
-        'free_delivery_above'
+        'free_delivery_above',
+        'auto_confirm_enabled',
+'auto_confirm_minutes'
     ];
 
     protected $casts = [

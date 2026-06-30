@@ -158,23 +158,26 @@ public function index()
         ]);
     }
     
- public function testNotification()
+public function testNotification()
 {
     $token = NotificationToken::value('fcm_token');
 
     if (!$token) {
-        return "No FCM Token Found";
+        return response()->json([
+            'success' => false,
+            'message' => 'No FCM Token Found'
+        ]);
     }
 
-    $this->firebase->sendToToken(
+    $response = $this->firebase->sendToToken(
         $token,
         'Test Notification',
         'Firebase Push Notification Working!',
         [
-            'url' => url('/dashboard')
+            'url' => url('/admin/dashboard')
         ]
     );
 
-    return "Notification Sent Successfully";
+    dd($response);
 }
 }

@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Helpers\S3Helper;
+
+use App\Models\OrganizationNotificationEmail;
+use Illuminate\Support\Facades\Mail;
 class OrganizationController extends Controller
 {
     public function index(Request $request)
@@ -84,10 +87,12 @@ class OrganizationController extends Controller
     {
         return view('organizations.create');
     }
-    public function show(Organization $organization)
-    {
-        return view('organizations.show', compact('organization'));
-    }
+  public function show(Organization $organization)
+{
+    $organization->load('notificationEmails');
+
+    return view('organizations.show', compact('organization'));
+}
     public function store(Request $request)
     {
         $data = $this->validated($request);
@@ -179,6 +184,38 @@ class OrganizationController extends Controller
                 'logo.' . $request->file('logo')->getClientOriginalExtension()
             );
     }
+    public function notificationSettings()
+{
+    $organizations = Organization::with('notificationEmails')->get();
+
+    return view('admin.notification-settings.index', compact('organizations'));
+}
+
+public function storeNotificationEmail(Request $request, Organization $organization)
+{
+    $request->validate([
+        'name' => 'nullable|string|max:255',
+        'email' => 'required|email|max:255',
+    ]);
+
+    $organization->notificationEmails()->create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'receive_order_notification' => $request->boolean('receive_order_notification'),
+        'receive_registration_notification' => $request->boolean('receive_registration_notification'),
+        'receive_contact_notification' => $request->boolean('receive_contact_notification'),
+        'is_active' => $request->boolean('is_active', true),
+    ]);
+
+    return back()->with('success', 'Notification email added successfully.');
+}
+
+public function destroyNotificationEmail($id)
+{
+    OrganizationNotificationEmail::findOrFail($id)->delete();
+
+    return back()->with('success', 'Notification email deleted successfully.');
+}
 
     private function deleteLogo(?string $path): void
     {
