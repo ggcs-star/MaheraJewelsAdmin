@@ -83,6 +83,55 @@
                 </div>
             </div>
 
+            <hr class="my-6">
+
+<h3 class="text-lg font-semibold text-gray-800 mb-4">
+    Order Automation
+</h3>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+    <div>
+
+        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+            Auto Confirm After (Minutes)
+        </label>
+
+        <input
+            type="number"
+            min="1"
+            name="auto_confirm_minutes"
+            value="{{ old('auto_confirm_minutes',60) }}"
+            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm">
+
+        <p class="text-xs text-gray-500 mt-2">
+            Pending orders will automatically become Confirmed after this time.
+        </p>
+
+    </div>
+
+    <div class="flex items-center mt-7">
+
+        <input
+            type="checkbox"
+            id="auto_confirm_enabled"
+            name="auto_confirm_enabled"
+            value="1"
+            checked
+            class="rounded border-gray-300">
+
+        <label
+            for="auto_confirm_enabled"
+            class="ml-3 text-sm font-medium text-gray-700">
+
+            Enable Auto Confirm Orders
+
+        </label>
+
+    </div>
+
+</div>
+
             <div class="px-5 py-4 border-t border-gray-100 bg-gray-50/50 flex justify-end">
                 <button type="submit" class="inline-flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all shadow-md" style="background: var(--primary-light); color: white;">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -95,6 +95,21 @@
             </svg>
             <span class="text-sm">App Settings</span>
         </a>
+
+        <a href="{{ admin_route('notification-settings.index') }}"
+   class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200
+   {{ request()->routeIs('notification-settings.*') ? 'bg-[#8B2452] text-white font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-[#8B2452]' }}">
+
+    <svg class="w-5 h-5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2.5"
+              d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0a3 3 0 11-6 0h6z"/>
+    </svg>
+
+    <span class="text-sm">Notification Settings</span>
+
+</a>
     </nav>
 </aside>
 

@@ -34,4 +34,8 @@ class Organization extends Model
             ? S3Helper::url($this->logo_path)
             : null;
     }
+    public function notificationEmails()
+{
+    return $this->hasMany(OrganizationNotificationEmail::class);
+}
 }

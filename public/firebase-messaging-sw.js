@@ -1,3 +1,5 @@
+console.log("Firebase Service Worker Loaded");
+
 importScripts("https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js");
 
@@ -14,12 +16,31 @@ const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(function(payload) {
 
+    console.log("Background Message", payload);
+
+    const notification = payload.notification || {};
+    const data = payload.data || {};
+
     self.registration.showNotification(
-        payload.notification.title,
+        notification.title || data.title || "Notification",
         {
-            body: payload.notification.body,
-            icon: "/favicon.ico"
+            body: notification.body || data.body || "",
+            icon: "/favicon.ico",
+            badge: "/favicon.ico",
+            requireInteraction: true,
+            data: {
+                url: data.url || "/admin/dashboard"
+            }
         }
+    );
+});
+
+self.addEventListener("notificationclick", function(event) {
+
+    event.notification.close();
+
+    event.waitUntil(
+        clients.openWindow(event.notification.data.url)
     );
 
 });

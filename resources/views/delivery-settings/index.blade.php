@@ -69,8 +69,21 @@
                         <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-24">Delivery Fee</th>
                         <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-24">Platform Fee</th>
                         <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-20">Tax %</th>
-                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-28">Free Delivery Above</th>
-                        <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider w-32">Actions</th>
+<th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-28">
+    Free Delivery Above
+</th>
+
+<th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-24">
+    Auto Confirm
+</th>
+
+<th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-24">
+    Confirm Time
+</th>
+
+<th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider w-32">
+    Actions
+</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -96,6 +109,22 @@
                                 <span class="text-sm text-gray-400">—</span>
                             @endif
                         </td>
+
+                        <td class="px-4 py-3">
+    @if($setting->auto_confirm_enabled)
+        <span class="inline-flex px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold">
+            Enabled
+        </span>
+    @else
+        <span class="inline-flex px-2 py-1 rounded-full bg-red-100 text-red-700 text-xs font-semibold">
+            Disabled
+        </span>
+    @endif
+</td>
+
+<td class="px-4 py-3">
+    {{ $setting->auto_confirm_minutes }} Min
+</td>
                         <td class="px-4 py-3 text-center" onclick="event.stopPropagation()">
                             <div class="flex items-center justify-center gap-1.5">
                                 <a href="{{ admin_route('delivery-settings.edit', $setting) }}" class="p-1.5 text-gray-400 hover:text-[#8B2452] transition-colors rounded-lg hover:bg-indigo-50">
@@ -117,7 +146,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="px-4 py-12 text-center">
+                        <td colspan="9" class="px-4 py-12 text-center">
                             <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M6 20h12M6 4h12M5 8h14M5 12h14M5 16h14" />
                             </svg>

@@ -167,4 +167,17 @@ class OrderController extends Controller
         return back()->with('success', 'Order cancelled successfully');
     }
 
+
+ public function confirm($id)
+{
+    $order = Order::findOrFail($id);
+
+    if ($order->status === 'pending') {
+        $order->update([
+            'status' => 'confirmed'
+        ]);
+    }
+
+    return redirect()->route('admin.orders.show', $order->id);
+}
 }
