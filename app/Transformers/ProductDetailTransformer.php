@@ -19,7 +19,8 @@ class ProductDetailTransformer
             'product_price' => $product->product_price,
             'description' => $product->description,
             'short_description' => $product->short_description,
-
+            'created_at' => $product->created_at,
+            'updated_at' => $product->updated_at,
             'image_url' => $product->image_url
                 ? S3Helper::url($product->image_url)
                 : null,

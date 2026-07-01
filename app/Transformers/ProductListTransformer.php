@@ -38,6 +38,9 @@ class ProductListTransformer
                 'type' => $bestPricing->discount_type,
                 'value' => $bestPricing->discount_value,
             ] : null,
+
+            'created_at' => $product->created_at,
+            'updated_at' => $product->updated_at,
         ];
     }
 }

@@ -37,11 +37,15 @@ class CategoryController extends Controller
                     'name' => $cat->name,
                     'slug' => $cat->slug,
                     'image_url' => $cat->image_url,
+                    'created_at' => $cat->created_at,
+                    'updated_at' => $cat->updated_at,
                     'children' => $cat->children->map(fn ($child) => [
                         'id' => $child->id,
                         'name' => $child->name,
                         'slug' => $child->slug,
                         'image_url' => $child->image_url,
+                        'created_at' => $child->created_at,
+                        'updated_at' => $child->updated_at,
                     ]),
                 ]),
             ]);
@@ -74,6 +78,8 @@ class CategoryController extends Controller
                     'name' => $category->name,
                     'slug' => $category->slug,
                     'image_url' => $category->image_url,
+                    'created_at' => $category->created_at,
+                    'updated_at' => $category->updated_at,
                 ],
             ]);
 
