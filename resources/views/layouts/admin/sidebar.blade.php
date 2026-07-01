@@ -121,6 +121,16 @@
             </svg>
             <span class="text-sm">Reels</span>
         </a>
+        <a href="{{ route('admin.instagram') }}"
+   class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200
+   {{ request()->routeIs('admin.instagram') ? 'bg-[#8B2452] text-white font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-[#8B2452]' }}">
+
+    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M7.75 2C4.574 2 2 4.574 2 7.75v8.5C2 19.426 4.574 22 22 16.25v-8.5C22 4.574 19.426 2 16.25 2h-8.5zm0 2h8.5A3.75 3.75 0 0120 7.75v8.5A3.75 3.75 0 0116.25 20h-8.5A3.75 3.75 0 014 16.25v-8.5A3.75 3.75 0 017.75 4zm8.75 1a1.25 1.25 0 100 2.5 1.25 1.25 0 000-2.5zM12 7a5 5 0 100 10 5 5 0 000-10zm0 2a3 3 0 110 6 3 3 0 010-6z"/>
+    </svg>
+
+    <span class="text-sm">Instagram</span>
+</a>
         <a href="{{ admin_route('stock.index') }}"
            class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200
            {{ (request()->routeIs('stock.*') && !request()->routeIs('stock.settings')) ? 'bg-[#8B2452] text-white font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-[#8B2452]' }}">

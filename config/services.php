@@ -36,6 +36,12 @@ return [
             'webhook_secret' => env('RAZORPAY_WEBHOOK_SECRET'),
 
     ],
+    'facebook' => [
+    'client_id' => env('FACEBOOK_APP_ID'),
+    'client_secret' => env('FACEBOOK_APP_SECRET'),
+    'redirect' => env('FACEBOOK_REDIRECT_URI'),
+    'graph_version' => env('FACEBOOK_GRAPH_VERSION', 'v23.0'),
+],
 
     'firebase' => [
 
