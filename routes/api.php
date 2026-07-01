@@ -17,7 +17,8 @@ use App\Http\Controllers\Api\Users\AppSettingController;
 use App\Http\Controllers\Api\LikeController;
 use App\Http\Controllers\Api\Users\OrganizationController;
 use App\Http\Controllers\Api\CommentController;
-
+use App\Http\Controllers\InstagramController;
+Route::get('/instagram/reels', [InstagramController::class, 'reels']);
 Route::post('/like', [LikeController::class, 'store']);
 Route::get('/like-count/{link_id}', [LikeController::class, 'count']);
 Route::post('/dislike', [LikeController::class, 'dislike']);

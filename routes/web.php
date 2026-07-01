@@ -30,7 +30,42 @@ use App\Http\Controllers\StockSettingController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NotificationSettingController;
+use App\Http\Controllers\InstagramController;
 use Google\Client;
+Route::get('/admin/instagram', function () {
+    return view('admin.instagram.index');
+})->middleware('auth')->name('admin.instagram');
+Route::post('/instagram/disconnect', [InstagramController::class, 'disconnect'])
+    ->middleware('auth')
+    ->name('instagram.disconnect');
+Route::get('/instagram/connect', [InstagramController::class, 'redirect'])
+    ->name('instagram.connect');
+
+Route::get('/instagram/callback', [InstagramController::class, 'callback'])
+    ->name('instagram.callback');
+
+Route::get('/instagram/reels', [InstagramController::class, 'reels'])
+    ->name('instagram.reels');
+Route::get('/test-auth', function () {
+    return [
+        'check' => Auth::check(),
+        'id' => Auth::id(),
+        'session' => session()->getId(),
+    ];
+});
+// Callback auth ke bahar
+Route::get('/accounts/facebook/callback', [InstagramController::class, 'callback'])
+    ->name('facebook.callback');
+
+// Auth routes
+Route::middleware(['auth'])->group(function () {
+
+    Route::get('/accounts/facebook/connect', [InstagramController::class, 'redirect'])
+        ->name('facebook.connect');
+
+    Route::get('/accounts/instagram/reels', [InstagramController::class, 'reels'])
+        ->name('instagram.reels');
+});
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -74,6 +109,11 @@ Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:admin']
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+
+
+
+
+
         Route::resource('reels', ReelController::class);
         Route::post('/reels/{reel}/comment', [ReelController::class, 'addComment'])
             ->name('reels.comment');
