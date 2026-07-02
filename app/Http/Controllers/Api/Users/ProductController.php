@@ -11,6 +11,7 @@ use App\Transformers\ProductDetailTransformer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 class ProductController extends Controller
@@ -136,6 +137,110 @@ class ProductController extends Controller
             ],
         ]);
     }
+
+    public function bestSeller(): JsonResponse
+{
+    try {
+
+        $platform = Platform::getOwnWebsite();
+
+        // Manual Best Seller Count
+        $manualCount = Product::query()
+            ->where('is_best_seller', 1)
+            ->count();
+
+        // ===========================
+        // Manual Best Seller
+        // ===========================
+        if ($manualCount > 0) {
+
+            $products = Product::query()
+                ->where('is_best_seller', 1)
+                ->where('status', 'active')
+                ->where('visibility', 'public')
+
+                ->whereHas('platformListings', fn ($q) =>
+                    $q->where('platform_id', $platform->id)
+                      ->userVisible()
+                )
+
+                ->with([
+                    'category:id,name',
+                    'platformListings' => fn ($q) =>
+                        $q->where('platform_id', $platform->id)
+                          ->userVisible(),
+
+                    'variants.platformPricings' => fn ($q) =>
+                        $q->where('status', 'active'),
+                ])
+
+                ->orderBy('sort_order')
+                ->limit(10)
+                ->get();
+
+        } else {
+
+            // ===========================
+            // Automatic Best Seller
+            // ===========================
+            $products = Product::query()
+
+                ->join('order_items', 'products.id', '=', 'order_items.product_id')
+                ->join('orders', 'orders.id', '=', 'order_items.order_id')
+
+                // Apna delivered status yahan change karna
+                ->where('orders.status', 'delivered')
+
+                ->where('products.status', 'active')
+                ->where('products.visibility', 'public')
+
+                ->whereHas('platformListings', fn ($q) =>
+                    $q->where('platform_id', $platform->id)
+                      ->userVisible()
+                )
+
+                ->select(
+                    'products.*',
+                    DB::raw('SUM(order_items.quantity) as total_sold')
+                )
+
+                ->groupBy('products.id')
+                ->orderByDesc('total_sold')
+
+                ->with([
+                    'category:id,name',
+
+                    'platformListings' => fn ($q) =>
+                        $q->where('platform_id', $platform->id)
+                          ->userVisible(),
+
+                    'variants.platformPricings' => fn ($q) =>
+                        $q->where('status', 'active'),
+                ])
+
+                ->limit(10)
+                ->get();
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'products' => $products->map(fn ($p) => ProductListTransformer::transform($p))
+            ]
+        ]);
+
+    } catch (\Throwable $e) {
+
+        Log::error('Best Seller API Error', [
+            'error' => $e->getMessage()
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Something went wrong'
+        ], 500);
+    }
+}
 
     public function searchSuggestions(Request $request): JsonResponse
     {

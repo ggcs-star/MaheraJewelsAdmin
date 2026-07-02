@@ -52,6 +52,30 @@
             </div>
 
             <div>
+    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+        Best Seller
+    </label>
+
+    <select
+        name="is_best_seller"
+        class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm bg-white">
+
+        <option value="0" {{ old('is_best_seller', $product->is_best_seller ?? 0) == 0 ? 'selected' : '' }}>
+            No
+        </option>
+
+        <option value="1" {{ old('is_best_seller', $product->is_best_seller ?? 0) == 1 ? 'selected' : '' }}>
+            Yes
+        </option>
+
+    </select>
+
+    <p class="text-xs text-gray-400 mt-1">
+        Manual Best Seller. If disabled, automatic Best Seller will be calculated from order history.
+    </p>
+</div>
+
+            <div>
                 <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
                     Status <span class="text-red-500">*</span>
                 </label>

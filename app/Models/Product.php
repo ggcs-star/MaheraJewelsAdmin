@@ -29,6 +29,7 @@ class Product extends Model
         'sort_order',
         'is_featured',
         'is_top_selling',
+        'is_best_seller',
         'visibility',
         'status',
         'warehouse_id',
@@ -40,6 +41,7 @@ class Product extends Model
         'gallery_images' => 'array',
         'is_featured' => 'boolean',
         'is_top_selling' => 'boolean',
+        'is_best_seller' => 'boolean',
         'expected_delivery_date' => 'date',
         'product_price' => 'decimal:2',
     ];
