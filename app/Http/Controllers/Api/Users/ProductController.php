@@ -11,6 +11,7 @@ use App\Transformers\ProductDetailTransformer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
+use App\Models\ProductClick;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -78,6 +79,18 @@ class ProductController extends Controller
             ])
 
                 ->firstOrFail();
+   $click = ProductClick::firstOrCreate(
+    ['product_id' => $product->id],
+    [
+        'click_count' => 0,
+        'user_id' => auth()->id(),
+        'ip_address' => request()->ip(),
+        'device_id' => request()->header('X-Device-ID'),
+    ]
+);
+
+$click->increment('click_count');
+$product->click_count = $click->fresh()->click_count;
 
             return response()->json([
                 'success' => true,
@@ -99,7 +112,18 @@ class ProductController extends Controller
                 'variants.platformPricings' => fn ($q) =>
                     $q->where('status', 'active'),
             ])->findOrFail($product_id);
+$click = ProductClick::firstOrCreate(
+    ['product_id' => $product->id],
+    [
+        'click_count' => 0,
+        'user_id' => auth()->id(),
+        'ip_address' => request()->ip(),
+        'device_id' => request()->header('X-Device-ID'),
+    ]
+);
 
+$click->increment('click_count');
+$product->click_count = $click->fresh()->click_count;
             return response()->json([
                 'success' => true,
                 'data' => ProductDetailTransformer::transform($product),
@@ -112,69 +136,167 @@ class ProductController extends Controller
             ], 404);
         }
     }
-    public function topSelling(): JsonResponse
-    {
-        $products = Product::query()
-            ->where('is_top_selling', 1)
-            ->where('status', 'active')
-            ->where('visibility', 'public')
-            ->select('id', 'name', 'slug', 'brand','product_price' , 'gallery_images')
-            ->with([
-                'category:id,name',
-                'variants:id,product_id,variant_id,variant_value_id,quantity,selling_price,image_url,sku_suffix,status',
-                'variants.variant:id,name',
-                'variants.value:id,value',
-            ])
-            ->orderBy('sort_order')
-            ->limit(10)
-            ->get()
-            ->map(fn ($p) => ProductListTransformer::transform($p));
+public function topSelling(): JsonResponse
+{
+    try {
+
+        $platform = Platform::getOwnWebsite();
+
+        // Manual Top Selling Count
+        $manualCount = Product::where('is_top_selling', 1)->count();
+
+        if ($manualCount > 0) {
+
+            // ===========================
+            // Manual Top Selling
+            // ===========================
+            $products = Product::query()
+
+                ->leftJoin('product_clicks', 'products.id', '=', 'product_clicks.product_id')
+
+                ->where('products.is_top_selling', 1)
+                ->where('products.status', 'active')
+                ->where('products.visibility', 'public')
+
+                ->whereHas('platformListings', function ($q) use ($platform) {
+                    $q->where('platform_id', $platform->id)
+                        ->userVisible();
+                })
+
+                ->with([
+                    'category:id,name',
+
+                    'platformListings' => function ($q) use ($platform) {
+                        $q->where('platform_id', $platform->id)
+                            ->userVisible();
+                    },
+
+                    'variants.platformPricings' => function ($q) {
+                        $q->where('status', 'active');
+                    },
+                ])
+
+                ->select(
+                    'products.*',
+                    DB::raw('COALESCE(product_clicks.click_count, 0) as click_count')
+                )
+
+                ->orderBy('products.sort_order')
+
+                ->limit(10)
+
+                ->get();
+
+        } else {
+
+            // ===========================
+            // Automatic Top Selling
+            // (Most Clicked Products)
+            // ===========================
+
+            $products = Product::query()
+
+                ->leftJoin('product_clicks', 'products.id', '=', 'product_clicks.product_id')
+
+                ->where('products.status', 'active')
+                ->where('products.visibility', 'public')
+
+                ->whereHas('platformListings', function ($q) use ($platform) {
+                    $q->where('platform_id', $platform->id)
+                        ->userVisible();
+                })
+
+                ->with([
+                    'category:id,name',
+
+                    'platformListings' => function ($q) use ($platform) {
+                        $q->where('platform_id', $platform->id)
+                            ->userVisible();
+                    },
+
+                    'variants.platformPricings' => function ($q) {
+                        $q->where('status', 'active');
+                    },
+                ])
+
+                ->select(
+                    'products.*',
+                    DB::raw('COALESCE(product_clicks.click_count, 0) as click_count')
+                )
+
+                ->orderByDesc('click_count')
+
+                ->limit(10)
+
+                ->get();
+        }
 
         return response()->json([
             'success' => true,
             'data' => [
-                'products' => $products
+                'products' => $products->map(fn ($p) => ProductListTransformer::transform($p))
             ],
         ]);
-    }
 
-    public function bestSeller(): JsonResponse
+    } catch (\Throwable $e) {
+
+        Log::error('Top Selling API Error', [
+            'error' => $e->getMessage()
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Something went wrong'
+        ], 500);
+    }
+}
+
+public function bestSeller(): JsonResponse
 {
     try {
 
         $platform = Platform::getOwnWebsite();
 
         // Manual Best Seller Count
-        $manualCount = Product::query()
-            ->where('is_best_seller', 1)
-            ->count();
+        $manualCount = Product::where('is_best_seller', 1)->count();
 
-        // ===========================
-        // Manual Best Seller
-        // ===========================
         if ($manualCount > 0) {
 
+            // ===========================
+            // Manual Best Seller
+            // ===========================
             $products = Product::query()
-                ->where('is_best_seller', 1)
-                ->where('status', 'active')
-                ->where('visibility', 'public')
 
-                ->whereHas('platformListings', fn ($q) =>
+                ->leftJoin('product_clicks', 'products.id', '=', 'product_clicks.product_id')
+
+                ->where('products.is_best_seller', 1)
+                ->where('products.status', 'active')
+                ->where('products.visibility', 'public')
+
+                ->whereHas('platformListings', function ($q) use ($platform) {
                     $q->where('platform_id', $platform->id)
-                      ->userVisible()
-                )
+                        ->userVisible();
+                })
 
                 ->with([
                     'category:id,name',
-                    'platformListings' => fn ($q) =>
-                        $q->where('platform_id', $platform->id)
-                          ->userVisible(),
 
-                    'variants.platformPricings' => fn ($q) =>
-                        $q->where('status', 'active'),
+                    'platformListings' => function ($q) use ($platform) {
+                        $q->where('platform_id', $platform->id)
+                            ->userVisible();
+                    },
+
+                    'variants.platformPricings' => function ($q) {
+                        $q->where('status', 'active');
+                    },
                 ])
 
-                ->orderBy('sort_order')
+                ->select(
+                    'products.*',
+                    DB::raw('COALESCE(product_clicks.click_count,0) as click_count')
+                )
+
+                ->orderBy('products.sort_order')
                 ->limit(10)
                 ->get();
 
@@ -183,49 +305,64 @@ class ProductController extends Controller
             // ===========================
             // Automatic Best Seller
             // ===========================
+
+            $soldProducts = DB::table('order_items')
+                ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                ->where('orders.status', 'delivered')
+                ->select(
+                    'order_items.product_id',
+                    DB::raw('SUM(order_items.quantity) as total_sold')
+                )
+                ->groupBy('order_items.product_id')
+                ->orderByDesc('total_sold')
+                ->limit(10)
+                ->pluck('product_id');
+
             $products = Product::query()
 
-                ->join('order_items', 'products.id', '=', 'order_items.product_id')
-                ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                ->leftJoin('product_clicks', 'products.id', '=', 'product_clicks.product_id')
 
-                // Apna delivered status yahan change karna
-                ->where('orders.status', 'delivered')
-
+                ->whereIn('products.id', $soldProducts)
                 ->where('products.status', 'active')
                 ->where('products.visibility', 'public')
 
-                ->whereHas('platformListings', fn ($q) =>
+                ->whereHas('platformListings', function ($q) use ($platform) {
                     $q->where('platform_id', $platform->id)
-                      ->userVisible()
-                )
-
-                ->select(
-                    'products.*',
-                    DB::raw('SUM(order_items.quantity) as total_sold')
-                )
-
-                ->groupBy('products.id')
-                ->orderByDesc('total_sold')
+                        ->userVisible();
+                })
 
                 ->with([
                     'category:id,name',
 
-                    'platformListings' => fn ($q) =>
+                    'platformListings' => function ($q) use ($platform) {
                         $q->where('platform_id', $platform->id)
-                          ->userVisible(),
+                            ->userVisible();
+                    },
 
-                    'variants.platformPricings' => fn ($q) =>
-                        $q->where('status', 'active'),
+                    'variants.platformPricings' => function ($q) {
+                        $q->where('status', 'active');
+                    },
                 ])
 
-                ->limit(10)
-                ->get();
+                ->select(
+                    'products.*',
+                    DB::raw('COALESCE(product_clicks.click_count,0) as click_count')
+                )
+
+                ->get()
+
+                // Keep same ranking as total sold
+                ->sortBy(function ($product) use ($soldProducts) {
+                    return array_search($product->id, $soldProducts->toArray());
+                })
+
+                ->values();
         }
 
         return response()->json([
             'success' => true,
             'data' => [
-                'products' => $products->map(fn ($p) => ProductListTransformer::transform($p))
+                'products' => $products->map(fn($p) => ProductListTransformer::transform($p))
             ]
         ]);
 

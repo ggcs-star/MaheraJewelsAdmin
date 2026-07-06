@@ -28,6 +28,7 @@ class ProductListTransformer
             'slug' => $product->slug,
             'brand' => $product->brand,
             'product_price' => $product->product_price,
+    'click_count' => $product->click_count ?? 0,
 
             'image_url' => $imageUrl,
             'gallery_images' => $product->getGalleryImagesPublicAttribute(),
