@@ -15,7 +15,7 @@ use Throwable;
 
 class ProductController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
             $platform = Platform::getOwnWebsite();
@@ -247,7 +247,7 @@ class ProductController extends Controller
                         $q->where('status','active')
                 ])
 
-                ->select('id','name','slug','brand','image_url','product_price','sort_order')
+                ->select('id','name','slug','brand','image_url','product_price','gallery_images','sort_order')
 
                 ->orderBy('sort_order','asc')
                 ->latest()
@@ -326,7 +326,7 @@ class ProductController extends Controller
                     });
                 })
 
-                ->select('id','name','slug','brand','image_url','product_price')
+                ->select('id','name','slug','brand','image_url','gallery_images','product_price')
                 ->limit(10)
                 ->get()
                 ->map(fn($p)=>ProductListTransformer::transform($p));
@@ -352,4 +352,133 @@ class ProductController extends Controller
             ],500);
         }
     }
+    public function searchRedirect(Request $request): JsonResponse
+{
+    try {
+        $platform = Platform::getOwnWebsite();
+        $query = trim($request->get('q', ''));
+
+        if ($query === '') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Empty search'
+            ], 400);
+        }
+
+        $subcategory = Category::query()
+            ->whereNotNull('parent_id')
+            ->whereRaw('LOWER(name) = ?', [strtolower($query)])
+            ->select('id', 'name', 'slug')
+            ->first();
+
+        if ($subcategory) {
+            return response()->json([
+                'success' => true,
+                'type' => 'subcategory',
+                'id' => $subcategory->id
+            ]);
+        }
+
+        $category = Category::query()
+            ->whereNull('parent_id')
+            ->whereRaw('LOWER(name) = ?', [strtolower($query)])
+            ->with([
+                'children' => function ($q) {
+                    $q->orderBy('sort_order')->orderBy('id');
+                }
+            ])
+            ->first();
+
+        if ($category && $category->children->count() > 0) {
+            $firstSubcategory = $category->children->first();
+            return response()->json([
+                'success' => true,
+                'type' => 'subcategory',
+                'id' => $firstSubcategory->id  // ✅ FIXED
+            ]);
+        }
+
+        $product = Product::query()
+            ->whereHas('platformListings', function ($q) use ($platform) {
+                $q->where('platform_id', $platform->id)->userVisible();
+            })
+            ->whereRaw('LOWER(name) = ?', [strtolower($query)])
+            ->select('slug', 'name')
+            ->first();
+
+        if ($product) {
+            return response()->json([
+                'success' => true,
+                'type' => 'product',
+                'slug' => $product->slug
+            ]);
+        }
+
+        $subcategory = Category::query()
+            ->whereNotNull('parent_id')
+            ->where('name', 'LIKE', "%{$query}%")
+            ->select('id', 'name', 'slug')
+            ->first();
+
+        if ($subcategory) {
+            return response()->json([
+                'success' => true,
+                'type' => 'subcategory',
+                'id' => $subcategory->id
+            ]);
+        }
+
+        $category = Category::query()
+            ->whereNull('parent_id')
+            ->where('name', 'LIKE', "%{$query}%")
+            ->with([
+                'children' => function ($q) {
+                    $q->orderBy('sort_order')->orderBy('id');
+                }
+            ])
+            ->first();
+
+        if ($category && $category->children->count() > 0) {
+            $firstSubcategory = $category->children->first();
+            return response()->json([
+                'success' => true,
+                'type' => 'subcategory',
+                'id' => $firstSubcategory->id
+            ]);
+        }
+
+        $product = Product::query()
+            ->whereHas('platformListings', function ($q) use ($platform) {
+                $q->where('platform_id', $platform->id)->userVisible();
+            })
+            ->where('name', 'LIKE', "%{$query}%")
+            ->select('slug', 'name')
+            ->first();
+
+        if ($product) {
+            return response()->json([
+                'success' => true,
+                'type' => 'product',
+                'slug' => $product->slug
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'type' => 'search',
+            'query' => $query
+        ], 200);
+
+    } catch (\Throwable $e) {
+        Log::error('Search redirect error', [
+            'query' => $request->q,
+            'error' => $e->getMessage()
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Something went wrong'
+        ], 500);
+    }
+}
 }
