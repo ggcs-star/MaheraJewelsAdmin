@@ -77,10 +77,14 @@ class ReelController extends Controller
 
             if ($request->hasFile('video')) {
                 $file = $request->file('video');
+                $name = $request->title
+                    ? \Illuminate\Support\Str::slug($request->title)
+                    : 'reel-' . time();
+
                 $videoPath = S3Helper::storeAs(
                     $file,
                     'admin/reels',
-                    time() . '_' . $file->getClientOriginalName()
+                    $name . '.' . $file->getClientOriginalExtension()
                 );
             }
 
@@ -139,10 +143,14 @@ class ReelController extends Controller
                     S3Helper::delete($reel->video);
                 }
 
+                $name = $request->title
+                    ? \Illuminate\Support\Str::slug($request->title)
+                    : 'reel-' . $reel->id;
+
                 $videoPath = S3Helper::storeAs(
                     $file,
                     'admin/reels',
-                    time() . '_' . $file->getClientOriginalName()
+                    $name . '.' . $file->getClientOriginalExtension()
                 );
 
                 $reel->video = $videoPath;
