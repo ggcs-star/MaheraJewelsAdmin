@@ -17,7 +17,8 @@ use App\Http\Controllers\Api\Users\AppSettingController;
 use App\Http\Controllers\Api\LikeController;
 use App\Http\Controllers\Api\Users\OrganizationController;
 use App\Http\Controllers\Api\CommentController;
-
+use App\Http\Controllers\InstagramController;
+Route::get('/instagram/reels', [InstagramController::class, 'reels']);
 Route::post('/like', [LikeController::class, 'store']);
 Route::get('/like-count/{link_id}', [LikeController::class, 'count']);
 Route::post('/dislike', [LikeController::class, 'dislike']);
@@ -164,6 +165,7 @@ Route::get(
 
 Route::get('/organization/footer-details', [OrganizationController::class, 'footerDetails']);
 Route::get('/products/top-selling', [ProductController::class, 'topSelling']);
+Route::get('/best-sellers', [ProductController::class, 'bestSeller']);
 Route::get('/products/suggestions', [ProductController::class, 'searchSuggestions'])
     ->middleware('throttle:30,1');
 Route::get('/products/search', [ProductController::class, 'search'])

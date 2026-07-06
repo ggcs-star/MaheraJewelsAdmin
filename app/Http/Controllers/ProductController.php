@@ -208,6 +208,7 @@ private function isUploadedFile($file): bool
             'sort_order' => 'nullable|integer|min:0',
             'is_featured' => 'nullable|boolean',
             'is_top_selling' => 'nullable|boolean',
+            'is_best_seller' => 'nullable|boolean',
 
             'visibility' => 'required|in:public,private',
             'status' => 'required|in:active,inactive',
@@ -222,7 +223,7 @@ private function isUploadedFile($file): bool
 
         $data['is_featured'] = $request->boolean('is_featured');
         $data['is_top_selling'] = $request->boolean('is_top_selling');
-
+$data['is_best_seller'] = $request->boolean('is_best_seller');
         return $data;
     }
 
@@ -545,7 +546,7 @@ private function isUploadedFile($file): bool
             'sort_order' => 'nullable|integer|min:0',
             'is_featured' => 'nullable|boolean',
             'is_top_selling' => 'nullable|boolean',
-
+'is_best_seller' => 'nullable|boolean',
             'visibility' => 'required|in:public,private',
             'status' => 'required|in:active,inactive',
 
@@ -557,7 +558,7 @@ private function isUploadedFile($file): bool
 
         $data['is_featured'] = $request->boolean('is_featured');
         $data['is_top_selling'] = $request->boolean('is_top_selling');
-
+$data['is_best_seller'] = $request->boolean('is_best_seller');
         return $data;
     }
 

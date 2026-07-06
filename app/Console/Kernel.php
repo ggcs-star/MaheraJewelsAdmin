@@ -10,6 +10,10 @@ class Kernel extends ConsoleKernel
    protected function schedule(Schedule $schedule)
 {
     $schedule->command('stock:check-low')->everyMinute();
+        $schedule->command('instagram:sync-reels')->everyThirtyMinutes();
+
+        // Instagram Token Refresh
+        $schedule->command('instagram:refresh-token')->daily();
 
     $schedule->command('app:auto-confirm-orders')
              ->everyMinute();
