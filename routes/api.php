@@ -131,7 +131,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/cart', [CartController::class, 'index']);
     Route::put('/cart/update/{cart_item}', [CartController::class, 'update']);
     Route::delete('/cart/remove/{cart_item}', [CartController::class, 'remove']);
-       
     
     Route::get('/orders', [OrderController::class, 'index']);
     Route::get('/orders/{id}', [OrderController::class, 'show']);
@@ -175,6 +174,8 @@ Route::get('/search', [ProductController::class, 'unifiedSearch']);
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/id/{product_id}', [ProductController::class, 'showById']);
 Route::get('/products/{slug}', [ProductController::class, 'show']);
+Route::get('/search/redirect', [ProductController::class, 'searchRedirect']);
+
 Route::get('/app-settings', [AppSettingController::class, 'index']);
 Route::prefix('banners')->group(function () {
     Route::get('/', [BannerController::class, 'index']);     

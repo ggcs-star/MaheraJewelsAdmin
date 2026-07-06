@@ -171,22 +171,26 @@ class CategoryController extends Controller
         ]);
     }    
     private function uploadImage(Request $request): ?string
-    {
-        if (!$request->hasFile('image_url')) {
-            return null;
-        }
-
-        $categorySlug = Str::slug($request->name);
-
-        if ($request->parent_id && $parent = Category::find($request->parent_id)) {
-            $parentSlug = Str::slug($parent->name);
-            $path = "admin/category/{$parentSlug}/{$categorySlug}";
-        } else {
-            $path = "admin/category/{$categorySlug}";
-        }
-
-        return S3Helper::store( $request->file('image_url'),$path);
+{
+    if (!$request->hasFile('image_url')) {
+        return null;
     }
+
+    $file = $request->file('image_url');
+
+    $categorySlug = Str::slug($request->slug);
+
+    if ($request->parent_id && $parent = Category::find($request->parent_id)) {
+        $parentSlug = Str::slug($parent->slug);
+        $path = "admin/category/{$parentSlug}/{$categorySlug}";
+    } else {
+        $path = "admin/category/{$categorySlug}";
+    }
+
+    $fileName = $categorySlug . '.' . $file->getClientOriginalExtension();
+
+    return S3Helper::storeAs($file, $path, $fileName);
+}
 
     private function deleteImage(?string $imagePath): void
     {

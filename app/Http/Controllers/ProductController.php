@@ -228,28 +228,42 @@ $data['is_best_seller'] = $request->boolean('is_best_seller');
     }
 
         private function handleProductImages(Request $request, array $data): array
-        {
-        $productSlug = Str::slug($request->name);
+{
+    $productSlug = Str::slug($request->slug);
 
-            if ($request->hasFile('image_url')) {
-                $data['image_url'] = S3Helper::store( $request->file('image_url'),
-                    "admin/product/{$productSlug}");
-            }
-            if ($request->hasFile('gallery_images')) {
-                $gallery = [];
+    if ($request->hasFile('image_url')) {
 
-                foreach ($request->file('gallery_images') as $img) {
-                    $gallery[] = S3Helper::store(
-                            $img,
-                            "admin/product/{$productSlug}"
-                        );
-                }
+        $file = $request->file('image_url');
 
-                $data['gallery_images'] = $gallery;
-            }
+        $fileName = $productSlug . '.' . $file->getClientOriginalExtension();
 
-            return $data;
+        $data['image_url'] = S3Helper::storeAs(
+            $file,
+            "admin/product/{$productSlug}",
+            $fileName
+        );
+    }
+
+    if ($request->hasFile('gallery_images')) {
+
+        $gallery = [];
+
+        foreach ($request->file('gallery_images') as $index => $img) {
+
+            $fileName = $productSlug . '-' . ($index + 1) . '.' . $img->getClientOriginalExtension();
+
+            $gallery[] = S3Helper::storeAs(
+                $img,
+                "admin/product/{$productSlug}",
+                $fileName
+            );
         }
+
+        $data['gallery_images'] = $gallery;
+    }
+
+    return $data;
+}
 
     private function createProduct(Request $request, array $data): Product
     {
@@ -315,7 +329,18 @@ $data['is_best_seller'] = $request->boolean('is_best_seller');
         if (isset($variant['image_file']) && $this->isUploadedFile($variant['image_file'])) {
             $productSlug = Str::slug($product->slug ?? $product->name);
             $variantSlug = Str::slug(($variant['sku_suffix'] ?? 'variant') . '-' . ($variant['variant_value_id'] ?? uniqid()));
-            $imagePath = S3Helper::store($variant['image_file'], "admin/product/{$productSlug}/variant/{$variantSlug}");
+            $file = $variant['image_file'];
+
+            $fileName =
+                $variantSlug .
+                '.' .
+                $file->getClientOriginalExtension();
+
+            $imagePath = S3Helper::storeAs(
+                $file,
+                "admin/product/{$productSlug}/variant/{$variantSlug}",
+                $fileName
+            );
         }
         // Priority 2: Gallery image (for first variant)
         elseif (!empty($variant['selected_gallery_image'])) {
@@ -325,7 +350,18 @@ $data['is_best_seller'] = $request->boolean('is_best_seller');
         elseif (isset($variant['image_url']) && $this->isUploadedFile($variant['image_url'])) {
             $productSlug = Str::slug($product->slug ?? $product->name);
             $variantSlug = Str::slug(($variant['sku_suffix'] ?? 'variant') . '-' . ($variant['variant_value_id'] ?? uniqid()));
-            $imagePath = S3Helper::store($variant['image_url'], "admin/product/{$productSlug}/variant/{$variantSlug}");
+            $file = $variant['image_url'];
+
+            $fileName =
+                $variantSlug .
+                '.' .
+                $file->getClientOriginalExtension();
+
+            $imagePath = S3Helper::storeAs(
+                $file,
+                "admin/product/{$productSlug}/variant/{$variantSlug}",
+                $fileName
+            );
         }
 
         $variantModel = ProductVariant::updateOrCreate(
@@ -384,10 +420,10 @@ $data['is_best_seller'] = $request->boolean('is_best_seller');
                 return null;
             }
             
-            $filename = uniqid() . '.' . $image_type;
+            
             $productSlug = Str::slug($product->slug ?? $product->name);
             $variantSlug = Str::slug(($variant['sku_suffix'] ?? 'variant') . '-' . ($variant['variant_value_id'] ?? uniqid()));
-            
+            $filename = $variantSlug . '.' . $image_type;
             $path = "admin/product/{$productSlug}/variant/{$variantSlug}/{$filename}";
             
             S3Helper::put($path, $image_base64);
@@ -532,31 +568,45 @@ $data['is_best_seller'] = $request->boolean('is_best_seller');
             array $data
         ): array {
 
-            $productSlug = Str::slug($product->slug ?? $product->name);
+            $productSlug = Str::slug($request->slug);
 
             if ($request->hasFile('image_url')) {
-                $data['image_url'] = S3Helper::store(
-                    $request->file('image_url'),
-                    "admin/product/{$productSlug}"
+                $file = $request->file('image_url');
+
+                $fileName = $productSlug . '.' . $file->getClientOriginalExtension();
+
+                $data['image_url'] = S3Helper::storeAs(
+                    $file,
+                    "admin/product/{$productSlug}",
+                    $fileName
                 );
             }
 
             if ($request->hasFile('gallery_images')) {
 
                 $existingImages = is_array($product->gallery_images)
-                    ? $product->gallery_images
-                    : [];
+            ? $product->gallery_images
+            : [];
 
-                $newImages = [];
+        $newImages = [];
 
-                foreach ($request->file('gallery_images') as $img) {
-                    $newImages[] = S3Helper::store(
-                            $img,
-                            "admin/product/{$productSlug}"
-                        );
-                }
+        $start = count($existingImages);
 
-                $data['gallery_images'] = array_merge($existingImages, $newImages);
+        foreach ($request->file('gallery_images') as $index => $img) {
+
+            $fileName = $productSlug . '-' . ($start + $index + 1) . '.' . $img->getClientOriginalExtension();
+
+            $newImages[] = S3Helper::storeAs(
+                $img,
+                "admin/product/{$productSlug}",
+                $fileName
+            );
+        }
+
+        $data['gallery_images'] = array_merge(
+            $existingImages,
+            $newImages
+        );
             }
 
             return $data;
@@ -669,8 +719,8 @@ $data['is_best_seller'] = $request->boolean('is_best_seller');
                 $product->variant_payload = $product->variants->map(function ($v) {
                     return [
                         'id' => $v->id,
-                        'variant_type'  => $v->variant->name,   // from variants table
-                        'variant_value' => $v->value->value,    // from variant_values table
+                        'variant_type'  => optional($v->variant)->name,
+                        'variant_value' => optional($v->value)->value,
                         'color' => $v->color, 
                         'sku_suffix' => $v->sku_suffix,
                         'quantity' => $v->quantity,
