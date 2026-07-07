@@ -154,17 +154,17 @@ class InstagramController extends Controller
             ], 404);
         }
 
-        $reels = $this->instagram->getReels(
-            $account->instagram_business_id,
-            $account->access_token
-        );
+     $media = $this->instagram->getMedia(
+    $account->instagram_business_id,
+    $account->access_token
+);
 
-        return response()->json([
-            'success' => true,
-            'username' => $account->instagram_username,
-            'total' => count($reels['data'] ?? []),
-            'reels' => $reels['data'] ?? [],
-        ]);
+return response()->json([
+    'success' => true,
+    'username' => $account->instagram_username,
+    'total' => count($media['data'] ?? []),
+    'posts' => $media['data'] ?? [],
+]);
     }
 
 public function disconnect()
