@@ -130,12 +130,12 @@ class InstagramController extends Controller
             ]
         );
 
-        return redirect()
-            ->route('instagram.reels')
-            ->with(
-                'success',
-                'Instagram connected successfully.'
-            );
+      return redirect()
+    ->route('admin.instagram')
+    ->with(
+        'success',
+        'Instagram connected successfully.'
+    );
     }
 
     /**
