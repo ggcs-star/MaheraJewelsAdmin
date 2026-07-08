@@ -38,14 +38,17 @@ Route::get('/admin/instagram', function () {
 Route::post('/instagram/disconnect', [InstagramController::class, 'disconnect'])
     ->middleware('auth')
     ->name('instagram.disconnect');
-Route::get('/instagram/connect', [InstagramController::class, 'redirect'])
-    ->name('instagram.connect');
+Route::middleware(['auth'])->group(function () {
 
-Route::get('/instagram/callback', [InstagramController::class, 'callback'])
-    ->name('instagram.callback');
+    Route::get('/accounts/facebook/connect', [InstagramController::class, 'redirect'])
+        ->name('facebook.connect');
 
-Route::get('/instagram/reels', [InstagramController::class, 'reels'])
-    ->name('instagram.reels');
+    Route::get('/accounts/facebook/callback', [InstagramController::class, 'callback'])
+        ->name('facebook.callback');
+
+    Route::get('/accounts/instagram/reels', [InstagramController::class, 'reels'])
+        ->name('instagram.reels');
+});
 Route::get('/test-auth', function () {
     return [
         'check' => Auth::check(),
