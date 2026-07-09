@@ -164,6 +164,7 @@ public function store(Request $request)
                 'discount_type' => $discountType,
                 'total'    => $price - $discountAmount,
             ]);
+            $variant->decrement('quantity', $item['qty']);
         }
     });
 
