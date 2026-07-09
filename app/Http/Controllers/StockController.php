@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\StockMovement;
+use App\Models\InvoiceItem;
 use App\Helpers\ColorHelper;
+
 class StockController extends Controller
 {
     public function index()
@@ -16,10 +18,20 @@ class StockController extends Controller
 
         foreach ($products as $product) {
             foreach ($product->variants as $variant) {
-                $sold = StockMovement::where('variant_id', $variant->id)
+
+                // Stock Movement se sold quantity
+                $stockMovementSold = StockMovement::where('variant_id', $variant->id)
                     ->where('movement', 'OUT')
                     ->sum('quantity');
 
+                // Offline Invoice se sold quantity
+                $offlineInvoiceSold = InvoiceItem::where('product_variant_id', $variant->id)
+                    ->sum('quantity');
+
+                // Total Sold
+                $sold = $stockMovementSold + $offlineInvoiceSold;
+
+                // Remaining Stock
                 $remaining = (int) ($variant->quantity ?? 0);
 
                 $variant->sold_qty = (int) $sold;
