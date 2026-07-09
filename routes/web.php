@@ -31,6 +31,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NotificationSettingController;
 use App\Http\Controllers\InstagramController;
+use App\Http\Controllers\PurchaseOrderController;      
 use Google\Client;
 Route::get('/admin/instagram', function () {
     return view('admin.instagram.index');
@@ -231,7 +232,23 @@ Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:admin']
             'products/{product}/image/{index}',
             [ProductController::class, 'deleteImage']
         )->name('products.image.delete');
+        Route::resource('purchase-orders', PurchaseOrderController::class);
 
+        Route::prefix('purchase-orders')
+            ->name('purchase-orders.')
+            ->group(function () {
+
+                Route::get(
+                    'supplier/{supplier}',
+                    [PurchaseOrderController::class, 'getSupplier']
+                )->name('supplier');
+
+                Route::get(
+                    'product/{product}/variants',
+                    [PurchaseOrderController::class, 'getProductVariants']
+                )->name('variants');
+
+            });
         Route::get('/warehouses', [WarehouseController::class, 'index'])->name('warehouses.index');
         Route::get('/warehouses/create', [WarehouseController::class, 'create'])->name('warehouses.create');
         Route::post('/warehouses', [WarehouseController::class, 'store'])->name('warehouses.store');
