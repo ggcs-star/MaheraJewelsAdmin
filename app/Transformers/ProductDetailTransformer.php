@@ -21,6 +21,8 @@ class ProductDetailTransformer
             'short_description' => $product->short_description,
             'created_at' => $product->created_at,
             'updated_at' => $product->updated_at,
+                'click_count' => (int) ($product->click_count ?? 0),
+
             'image_url' => $product->image_url
                 ? S3Helper::url($product->image_url)
                 : null,

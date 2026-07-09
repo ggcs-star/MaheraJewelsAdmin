@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 use App\Models\Platform;
 use App\Transformers\ProductListTransformer;
@@ -100,17 +101,30 @@ class CategoryController extends Controller
     {
         $platform = Platform::getOwnWebsite();
 
-        $products = $category->products()
-            ->whereHas('platformListings', fn ($q) =>
-                $q->where('platform_id', $platform->id)->userVisible()
-            )
-            ->with([
-                'category:id,name',
-                'variants.platformPricings' => fn ($q) =>
-                    $q->where('status', 'active'),
-            ])
-            ->latest()
-            ->paginate(12);
+     $products = $category->products()
+
+    ->leftJoin('product_clicks', 'products.id', '=', 'product_clicks.product_id')
+
+    ->whereHas('platformListings', fn ($q) =>
+        $q->where('platform_id', $platform->id)->userVisible()
+    )
+
+    ->with([
+        'category:id,name',
+
+        'variants.platformPricings' => fn ($q) =>
+            $q->where('status', 'active'),
+    ])
+
+    ->select(
+        'products.*',
+        DB::raw('COALESCE(product_clicks.click_count,0) as click_count')
+    )
+
+    // Agar Similar Styles ko sabse zyada viewed products dikhane hain
+    ->orderByDesc('click_count')
+
+    ->paginate(12);
 
         return response()->json([
             'success' => true,

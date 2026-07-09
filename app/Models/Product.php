@@ -101,6 +101,10 @@ class Product extends Model
             str_replace('\\', '/', $this->image_url)
         );
     }
+    public function clicks()
+{
+    return $this->hasMany(ProductClick::class);
+}
 
     public function getGalleryImagesPublicAttribute()
     {
