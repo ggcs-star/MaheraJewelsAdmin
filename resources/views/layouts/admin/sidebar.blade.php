@@ -59,7 +59,19 @@
             <svg class="w-5 h-5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
             </svg>
-            <span class="text-sm">Inventory</span>
+            <span class="text-sm">Purchases</span>
+        </a>
+        <a href="{{ admin_route('purchase-orders.index') }}"
+            class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200
+            {{ request()->routeIs('purchase-orders.*') ? 'bg-[#8B2452] text-white font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-[#8B2452]' }}">
+
+                <svg class="w-5 h-5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                        d="M3 7h18M6 7V5a2 2 0 012-2h8a2 2 0 012 2v2M5 7v12a2 2 0 002 2h10a2 2 0 002-2V7M9 12h6M12 9v6"/>
+                </svg>
+
+                <span class="text-sm">Purchase Orders</span>
+
         </a>
 
         <a href="{{ admin_route('products.list') }}"
