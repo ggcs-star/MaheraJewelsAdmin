@@ -18,7 +18,7 @@ use App\Models\Variant;
 use App\Models\VariantValue;
 use Illuminate\Support\Str;
 use App\Helpers\S3Helper;
-
+use App\Models\PurchaseOrderItem;
 
 class ProductController extends Controller
 {
@@ -671,97 +671,139 @@ $data['is_best_seller'] = $request->boolean('is_best_seller');
 
 
         public function list()
-        {
-        $pushedProducts = PlatformProduct::with([
-            'platform:id,display_name',
-            'product.category:id,name',
-            'product.supplier:id,name',
-            'pricing.variant.variant:id,name',
-            'pricing.variant.value:id,value'
-        ])->paginate(10);
+{
+    $pushedProducts = PlatformProduct::with([
+        'platform:id,display_name',
+        'product.category:id,name',
+        'product.supplier:id,name',
+        'pricing.variant.variant:id,name',
+        'pricing.variant.value:id,value'
+    ])->paginate(10);
 
-
-            return view('products.list', compact('pushedProducts'));
+    // ✅ Purchase Order Data Fetch
+    $poData = [];
+    $purchaseItems = \App\Models\PurchaseOrderItem::with('variant', 'purchaseOrder')
+        ->whereHas('purchaseOrder', function($query) {
+            $query->where('status', '!=', 'cancelled');
+        })
+        ->get();
+    
+    foreach ($purchaseItems as $item) {
+        if ($item->product_variant_id) {
+            $poData[$item->product_variant_id] = [
+                'quantity' => $item->quantity,
+                'purchase_price' => $item->purchase_price,
+                'po_number' => $item->purchaseOrder->po_number ?? 'N/A',
+            ];
         }
+    }
 
+    return view('products.list', compact('pushedProducts', 'poData'));
+}
 
-        public function push()
-        {
-            $products = Product::with([
-                'category:id,name,parent_id',
-                'category.parent:id,name',
+        public function push(Request $request)
+{
+    // ✅ Get all product IDs from Purchase Order
+    $poProductIds = PurchaseOrderItem::whereHas('purchaseOrder', function($query) {
+        $query->where('status', '!=', 'cancelled');
+    })->pluck('product_id')->unique()->toArray();
 
-                // ⭐ Load relations instead of columns
-                'variants:id,product_id,variant_id,variant_value_id,sku_suffix,image_url,sort_order,status,quantity,purchase_price,selling_price,color',
-                'variants.variant:id,name',
-                'variants.value:id,value',
+    // ✅ Filter products - only those in Purchase Order
+    $products = Product::with([
+        'category:id,name,parent_id',
+        'category.parent:id,name',
+        'variants:id,product_id,variant_id,variant_value_id,sku_suffix,image_url,sort_order,status,quantity,purchase_price,selling_price,color',
+        'variants.variant:id,name',
+        'variants.value:id,value',
+        'variants.platformPricings.platformProduct'
+    ])
+    ->where('status', 'active')
+    ->whereIn('id', $poProductIds)  // ✅ Only PO products
+    ->orderBy('name')
+    ->get()
+    ->map(function ($product) {
 
-                'variants.platformPricings.platformProduct'
-            ])
-            ->where('status', 'active')
-            ->orderBy('name')
-            ->get()
-            ->map(function ($product) {
+        $category = $product->category;
 
-                $category = $product->category;
-
-                if ($category) {
-                    if ($category->parent) {
-                        $product->display_category = $category->parent->name;
-                        $product->display_subcategory = $category->name;
-                    } else {
-                        $product->display_category = $category->name;
-                        $product->display_subcategory = null;
-                    }
-                }
-
-                // ⭐ Variant payload using relations
-                $product->variant_payload = $product->variants->map(function ($v) {
-                    return [
-                        'id' => $v->id,
-                        'variant_type'  => optional($v->variant)->name,
-                        'variant_value' => optional($v->value)->value,
-                        'color' => $v->color, 
-                        'sku_suffix' => $v->sku_suffix,
-                        'quantity' => $v->quantity,
-                        'purchase_price' => $v->purchase_price,
-                        'selling_price'  => $v->selling_price,
-                    ];
-                });
-
-                return $product;
-            });
-
-            $existingConfig = [];
-
-            foreach ($products as $product) {
-                foreach ($product->variants as $variant) {
-
-                    foreach ($variant->platformPricings as $pricing) {
-
-                        $platformId = $pricing->platformProduct->platform_id;
-
-                        $existingConfig[$variant->id][$platformId] = [
-                            'price' => $pricing->price,
-                            'qty'   => $pricing->quantity,
-                            'discount_value' => $pricing->discount_value,
-                            'discount_type'  => $pricing->discount_type === 'percentage' ? 'percent' : 'amount',
-                            'final_total'    => $pricing->quantity * $pricing->final_price
-                        ];
-                    }
-                }
+        if ($category) {
+            if ($category->parent) {
+                $product->display_category = $category->parent->name;
+                $product->display_subcategory = $category->name;
+            } else {
+                $product->display_category = $category->name;
+                $product->display_subcategory = null;
             }
-
-            $platforms = Platform::select('id', 'name')
-                ->where('is_enabled', true)
-                ->get();
-
-            return view('products.push', [
-                'products' => $products,
-                'platforms' => $platforms,
-                'existingVariantPlatformData' => $existingConfig
-            ]);
         }
+
+        $product->variant_payload = $product->variants->map(function ($v) {
+            return [
+                'id' => $v->id,
+                'variant_type'  => optional($v->variant)->name,
+                'variant_value' => optional($v->value)->value,
+                'color' => $v->color, 
+                'sku_suffix' => $v->sku_suffix,
+                'quantity' => $v->quantity,
+                'purchase_price' => $v->purchase_price,
+                'selling_price'  => $v->selling_price,
+            ];
+        });
+
+        return $product;
+    });
+
+    $existingConfig = [];
+
+    foreach ($products as $product) {
+        foreach ($product->variants as $variant) {
+
+            foreach ($variant->platformPricings as $pricing) {
+
+                $platformId = $pricing->platformProduct->platform_id;
+
+                $existingConfig[$variant->id][$platformId] = [
+                    'price' => $pricing->price,
+                    'qty'   => $pricing->quantity,
+                    'discount_value' => $pricing->discount_value,
+                    'discount_type'  => $pricing->discount_type === 'percentage' ? 'percent' : 'amount',
+                    'final_total'    => $pricing->quantity * $pricing->final_price
+                ];
+            }
+        }
+    }
+
+    $platforms = Platform::select('id', 'name')
+        ->where('is_enabled', true)
+        ->get();
+
+    // ✅ Purchase Order Data Fetch
+    $purchaseOrderData = [];
+    $purchaseItems = PurchaseOrderItem::with('variant', 'purchaseOrder')
+        ->whereHas('purchaseOrder', function($query) {
+            $query->where('status', '!=', 'cancelled');
+        })
+        ->get();
+    
+    foreach ($purchaseItems as $item) {
+        if ($item->product_variant_id) {
+            $purchaseOrderData[$item->product_variant_id] = [
+                'quantity' => $item->quantity,
+                'purchase_price' => $item->purchase_price,
+                'product_id' => $item->product_id,
+                'po_number' => $item->purchaseOrder->po_number ?? 'N/A',
+            ];
+        }
+    }
+
+    $productId = $request->product_id ?? null;
+
+    return view('products.push', [
+        'products' => $products,
+        'platforms' => $platforms,
+        'existingVariantPlatformData' => $existingConfig,
+        'purchaseOrderData' => $purchaseOrderData,
+        'productId' => $productId,
+    ]);
+}
 
 
         public function pushStore(Request $request)

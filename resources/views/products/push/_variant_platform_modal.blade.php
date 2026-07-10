@@ -8,9 +8,29 @@
             </div>
 
             <div class="modal-body">
-                {{-- ✅ ONLY HERE --}}
+
+                {{-- ✅ Hidden input for variant ID --}}
+                <input type="hidden" id="modalVariantId" value="">
+
                 @include('products.push._platform_selection')
-                @include('products.push._platform_pricing')
+
+                <div id="platformPricingSection" style="display: none;">
+                    @if(isset($platforms) && count($platforms) > 0)
+                        @foreach($platforms as $platform)
+                            @php
+                                // ✅ Get variant ID from hidden input
+                                $currentVariantId = request()->input('variant_id', null);
+                            @endphp
+                            @include('products.push._platform_pricing', [
+                                'platform' => $platform,
+                                'variantId' => $currentVariantId
+                            ])
+                        @endforeach
+                    @else
+                        <div class="alert alert-warning">No platforms configured.</div>
+                    @endif
+                </div>
+
             </div>
 
             <div class="modal-footer">

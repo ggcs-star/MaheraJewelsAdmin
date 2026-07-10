@@ -5,29 +5,23 @@
         <table class="table table-bordered align-middle mb-0">
             <thead class="table-light text-center">
                 <tr>
-                    <th></th>
+                    <th>Action</th>
                     <th>Type</th>
                     <th>Value</th>
                     <th>Color</th>
                     <th>SKU</th>
-                    <th>Qty</th>
-                    <th>Cost</th>
-                        <th>Selling Price</th>  <!-- NEW -->
-   <!-- NEW -->
-
+                    <th>PO Qty</th>
+                    <th>PO Price (₹)</th>
                     <th>Status</th>
                 </tr>
             </thead>
-           <tbody id="variantsTableBody">
-    <tr>
-<td colspan="8" class="text-center text-muted">
-            Select product to view variants
-        </td>
-    </tr>
-</tbody>
-
+            <tbody id="variantsTableBody">
+                <tr>
+                    <td colspan="8" class="text-center text-muted">
+                        Select product to view variants
+                    </td>
+                </tr>
+            </tbody>
         </table>
     </div>
 </div>
-
-

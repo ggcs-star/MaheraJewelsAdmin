@@ -291,10 +291,11 @@
                                                                         <th class="py-2 px-4 text-left text-xs font-medium text-gray-700">Final Price</th>
                                                                         <th class="py-2 px-4 text-left text-xs font-medium text-gray-700">Discount</th>
                                                                         <th class="py-2 px-4 text-left text-xs font-medium text-gray-700">Total Value</th>
+                                                                        <th class="py-2 px-4 text-left text-xs font-medium text-gray-700">PO Info</th>
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody class="divide-y divide-gray-100 text-sm">
-                                                                    @foreach($item->pricing as $pricing)
+                                                                   @foreach($item->pricing as $pricing)
                                                                     @php
                                                                         $unitPrice = $pricing->price;
                                                                         $platformQty = $pricing->quantity;
@@ -306,6 +307,10 @@
                                                                             $discountAmount = $pricing->discount_value;
                                                                         }
                                                                         $finalTotal = $preDiscountTotal - $discountAmount;
+                                                                        
+                                                                        // ✅ PO Data
+                                                                        $variantId = $pricing->product_variant_id ?? null;
+                                                                        $poInfo = isset($poData[$variantId]) ? $poData[$variantId] : null;
                                                                     @endphp
                                                                     <tr class="hover:bg-gray-50/60 transition">
                                                                         <td class="py-3 px-4">
@@ -331,6 +336,23 @@
                                                                             @endif
                                                                         </td>
                                                                         <td class="py-3 px-4 text-emerald-700 font-bold">₹{{ number_format($finalTotal,2) }}</td>
+                                                                        <td class="py-3 px-4">
+                                                                            @if($poInfo)
+                                                                                <div class="text-xs">
+                                                                                    <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                                                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6M7 4h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2z"/>
+                                                                                        </svg>
+                                                                                        {{ $poInfo['po_number'] }}
+                                                                                    </span>
+                                                                                    <div class="text-xs text-gray-500 mt-1">
+                                                                                        Qty: {{ $poInfo['quantity'] }} | ₹{{ number_format($poInfo['purchase_price'], 2) }}
+                                                                                    </div>
+                                                                                </div>
+                                                                            @else
+                                                                                <span class="text-xs text-gray-400">—</span>
+                                                                            @endif
+                                                                        </td>
                                                                     </tr>
                                                                     @endforeach
                                                                 </tbody>

@@ -1,6 +1,5 @@
 @extends('layouts.admin')
 
-
 @if(session('error'))
     <div class="alert alert-danger">
         {{ session('error') }}
@@ -19,11 +18,12 @@
 
     <script>
         window.existingVariantPlatformData = @json($existingVariantPlatformData ?? []);
+        window.purchaseOrderData = @json($purchaseOrderData ?? []);
+        window.selectedProductId = @json($productId ?? null);
     </script>
 
     @include('products.partials._errors')
 
-    <!-- ✅ FORM START -->
     <form id="pushProductForm"
           action="{{ admin_route('products.push.store') }}"
           method="POST">
@@ -35,7 +35,6 @@
         @include('products.push._product_details')
         @include('products.push._product_variants')
 
-        <!-- ✅ ONLY PREVIEW BUTTON (NO CANCEL) -->
         <div class="text-end mt-4">
             <button type="button"
                     id="previewPushBtn"
@@ -44,18 +43,15 @@
             </button>
         </div>
 
-        <!-- ✅ PREVIEW MODAL INSIDE FORM -->
         <div class="modal fade" id="pushPreviewModal" tabindex="-1">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
-
                     <div class="modal-header">
                         <h5 class="modal-title">Confirm Push Summary</h5>
                         <button type="button"
                                 class="btn-close"
                                 data-bs-dismiss="modal"></button>
                     </div>
-
                     <div class="modal-body">
                         <table class="table table-bordered align-middle">
                             <thead class="table-light">
@@ -66,38 +62,36 @@
                                     <th>Color</th>
                                     <th>SKU</th>
                                     <th>Quantity</th>
-                                    <th>Price</th>
+                                    <th>Price (₹)</th>
                                     <th>Discount</th>
-                                    <th>Final Total</th>
+                                    <th>Final Total (₹)</th>
                                 </tr>
                             </thead>
                             <tbody id="pushPreviewBody"></tbody>
                         </table>
                     </div>
-
                     <div class="modal-footer">
                         <button type="button"
                                 class="btn btn-secondary"
                                 data-bs-dismiss="modal">
                             Edit
                         </button>
-
-                        <!-- ✅ REAL SUBMIT BUTTON -->
                         <button type="submit"
                                 class="btn btn-success">
                             Confirm & Push
                         </button>
                     </div>
-
                 </div>
             </div>
         </div>
-        <!-- ✅ MODAL END -->
 
     </form>
-    <!-- ✅ FORM END -->
+    @php
+    
+        $variantId = $variantId ?? null;
+    @endphp
 
-    @include('products.push._variant_platform_modal')
+@include('products.push._variant_platform_modal')
 
     <script>
         window.platformMap = {
