@@ -20,6 +20,8 @@
         window.existingVariantPlatformData = @json($existingVariantPlatformData ?? []);
         window.purchaseOrderData = @json($purchaseOrderData ?? []);
         window.selectedProductId = @json($productId ?? null);
+        window.variantId = @json($variantId ?? null);
+        window.pushedQuantities = @json($pushedQuantities ?? []); 
     </script>
 
     @include('products.partials._errors')

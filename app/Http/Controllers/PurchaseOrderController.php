@@ -124,7 +124,15 @@ class PurchaseOrderController extends Controller
                 'quantity' => $request->quantity[$index],
                 'total' => $request->purchase_price[$index] * $request->quantity[$index],
             ]);
+             $variant = ProductVariant::find($request->product_variant_id[$index]);
+            if ($variant) {
+                $variant->quantity += $request->quantity[$index]; // PO create mein stock increase karo
+                $variant->purchase_price = $request->purchase_price[$index];
+                $variant->save();
+            }
+        
         }
+        
 
         DB::commit();
 
@@ -208,17 +216,16 @@ public function update(Request $request, PurchaseOrder $purchaseOrder)
     DB::beginTransaction();
 
     try {
+        // ✅ Pehle old stock wapas add karo
         foreach ($purchaseOrder->items as $item) {
             $variant = ProductVariant::find($item->product_variant_id);
             if ($variant) {
-                $variant->quantity -= $item->quantity;
-                if ($variant->quantity < 0) {
-                    $variant->quantity = 0;
-                }
+                $variant->quantity += $item->quantity; // ✅ Add karo (minus nahi)
                 $variant->save();
             }
         }
 
+        // ✅ Invoice file handle karo
         if ($request->hasFile('invoice_file')) {
             if ($purchaseOrder->invoice_file) {
                 Storage::disk('s3')->delete($purchaseOrder->invoice_file);
@@ -228,6 +235,7 @@ public function update(Request $request, PurchaseOrder $purchaseOrder)
             $purchaseOrder->invoice_file = $file->storeAs('purchase_orders', $originalName, 's3');
         }
 
+        // ✅ Subtotal calculate karo
         $subtotal = 0;
         foreach ($request->purchase_price as $index => $price) {
             $qty = (int) $request->quantity[$index];
@@ -236,20 +244,23 @@ public function update(Request $request, PurchaseOrder $purchaseOrder)
         
         $grandTotal = $subtotal;
 
+        // ✅ PO update karo
         $purchaseOrder->update([
             'supplier_id' => $request->supplier_id,
             'invoice_number' => $request->invoice_number,
             'purchase_date' => $request->purchase_date,
             'payment_method' => $request->payment_method,
-            'invoice_file' => $purchaseOrder->invoice_file,
+            'invoice_file' => $purchaseOrder->invoice_file ?? null,
             'subtotal' => $subtotal,
             'tax_amount' => 0,
             'grand_total' => $grandTotal,
             'notes' => $request->notes,
         ]);
 
+        // ✅ Old items delete karo
         $purchaseOrder->items()->delete();
 
+        // ✅ Naye items create karo aur stock subtract karo
         foreach ($request->product_id as $index => $productId) {
             $qty = (int)$request->quantity[$index];
             $purchasePrice = (float)$request->purchase_price[$index];
@@ -264,9 +275,13 @@ public function update(Request $request, PurchaseOrder $purchaseOrder)
                 'total' => $total,
             ]);
 
+            // ✅ Stock subtract karo (kyunki naya PO hai)
             $variant = ProductVariant::find($request->product_variant_id[$index]);
             if ($variant) {
-                $variant->quantity += $qty;
+                $variant->quantity -= $qty;
+                if ($variant->quantity < 0) {
+                    $variant->quantity = 0;
+                }
                 $variant->purchase_price = $purchasePrice;
                 $variant->save();
             }
@@ -292,10 +307,8 @@ public function destroy(PurchaseOrder $purchaseOrder)
         foreach ($purchaseOrder->items as $item) {
             $variant = ProductVariant::find($item->product_variant_id);
             if ($variant) {
-                $variant->quantity -= $item->quantity;
-                if ($variant->quantity < 0) {
-                    $variant->quantity = 0;
-                }
+                // ✅ PO delete ho rahi hai, toh stock wapas add karo
+                $variant->quantity += $item->quantity;
                 $variant->save();
             }
         }
