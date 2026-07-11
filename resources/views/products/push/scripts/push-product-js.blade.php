@@ -238,14 +238,8 @@ function bindConfigureButtons() {
             document.querySelectorAll('[id^="final_total_"]').forEach(i => i.value = '0.00');
 
             resetModalUI();
-            document.getElementById('platformSelectionCard').style.display = 'block';
-
-            loadVariantData(activeVariantId);
-
-            const data = variantPlatformData[activeVariantId];
-            document.getElementById('platformPricingSection').style.display =
-                data && Object.keys(data).length ? 'block' : 'none';
-
+document.getElementById('platformSelectionCard').style.display = 'block';
+loadVariantData(activeVariantId);
             if (modal) modal.show();
 
             setTimeout(() => {
@@ -289,14 +283,15 @@ function bindConfigureButtons() {
     });
 }
 function resetModalUI() {
-        document.querySelectorAll('.platform-checkbox')
-            .forEach(cb => cb.checked = false);
-        document.querySelectorAll('.platform-pricing-card')
-            .forEach(card => card.style.display = 'none');
-    }
+    document.querySelectorAll('.platform-checkbox')
+        .forEach(cb => cb.checked = false);
+    // ✅ Cards hide mat karo!
+}
 
     function loadVariantData(variantId) {
         const data = variantPlatformData[variantId];
+         document.querySelectorAll('.platform-pricing-card').forEach(c => c.style.display = 'none');
+    document.querySelectorAll('.platform-checkbox').forEach(cb => cb.checked = false);
         document.getElementById('platformPricingSection').style.display =
             data ? 'block' : 'none';
 
@@ -406,19 +401,29 @@ document.addEventListener('input', function(e) {
     }
 });
     document.querySelectorAll('.platform-checkbox').forEach(cb => {
-        cb.addEventListener('change', function () {
-            const platformId = this.dataset.platformId;
-            const card = document.getElementById('platformPricingCard_' + platformId);
-            if (!card) return;
+    cb.addEventListener('change', function () {
+        const platformId = this.dataset.platformId;
+        const card = document.getElementById('platformPricingCard_' + platformId);
+        if (!card) return;
 
-            card.style.display = this.checked ? 'block' : 'none';
-            const anyChecked = document.querySelectorAll('.platform-checkbox:checked').length > 0;
-            document.getElementById('platformPricingSection').style.display = anyChecked ? 'block' : 'none';
-            setTimeout(updateSharedStockDisplay, 150);
-        });
+        if (this.checked) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+        
+        // ✅ Check karo koi bhi checkbox checked hai ya nahi
+        const anyChecked = document.querySelectorAll('.platform-checkbox:checked').length > 0;
+        const pricingSection = document.getElementById('platformPricingSection');
+        if (pricingSection) {
+            pricingSection.style.display = anyChecked ? 'block' : 'none';
+            console.log('Pricing section display:', pricingSection.style.display); // Debug
+        }
+        
+        setTimeout(updateSharedStockDisplay, 150);
     });
-
-    document.getElementById('saveVariantData').addEventListener('click', function () {
+});
+document.getElementById('saveVariantData').addEventListener('click', function () {
         modalOpenedButNotSaved = false;
 
         if (!activeVariantId) {
