@@ -7,16 +7,17 @@ use App\Models\InvoiceItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Customer;
+use App\Models\PurchaseOrderItem;
+use App\Models\PlatformPricing;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
 
 class InvoiceController extends Controller
 {
     public function index(Request $request)
     {
         $query = Invoice::where('organization_id', activeOrganization()->id)
-    ->orderByDesc('invoice_date');
+            ->orderByDesc('invoice_date');
 
         if ($request->filled('start_date')) {
             $query->whereDate('invoice_date', '>=', $request->start_date);
@@ -28,7 +29,7 @@ class InvoiceController extends Controller
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->where('invoice_number', 'like', "%{$request->search}%")
-                  ->orWhere('customer_name', 'like', "%{$request->search}%");
+                    ->orWhere('customer_name', 'like', "%{$request->search}%");
             });
         }
 
@@ -37,25 +38,125 @@ class InvoiceController extends Controller
 
         return view('invoices.index', compact('invoices', 'totalAmount'));
     }
+
     public function create()
-    {
-        $customers = Customer::where('organization_id', activeOrganization()->id)
-    ->orderBy('name')
-    ->get();
+{
+    $customers = Customer::where('organization_id', activeOrganization()->id)
+        ->orderBy('name')
+        ->get();
 
-        $products  = Product::orderBy('name')->get();
+    $poProductIds = PurchaseOrderItem::whereHas('purchaseOrder', function($query) {
+        $query->where('status', '!=', 'cancelled');
+    })->pluck('product_id')->unique()->toArray();
 
-        return view('invoices.create', compact('customers', 'products'));
+    $products = Product::whereIn('id', $poProductIds)
+        ->orderBy('name')
+        ->get();
+
+    $poData = [];
+    $purchaseItems = PurchaseOrderItem::with('variant', 'purchaseOrder')
+        ->whereHas('purchaseOrder', function($query) {
+            $query->where('status', '!=', 'cancelled');
+        })
+        ->get();
+
+    foreach ($purchaseItems as $item) {
+        if ($item->product_variant_id) {
+            $poData[$item->product_variant_id] = [
+                'quantity' => $item->quantity,
+                'purchase_price' => $item->purchase_price,
+                'po_number' => $item->purchaseOrder->po_number ?? 'N/A',
+            ];
+        }
     }
+
+    $pushedQuantities = [];
+    $pushedData = PlatformPricing::with('platformProduct')
+        ->whereHas('platformProduct', function($q) {
+            $q->where('platform_id', 3);
+        })
+        ->get();
+
+    foreach ($pushedData as $pricing) {
+        $variantId = $pricing->product_variant_id;
+        $pushedQuantities[$variantId] = ($pushedQuantities[$variantId] ?? 0) + $pricing->quantity;
+    }
+
+    // ✅ Offline Pricing Data
+    $offlinePricing = [];
+    $offlineData = PlatformPricing::with('platformProduct')
+        ->whereHas('platformProduct', function($q) {
+            $q->where('platform_id', 4);
+        })
+        ->get();
+
+    foreach ($offlineData as $pricing) {
+        $variantId = $pricing->product_variant_id;
+        $offlinePricing[$variantId] = [
+            'price' => $pricing->price,
+            'final_price' => $pricing->final_price,
+            'discount_value' => $pricing->discount_value,
+            'discount_type' => $pricing->discount_type,
+            'quantity' => $pricing->quantity,
+        ];
+    }
+
+    return view('invoices.create', compact('customers', 'products', 'poData', 'pushedQuantities', 'offlinePricing'));
+}
+
     public function productVariants(Product $product)
-    {
-        return response()->json(
-            $product->variants()
-                ->where('status', 1)
-                ->get(['id', 'sku_suffix', 'selling_price'])
-        );
+{
+    $poVariantIds = PurchaseOrderItem::where('product_id', $product->id)
+        ->whereHas('purchaseOrder', function($query) {
+            $query->where('status', '!=', 'cancelled');
+        })
+        ->pluck('product_variant_id')
+        ->unique()
+        ->toArray();
+
+    $variants = $product->variants()
+        ->whereIn('id', $poVariantIds)
+        ->where('status', 1)
+        ->get(['id', 'sku_suffix', 'selling_price']);
+
+    $offlinePricing = [];
+    $offlineData = PlatformPricing::whereHas('platformProduct', function($q) {
+        $q->where('platform_id', 4);
+    })->get();
+
+    foreach ($offlineData as $pricing) {
+        $offlinePricing[$pricing->product_variant_id] = $pricing;
     }
-public function store(Request $request)
+
+    $pushedQuantities = [];
+    $pushedData = PlatformPricing::whereHas('platformProduct', function($q) {
+        $q->where('platform_id', 4);
+    })->get();
+
+    foreach ($pushedData as $pricing) {
+        $variantId = $pricing->product_variant_id;
+        $pushedQuantities[$variantId] = ($pushedQuantities[$variantId] ?? 0) + $pricing->quantity;
+    }
+
+    return response()->json(
+        $variants->map(function ($variant) use ($offlinePricing, $pushedQuantities) {
+            $offline = $offlinePricing[$variant->id] ?? null;
+            $pushedQty = $pushedQuantities[$variant->id] ?? 0;
+
+            return [
+                'id' => $variant->id,
+                'sku_suffix' => $variant->sku_suffix,
+                'selling_price' => $variant->selling_price,
+                'offline_price' => $offline ? (float) $offline->price : 0,
+                'offline_discount' => $offline ? (float) $offline->discount_value : 0,
+                'offline_discount_type' => $offline ? $offline->discount_type : 'percentage',
+                'offline_quantity' => $pushedQty,
+            ];
+        })
+    );
+}
+
+    public function store(Request $request)
 {
     $org = activeOrganization();
 
@@ -74,6 +175,26 @@ public function store(Request $request)
     ]);
 
     DB::transaction(function () use ($request, $org) {
+
+        foreach ($request->items as $item) {
+            $variant = ProductVariant::findOrFail($item['variant_id']);
+            
+            $poItem = PurchaseOrderItem::where('product_variant_id', $variant->id)
+                ->whereHas('purchaseOrder', function($q) {
+                    $q->where('status', '!=', 'cancelled');
+                })
+                ->first();
+            
+            $poQuantity = $poItem ? $poItem->quantity : 0;
+            
+            $pushedQty = PlatformPricing::where('product_variant_id', $variant->id)->sum('quantity');
+            
+            $availableQty = $poQuantity - $pushedQty;
+            
+            if ($item['qty'] > $availableQty) {
+                throw new \Exception("Not enough stock. Available: {$availableQty}, Requested: {$item['qty']}");
+            }
+        }
 
         $customerId = $customerName = $customerMobile = $customerAddress = null;
 
@@ -164,26 +285,45 @@ public function store(Request $request)
                 'discount_type' => $discountType,
                 'total'    => $price - $discountAmount,
             ]);
+
             $variant->decrement('quantity', $item['qty']);
+
+            // ✅ Offline PlatformPricing update
+            $offlinePricing = PlatformPricing::where('product_variant_id', $variant->id)
+                ->whereHas('platformProduct', function($q) {
+                    $q->where('platform_id', 4);
+                })
+                ->first();
+
+            if ($offlinePricing) {
+                $newQty = $offlinePricing->quantity - $item['qty'];
+                if ($newQty < 0) $newQty = 0;
+                $offlinePricing->update(['quantity' => $newQty]);
+            }
         }
     });
 
     return redirect()->route('admin.invoices.index')
         ->with('success', 'Invoice created successfully');
 }
-    public function show(Invoice $invoice)
-{
-    $invoice->load(['items','organization']);
-    return view('invoices.show', compact('invoice'));
-}
-public function edit(Invoice $invoice)
-{
-    $invoice->load('items');
-    $customers = Customer::where('organization_id', activeOrganization()->id)->get();
-    $products = Product::all();
 
-    return view('invoices.edit', compact('invoice','customers','products'));
-}
+    public function show(Invoice $invoice)
+    {
+        $invoice->load(['items','organization']);
+        return view('invoices.show', compact('invoice'));
+    }
+
+    public function edit(Invoice $invoice)
+    {
+        $invoice->load('items');
+        $customers = Customer::where('organization_id', activeOrganization()->id)->get();
+        $products = Product::all();
+
+        return view('invoices.edit', compact('invoice','customers','products'));
+    }
+
+   
+
 public function update(Request $request, Invoice $invoice)
 {
     $request->validate([
@@ -201,6 +341,45 @@ public function update(Request $request, Invoice $invoice)
     ]);
 
     DB::transaction(function () use ($request, $invoice) {
+
+        foreach ($invoice->items as $oldItem) {
+            $variant = ProductVariant::find($oldItem->product_variant_id);
+            if ($variant) {
+                $variant->increment('quantity', $oldItem->quantity);
+            }
+
+            $offlinePricing = PlatformPricing::where('product_variant_id', $oldItem->product_variant_id)
+                ->whereHas('platformProduct', function($q) {
+                    $q->where('platform_id', 4);
+                })
+                ->first();
+
+            if ($offlinePricing) {
+                $offlinePricing->increment('quantity', $oldItem->quantity);
+                $offlinePricing->status = 'active';
+                $offlinePricing->save();
+            }
+        }
+
+        foreach ($request->items as $item) {
+            $variant = ProductVariant::findOrFail($item['variant_id']);
+            
+            $poItem = PurchaseOrderItem::where('product_variant_id', $variant->id)
+                ->whereHas('purchaseOrder', function($q) {
+                    $q->where('status', '!=', 'cancelled');
+                })
+                ->first();
+            
+            $poQuantity = $poItem ? $poItem->quantity : 0;
+            
+            $pushedQty = PlatformPricing::where('product_variant_id', $variant->id)->sum('quantity');
+            
+            $availableQty = $poQuantity - $pushedQty;
+            
+            if ($item['qty'] > $availableQty) {
+                throw new \Exception("Not enough stock. Available: {$availableQty}, Requested: {$item['qty']}");
+            }
+        }
 
         $customerId = $customerName = $customerMobile = $customerAddress = null;
 
@@ -289,20 +468,58 @@ public function update(Request $request, Invoice $invoice)
                 'discount_type' => $discountType,
                 'total'    => $price - $discountAmount,
             ]);
+
+            $variant->decrement('quantity', $item['qty']);
+
+            $offlinePricing = PlatformPricing::where('product_variant_id', $variant->id)
+                ->whereHas('platformProduct', function($q) {
+                    $q->where('platform_id', 4);
+                })
+                ->first();
+
+            if ($offlinePricing) {
+                $offlinePricing->decrement('quantity', $item['qty']);
+                if ($offlinePricing->quantity <= 0) {
+                    $offlinePricing->quantity = 0;
+                    $offlinePricing->status = 'inactive';
+                }
+                $offlinePricing->save();
+            }
         }
     });
 
     return redirect()->route('admin.invoices.index')
         ->with('success', 'Invoice updated successfully');
 }
+
 public function destroy(Invoice $invoice)
 {
-    $invoice->items()->delete(); 
-    $invoice->delete();
+    DB::transaction(function () use ($invoice) {
 
-    return redirect()
-        ->route('admin.invoices.index')
+        foreach ($invoice->items as $item) {
+            $variant = ProductVariant::find($item->product_variant_id);
+            if ($variant) {
+                $variant->increment('quantity', $item->quantity);
+            }
+
+            $offlinePricing = PlatformPricing::where('product_variant_id', $item->product_variant_id)
+                ->whereHas('platformProduct', function($q) {
+                    $q->where('platform_id', 4);
+                })
+                ->first();
+
+            if ($offlinePricing) {
+                $offlinePricing->increment('quantity', $item->quantity);
+                $offlinePricing->status = 'active';
+                $offlinePricing->save();
+            }
+        }
+
+        $invoice->items()->delete();
+        $invoice->delete();
+    });
+
+    return redirect()->route('admin.invoices.index')
         ->with('success', 'Invoice deleted successfully');
 }
-
 }

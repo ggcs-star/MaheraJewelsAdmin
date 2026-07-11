@@ -414,6 +414,14 @@
     @endforeach
 </select>
 
+<script>
+    window.poData = @json($poData ?? []);
+    window.pushedQuantities = @json($pushedQuantities ?? []);
+    window.offlinePricing = @json($offlinePricing ?? []);
+    
+    console.log('offlinePricing:', window.offlinePricing);
+</script>
+
 @endsection
 
 @push('scripts')
