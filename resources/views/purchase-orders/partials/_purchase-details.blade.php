@@ -16,38 +16,27 @@
     <div class="p-6">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div>
-                <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
-                    PO Number
-                </label>
+                <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">PO Number</label>
                 <input type="text" name="po_number"
                     value="{{ $poNumber ?? '' }}"
                     readonly
                     class="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-100 text-gray-700 cursor-not-allowed">
             </div>
-
             <div>
-                <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
-                    Invoice Number
-                </label>
+                <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Invoice Number</label>
                 <input type="text" name="invoice_number"
                     value="{{ old('invoice_number', $purchaseOrder->invoice_number ?? '') }}"
                     placeholder="Enter invoice number"
                     class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all duration-200">
             </div>
-
             <div>
-                <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
-                    Purchase Date
-                </label>
+                <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Purchase Date</label>
                 <input type="date" name="purchase_date"
                     value="{{ old('purchase_date', isset($purchaseOrder) ? $purchaseOrder->purchase_date : date('Y-m-d')) }}"
                     class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all duration-200">
             </div>
-
             <div>
-                <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
-                    Payment Method
-                </label>
+                <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Payment Method</label>
                 <select name="payment_method"
                     class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all duration-200 bg-white">
                     <option value="">Select Payment</option>

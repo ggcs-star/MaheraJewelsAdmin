@@ -205,19 +205,16 @@ function bindConfigureButtons() {
             modalOpenedButNotSaved = true;
             activeVariantId = parseInt(this.dataset.variantId);
 
-            // ✅ Set hidden input value
             const hiddenInput = document.getElementById('modalVariantId');
             if (hiddenInput) {
                 hiddenInput.value = activeVariantId;
             }
 
-            // ✅ Also set for platform pricing includes
             const variantIdInputs = document.querySelectorAll('input[name="variant_id"]');
             variantIdInputs.forEach(input => {
                 input.value = activeVariantId;
             });
 
-            // ✅ Add hidden input to form if not exists
             let formVariantInput = document.getElementById('formVariantId');
             if (!formVariantInput) {
                 formVariantInput = document.createElement('input');
@@ -233,10 +230,8 @@ function bindConfigureButtons() {
             let originalStock = parseInt(row.children[5]?.innerText) || 0;
             window.variantOriginalStock = originalStock;
 
-            // ✅ PO Data
             const poData = window.purchaseOrderData ? window.purchaseOrderData[activeVariantId] : null;
 
-            // Reset modal UI
             document.querySelectorAll('.platform-price-input').forEach(i => i.value = '');
             document.querySelectorAll('.platform-qty-input').forEach(i => i.value = 0);
             document.querySelectorAll('[id^="discount_value_"]').forEach(i => i.value = 0);
@@ -254,20 +249,38 @@ function bindConfigureButtons() {
             if (modal) modal.show();
 
             setTimeout(() => {
-                // ✅ Set PO data if exists
                 if (poData) {
+                    // ✅ existingVariantPlatformData se already pushed calculate karein
+                    let alreadyPushed = 0;
+                    if (window.existingVariantPlatformData && window.existingVariantPlatformData[activeVariantId]) {
+                        const platformData = window.existingVariantPlatformData[activeVariantId];
+                        Object.values(platformData).forEach(p => {
+                            alreadyPushed += parseInt(p.qty) || 0;
+                        });
+                    }
+                    
+                    // ✅ Agar window.pushedQuantities mein data hai toh use karein
+                    if (window.pushedQuantities && window.pushedQuantities[activeVariantId]) {
+                        alreadyPushed = window.pushedQuantities[activeVariantId];
+                    }
+                    
+                    const availableStock = poData.quantity - alreadyPushed;
+                    
                     document.querySelectorAll('.platform-qty-input').forEach(input => {
-                        input.value = poData.quantity || 0;
+                        input.value = availableStock;
                     });
-                    // document.querySelectorAll('.platform-price-input').forEach(input => {
-                    //     input.value = defaultPrice;
-                    // });
-                    // ✅ Update PO Quantity and PO Price displays
                     document.querySelectorAll('[id^="po_quantity_"]').forEach(input => {
                         input.value = poData.quantity || 0;
                     });
                     document.querySelectorAll('[id^="po_price_"]').forEach(input => {
                         input.value = poData.purchase_price || 0;
+                    });
+                    
+                    document.querySelectorAll('.available-stock').forEach(el => {
+                        el.innerText = availableStock;
+                    });
+                    document.querySelectorAll('.remaining-stock').forEach(el => {
+                        el.innerText = availableStock;
                     });
                 }
                 updateSharedStockDisplay();
@@ -275,7 +288,7 @@ function bindConfigureButtons() {
         });
     });
 }
-    function resetModalUI() {
+function resetModalUI() {
         document.querySelectorAll('.platform-checkbox')
             .forEach(cb => cb.checked = false);
         document.querySelectorAll('.platform-pricing-card')
@@ -306,26 +319,44 @@ function bindConfigureButtons() {
     }
 
     function updateSharedStockDisplay() {
-        let totalUsed = 0;
-        document.querySelectorAll('.platform-qty-input').forEach(input => {
-            totalUsed += parseInt(input.value) || 0;
-        });
+    let totalUsed = 0;
+    document.querySelectorAll('.platform-qty-input').forEach(input => {
+        totalUsed += parseInt(input.value) || 0;
+    });
 
-        let master = window.variantOriginalStock || 0;
-        let remaining = master - totalUsed;
-        if (remaining < 0) remaining = 0;
-
-        document.querySelectorAll('.stock-display').forEach(box => {
-            box.querySelector('.available-stock').innerText = master;
-            box.querySelector('.remaining-stock').innerText = remaining;
-            if (remaining <= 2) {
-                box.querySelector('.remaining-stock').classList.add('text-danger');
-            } else {
-                box.querySelector('.remaining-stock').classList.remove('text-danger');
+    let master = window.variantOriginalStock || 0;
+    
+    // ✅ existingVariantPlatformData se master calculate karein
+    if (activeVariantId) {
+        const poData = window.purchaseOrderData ? window.purchaseOrderData[activeVariantId] : null;
+        if (poData) {
+            let alreadyPushed = 0;
+            if (window.existingVariantPlatformData && window.existingVariantPlatformData[activeVariantId]) {
+                const platformData = window.existingVariantPlatformData[activeVariantId];
+                Object.values(platformData).forEach(p => {
+                    alreadyPushed += parseInt(p.qty) || 0;
+                });
             }
-        });
+            if (window.pushedQuantities && window.pushedQuantities[activeVariantId]) {
+                alreadyPushed = window.pushedQuantities[activeVariantId];
+            }
+            master = poData.quantity - alreadyPushed;
+        }
     }
+    
+    let remaining = master - totalUsed;
+    if (remaining < 0) remaining = 0;
 
+    document.querySelectorAll('.stock-display').forEach(box => {
+        box.querySelector('.available-stock').innerText = master;
+        box.querySelector('.remaining-stock').innerText = remaining;
+        if (remaining <= 2) {
+            box.querySelector('.remaining-stock').classList.add('text-danger');
+        } else {
+            box.querySelector('.remaining-stock').classList.remove('text-danger');
+        }
+    });
+}
     document.addEventListener('input', function(e) {
         if (!e.target.classList.contains('platform-qty-input')) return;
 

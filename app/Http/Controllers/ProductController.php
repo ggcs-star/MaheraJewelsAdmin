@@ -701,14 +701,12 @@ $data['is_best_seller'] = $request->boolean('is_best_seller');
     return view('products.list', compact('pushedProducts', 'poData'));
 }
 
-        public function push(Request $request)
+    public function push(Request $request)
 {
-    // ✅ Get all product IDs from Purchase Order
     $poProductIds = PurchaseOrderItem::whereHas('purchaseOrder', function($query) {
         $query->where('status', '!=', 'cancelled');
     })->pluck('product_id')->unique()->toArray();
 
-    // ✅ Filter products - only those in Purchase Order
     $products = Product::with([
         'category:id,name,parent_id',
         'category.parent:id,name',
@@ -718,7 +716,7 @@ $data['is_best_seller'] = $request->boolean('is_best_seller');
         'variants.platformPricings.platformProduct'
     ])
     ->where('status', 'active')
-    ->whereIn('id', $poProductIds)  // ✅ Only PO products
+    ->whereIn('id', $poProductIds)
     ->orderBy('name')
     ->get()
     ->map(function ($product) {
@@ -775,21 +773,42 @@ $data['is_best_seller'] = $request->boolean('is_best_seller');
         ->where('is_enabled', true)
         ->get();
 
-    // ✅ Purchase Order Data Fetch
+    $pushedQuantities = [];
+    $pushedData = PlatformPricing::with('platformProduct')
+        ->whereHas('platformProduct', function($q) {
+            $q->where('platform_id', 1);
+        })
+        ->get();
+    
+    foreach ($pushedData as $pricing) {
+        $variantId = $pricing->product_variant_id;
+        $pushedQuantities[$variantId] = ($pushedQuantities[$variantId] ?? 0) + $pricing->quantity;
+    }
+    
+
     $purchaseOrderData = [];
     $purchaseItems = PurchaseOrderItem::with('variant', 'purchaseOrder')
         ->whereHas('purchaseOrder', function($query) {
             $query->where('status', '!=', 'cancelled');
         })
         ->get();
-    
+
     foreach ($purchaseItems as $item) {
         if ($item->product_variant_id) {
+            $variant = ProductVariant::find($item->product_variant_id);
+            
+            $totalPoQty = $item->quantity;
+            $alreadyPushed = $pushedQuantities[$item->product_variant_id] ?? 0;
+            $availableStock = $totalPoQty - $alreadyPushed;
+            
             $purchaseOrderData[$item->product_variant_id] = [
                 'quantity' => $item->quantity,
                 'purchase_price' => $item->purchase_price,
                 'product_id' => $item->product_id,
                 'po_number' => $item->purchaseOrder->po_number ?? 'N/A',
+                'actual_stock' => $variant ? $variant->quantity : 0,
+                'available_stock' => $availableStock,
+                'pushed_quantity' => $alreadyPushed,
             ];
         }
     }
@@ -802,139 +821,141 @@ $data['is_best_seller'] = $request->boolean('is_best_seller');
         'existingVariantPlatformData' => $existingConfig,
         'purchaseOrderData' => $purchaseOrderData,
         'productId' => $productId,
+        'pushedQuantities' => $pushedQuantities,
     ]);
 }
 
+public function pushStore(Request $request)
+{
+    \Log::info('PUSH DATA', $request->all());
 
-        public function pushStore(Request $request)
-        {
-            \Log::info('PUSH DATA', $request->all());
-
-            try {
-
-            
+    try {
         $request->validate([
             'variant_platform_data' => 'required'
         ]);
 
+        $data = json_decode($request->variant_platform_data, true);
 
-            
-
-                $data = json_decode($request->variant_platform_data, true);
-
-
-                if (!$data || !is_array($data)) {
-                    return back()->with('error', 'No platform data found');
-                }
+        if (!$data || !is_array($data)) {
+            return back()->with('error', 'No platform data found');
+        }
 
         DB::transaction(function () use ($data) {
 
             foreach ($data as $variantId => $platforms) {
 
-            if (!is_array($platforms) || empty($platforms)) {
-                continue; // skip empty variant
+                if (!is_array($platforms) || empty($platforms)) {
+                    continue;
+                }
+
+                $variant = ProductVariant::with(['product','value'])
+                    ->where('id', $variantId)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                // ✅ PO Quantity fetch
+                $poItem = PurchaseOrderItem::where('product_variant_id', $variantId)
+                    ->whereHas('purchaseOrder', function($q) {
+                        $q->where('status', '!=', 'cancelled');
+                    })
+                    ->first();
+                
+                $poQuantity = $poItem ? $poItem->quantity : 0;
+
+                $totalRequested = collect($platforms)
+                    ->filter(fn($p) => isset($p['qty']) && $p['qty'] > 0)
+                    ->sum('qty');
+
+                if ($totalRequested <= 0) {
+                    continue;
+                }
+
+                foreach ($platforms as $platformId => $p) {
+
+                    if (!isset($p['qty']) || $p['qty'] <= 0) continue;
+
+                    $platformProduct = PlatformProduct::firstOrCreate(
+                        [
+                            'platform_id' => $platformId,
+                            'product_id'  => $variant->product_id,
+                        ],
+                        [
+                            'platform_sku'   => $variant->product->sku . ($variant->sku_suffix ?? ''),
+                            'platform_price' => $p['price'],
+                            'platform_stock' => 0,
+                            'status'         => 'active',
+                            'sync_status'    => 'pending',
+                        ]
+                    );
+
+                    $platformProduct->update([
+                        'platform_sku'   => $variant->product->sku . ($variant->sku_suffix ?? ''),
+                        'platform_price' => $p['price'],
+                        'status'         => 'active',
+                    ]);
+
+                    $discountType = $p['discount_type'] === 'percent' ? 'percentage' : 'fixed';
+                    
+                    // ✅ FIND existing record
+                    $existingPricing = PlatformPricing::where([
+                        'platform_product_id' => $platformProduct->id,
+                        'product_variant_id'  => $variantId,
+                    ])->first();
+
+                    if ($existingPricing) {
+                        // ✅ UPDATE: Quantity ADD karo
+                        $existingPricing->quantity += $p['qty'];
+                        $existingPricing->price = $p['price'];
+                        $existingPricing->discount_type = $discountType;
+                        $existingPricing->discount_value = $p['discount_value'];
+                        $existingPricing->final_price = $p['final_total'] / max($existingPricing->quantity, 1);
+                        $existingPricing->save();
+                    } else {
+                        // ✅ CREATE: Naya record
+                        PlatformPricing::create([
+                            'platform_product_id' => $platformProduct->id,
+                            'product_variant_id'  => $variantId,
+                            'price'          => $p['price'],
+                            'discount_type'  => $discountType,
+                            'discount_value' => $p['discount_value'],
+                            'final_price'    => $p['final_total'] / max($p['qty'], 1),
+                            'quantity'       => $p['qty'],
+                            'currency'       => 'INR',
+                            'status'         => 'active',
+                        ]);
+                    }
+
+                    // ✅ Update platform stock
+                    $platformProduct->platform_stock = PlatformPricing::where('platform_product_id', $platformProduct->id)->sum('quantity');
+                    $platformProduct->save();
+                }
+
+                // ✅ Total pushed calculate karo
+                $totalPushed = PlatformPricing::where('product_variant_id', $variantId)->sum('quantity');
+                
+                // ✅ Safety check
+                if ($totalPushed > $poQuantity) {
+                    throw new \Exception(
+                        "Not enough stock! PO Qty: {$poQuantity}, Total Pushed: {$totalPushed}"
+                    );
+                }
+
+                // ✅ Update ProductVariant.quantity = Available Stock
+                $availableStock = $poQuantity - $totalPushed;
+                $variant->quantity = $availableStock;
+                $variant->save();
+                
+                \Log::info('Stock updated for Variant ' . $variantId . ': Available = ' . $availableStock);
             }
-
-        $variant = ProductVariant::with(['product','value'])
-            ->where('id', $variantId)
-            ->lockForUpdate()
-            ->firstOrFail();
-
-            $totalRequested = collect($platforms)
-                ->filter(fn($p) => isset($p['qty']) && $p['qty'] > 0)
-                ->sum('qty');
-
-            if ($totalRequested <= 0) {
-                continue;
-            }
-        // OLD allocation BEFORE update
-        $oldAllocated = PlatformPricing::where('product_variant_id', $variantId)->sum('quantity');
-
-
-
-
-        foreach ($platforms as $platformId => $p) {
-
-            if (!isset($p['qty']) || $p['qty'] <= 0) continue;
-
-            $platformProduct = PlatformProduct::firstOrCreate(
-                [
-                    'platform_id' => $platformId,
-                    'product_id'  => $variant->product_id,
-                ],
-                [
-                    'platform_sku'   => $variant->product->sku . ($variant->sku_suffix ?? ''),
-                    'platform_price' => $p['price'],
-                    'platform_stock' => 0,
-                    'status'         => 'active',
-                    'sync_status'    => 'pending',
-                ]
-            );
-
-            $platformProduct->update([
-                'platform_sku'   => $variant->product->sku . ($variant->sku_suffix ?? ''),
-                'platform_price' => $p['price'],
-                'status'         => 'active',
-            ]);
-
-            $discountType = $p['discount_type'] === 'percent' ? 'percentage' : 'fixed';
-        PlatformPricing::updateOrCreate(
-            [
-                'platform_product_id' => $platformProduct->id,
-                'product_variant_id'  => $variantId,
-            ],
-            [
-                'price'          => $p['price'],
-                'discount_type'  => $discountType,
-                'discount_value' => $p['discount_value'],
-                'final_price'    => $p['final_total'] / max($p['qty'],1),
-                'quantity'       => $p['qty'],
-                'currency'       => 'INR',
-                'status'         => 'active',
-            ]
-        );
-
-        // ✅ ADD THIS
-        $platformProduct->platform_stock = PlatformPricing::where('platform_product_id', $platformProduct->id)->sum('quantity');
-        $platformProduct->save();
-
-        }
-        // NEW allocation AFTER update
-        $newAllocated = PlatformPricing::where('product_variant_id', $variantId)->sum('quantity');
-
-        $difference = $newAllocated - $oldAllocated;
-
-        // ❗ Safety check
-        if ($difference > 0 && $difference > $variant->quantity) {
-            throw new \Exception(
-                "Not enough stock for " .
-                optional($variant->value)->value .
-                " (Available: {$variant->quantity}, Needed: {$difference})"
-            );
-        }
-
-        // ✅ Adjust stock
-        if ($difference > 0) {
-            $variant->decrement('quantity', $difference);
-        }
-
-        if ($difference < 0) {
-            $variant->increment('quantity', abs($difference));
-        }
-
-        }
-
         });
 
         return redirect()->route('admin.products.list')
             ->with('success', 'Product pushed to marketplace successfully!');
 
-
-            } catch (\Throwable $e) {
+    } catch (\Throwable $e) {
         return back()->with('error', $e->getMessage());
-                }
-        }
-
+    }
+}
 
         public function bulkDelete(Request $request)
         {

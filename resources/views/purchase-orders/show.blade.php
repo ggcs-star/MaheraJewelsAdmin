@@ -10,14 +10,14 @@
         </div>
         <div class="flex gap-3 mt-4 sm:mt-0">
             <a href="{{ admin_route('purchase-orders.edit', $purchaseOrder->id) }}"
-                class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:shadow-lg hover:shadow-amber-500/30 transition-all duration-200 text-sm font-medium flex items-center gap-2">
+               class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:shadow-lg hover:shadow-amber-500/30 transition-all duration-200 text-sm font-medium flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                 </svg>
                 Edit
             </a>
             <a href="{{ admin_route('purchase-orders.index') }}"
-                class="px-5 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 text-sm font-medium flex items-center gap-2">
+               class="px-5 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 text-sm font-medium flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
@@ -27,7 +27,7 @@
     </div>
 
     @if(session('success'))
-        <div class="bg-green-50 border-l-4 border-green-500 text-green-700 px-5 py-4 rounded-xl mb-6 shadow-sm">
+        <div class="bg-green-50 border-l-4 border-green-500 text-green-700 px-5 py-4 rounded-xl mb-6">
             <div class="flex items-center">
                 <svg class="w-5 h-5 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -38,7 +38,11 @@
     @endif
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        {{-- Main Content --}}
         <div class="lg:col-span-2 space-y-6">
+
+            {{-- PO Info --}}
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-indigo-50/80 to-white">
                     <h3 class="text-base font-bold text-gray-800 flex items-center gap-2">
@@ -68,7 +72,11 @@
                         </div>
                         <div>
                             <p class="text-xs text-gray-400 uppercase tracking-wider">Status</p>
-                            <span class="inline-block mt-1 px-3 py-1 rounded-full text-xs font-medium {{ $purchaseOrder->status == 'draft' ? 'bg-gray-100 text-gray-700' : ($purchaseOrder->status == 'ordered' ? 'bg-blue-100 text-blue-700' : ($purchaseOrder->status == 'received' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700')) }}">
+                            <span class="inline-block mt-1 px-3 py-1 rounded-full text-xs font-medium
+                                {{ $purchaseOrder->status == 'draft' ? 'bg-gray-100 text-gray-700' : '' }}
+                                {{ $purchaseOrder->status == 'ordered' ? 'bg-blue-100 text-blue-700' : '' }}
+                                {{ $purchaseOrder->status == 'received' ? 'bg-green-100 text-green-700' : '' }}
+                                {{ $purchaseOrder->status == 'cancelled' ? 'bg-red-100 text-red-700' : '' }}">
                                 {{ ucfirst($purchaseOrder->status) }}
                             </span>
                         </div>
@@ -80,6 +88,7 @@
                 </div>
             </div>
 
+            {{-- Supplier Info --}}
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-rose-50/80 to-white">
                     <h3 class="text-base font-bold text-gray-800 flex items-center gap-2">
@@ -109,7 +118,7 @@
                                 <p class="font-semibold text-gray-800 mt-1">{{ $purchaseOrder->supplier->email ?? '-' }}</p>
                             </div>
                             <div>
-                                <p class="text-xs text-gray-400 uppercase tracking-wider">GST Number</p>
+                                <p class="text-xs text-gray-400 uppercase tracking-wider">GST</p>
                                 <p class="font-semibold text-gray-800 mt-1">{{ $purchaseOrder->supplier->gst_number ?? '-' }}</p>
                             </div>
                             <div>
@@ -135,6 +144,7 @@
                 </div>
             </div>
 
+            {{-- Products Table --}}
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-emerald-50/80 to-white">
                     <div class="flex items-center justify-between">
@@ -142,52 +152,54 @@
                             <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                             </svg>
-                            Purchase Products
+                            Products
                         </h3>
                         <span class="text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full">Total: {{ $purchaseOrder->items->count() }}</span>
                     </div>
                 </div>
-                <div class="p-6">
-                    <div class="overflow-x-auto rounded-xl border border-gray-100">
-                        <table class="min-w-full border-collapse">
-                            <thead>
-                                <tr class="bg-gray-50/80">
-                                    <th class="border-b border-gray-200 px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Product</th>
-                                    <th class="border-b border-gray-200 px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Variant</th>
-                                    <th class="border-b border-gray-200 px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Purchase Price</th>
-                                    <th class="border-b border-gray-200 px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Quantity</th>
-                                    <th class="border-b border-gray-200 px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Total</th>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50/80">
+                                <th class="border-b border-gray-200 px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Product</th>
+                                <th class="border-b border-gray-200 px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Variant</th>
+                                <th class="border-b border-gray-200 px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Price</th>
+                                <th class="border-b border-gray-200 px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Qty</th>
+                                <th class="border-b border-gray-200 px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($purchaseOrder->items as $item)
+                                <tr class="hover:bg-gray-50/50 transition-colors duration-150">
+                                    <td class="border-b border-gray-100 px-4 py-3 text-sm text-gray-700">{{ $item->product->name ?? '-' }}</td>
+                                    <td class="border-b border-gray-100 px-4 py-3 text-sm text-gray-700">
+                                        @if($item->variant)
+                                            {{ $item->variant->variant->name ?? '' }} : {{ $item->variant->value->value ?? '' }}
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    <td class="border-b border-gray-100 px-4 py-3 text-center text-sm text-gray-700">₹ {{ number_format($item->purchase_price, 2) }}</td>
+                                    <td class="border-b border-gray-100 px-4 py-3 text-center text-sm text-gray-700">{{ $item->quantity }}</td>
+                                    <td class="border-b border-gray-100 px-4 py-3 text-center text-sm font-semibold text-gray-800">₹ {{ number_format($item->total, 2) }}</td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($purchaseOrder->items as $item)
-                                    <tr class="hover:bg-gray-50/50 transition-colors duration-150">
-                                        <td class="border-b border-gray-100 px-4 py-3 text-sm text-gray-700">{{ $item->product->name ?? '-' }}</td>
-                                        <td class="border-b border-gray-100 px-4 py-3 text-sm text-gray-700">
-                                            @if($item->variant)
-                                                {{ $item->variant->variant->name ?? '' }} : {{ $item->variant->value->value ?? '' }}
-                                            @else
-                                                -
-                                            @endif
-                                        </td>
-                                        <td class="border-b border-gray-100 px-4 py-3 text-center text-sm text-gray-700">₹ {{ number_format($item->purchase_price, 2) }}</td>
-                                        <td class="border-b border-gray-100 px-4 py-3 text-center text-sm text-gray-700">{{ $item->quantity }}</td>
-                                        <td class="border-b border-gray-100 px-4 py-3 text-center text-sm font-semibold text-gray-800">₹ {{ number_format($item->total, 2) }}</td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="5" class="text-center py-8 text-gray-400">No products found</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="text-center py-8 text-gray-400">No products found</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
+
         </div>
 
+        {{-- Sidebar --}}
         <div class="space-y-6">
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+
+            {{-- Summary --}}
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden sticky top-6">
                 <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-rose-50/80 to-white">
                     <h3 class="text-base font-bold text-gray-800 flex items-center gap-2">
                         <svg class="w-5 h-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -224,6 +236,7 @@
                 </div>
             </div>
 
+            {{-- Invoice --}}
             @if($purchaseOrder->invoice_file)
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-rose-50/80 to-white">
@@ -238,8 +251,8 @@
                         <svg class="w-14 h-14 mx-auto text-[#8B2452] mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6M7 4h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2z"/>
                         </svg>
-                        <a href="{{ Storage::disk('s3')->url($purchaseOrder->invoice_file) }}" target="_blank"
-                            class="text-[#8B2452] font-semibold hover:underline inline-flex items-center gap-2">
+                        <a href="{{ App\Helpers\S3Helper::url($purchaseOrder->invoice_file) }}" target="_blank"
+                           class="text-[#8B2452] font-semibold hover:underline inline-flex items-center gap-2">
                             View Uploaded Invoice
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -265,7 +278,10 @@
                     </div>
                 </div>
             @endif
+
         </div>
+
     </div>
+
 </div>
 @endsection

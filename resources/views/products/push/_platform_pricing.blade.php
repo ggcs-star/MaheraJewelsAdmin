@@ -1,17 +1,21 @@
 @php
+    // ✅ Modal se variantId le rahe hain
     $variantId = $variantId ?? null;
+    
+    // ✅ Debug ke liye (baad mein hata dena)
+    // dump('Variant ID in platform pricing: ' . $variantId);
+    
     $poData = isset($purchaseOrderData[$variantId]) ? $purchaseOrderData[$variantId] : null;
     $poQty = $poData['quantity'] ?? 0;
     $poPrice = $poData['purchase_price'] ?? 0;
-    $availableStock = $variant->quantity ?? 0;
+    $availableStock = $poData['available_stock'] ?? $poQty;
+    $defaultQty = $availableStock;
 @endphp
 
 <div class="row g-3">
 
-    {{-- Hidden: Variant ID --}}
     <input type="hidden" id="variantId" value="{{ $variantId ?? '' }}">
 
-    {{-- 1. PO Quantity (Readonly) --}}
     <div class="col-md-3">
         <label class="form-label fw-semibold text-muted">📦 PO Quantity</label>
         <input type="text"
@@ -23,7 +27,6 @@
         <div class="form-text text-muted">From Purchase Order</div>
     </div>
 
-    {{-- 2. PO Price (Readonly) --}}
     <div class="col-md-3">
         <label class="form-label fw-semibold text-muted">📦 PO Price (₹)</label>
         <input type="text"
@@ -35,7 +38,6 @@
         <div class="form-text text-muted">From Purchase Order</div>
     </div>
 
-    {{-- 3. Selling Price (Manual Entry - BLANK) --}}
     <div class="col-md-3">
         <label class="form-label fw-semibold">💰 Selling Price (₹) <span class="text-danger">*</span></label>
         <input type="number"
@@ -48,7 +50,6 @@
         <div class="form-text">Set selling price manually</div>
     </div>
 
-    {{-- 4. Quantity (Auto-filled from PO, Editable) --}}
     <div class="col-md-3">
         <label class="form-label fw-semibold">📊 Quantity</label>
         <input type="number"
@@ -56,12 +57,12 @@
                class="form-control platform-calc-input platform-qty-input"
                placeholder="0"
                min="0"
-               value="{{ $poQty }}"
+               value="{{ $defaultQty }}"
                style="font-weight: bold; color: #1a7a3a;">
         <div class="small mt-1 text-muted stock-display">
             Available: <strong class="available-stock">{{ $availableStock }}</strong>
             &nbsp;|&nbsp;
-            Remaining: <strong class="remaining-stock">{{ $availableStock - $poQty }}</strong>
+            Remaining: <strong class="remaining-stock">{{ $availableStock - $defaultQty }}</strong>
         </div>
         <div id="stockError_{{ $platform->id }}" class="text-danger small" style="display:none;">
             ⚠️ Quantity exceeds available stock!
@@ -70,10 +71,8 @@
 
 </div>
 
-{{-- Second Row --}}
 <div class="row g-3 mt-2">
 
-    {{-- 5. Discount --}}
     <div class="col-md-3">
         <label class="form-label fw-semibold">🏷️ Discount</label>
         <div class="input-group">
@@ -94,7 +93,6 @@
         <div class="form-text">Choose ₹ or %</div>
     </div>
 
-    {{-- 6. Total --}}
     <div class="col-md-3">
         <label class="form-label fw-semibold">💵 Total (₹)</label>
         <input type="text"
@@ -107,7 +105,6 @@
 
 </div>
 
-{{-- PO Info Banner --}}
 @if($poData)
     <div class="alert alert-info alert-sm py-2 px-3 mt-3 mb-0">
         <small>
@@ -118,3 +115,4 @@
         </small>
     </div>
 @endif
+

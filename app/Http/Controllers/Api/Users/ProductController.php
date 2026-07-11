@@ -18,124 +18,284 @@ use Throwable;
 class ProductController extends Controller
 {
     public function index(Request $request): JsonResponse
-    {
-        try {
-            $platform = Platform::getOwnWebsite();
+{
+    try {
+        $platform = Platform::getOwnWebsite();
 
-            $products = Product::query()
-                ->whereHas('platformListings', fn ($q) =>
-                    $q->where('platform_id', $platform->id)->userVisible()
-                )
-                ->with([
-                    'category:id,name',
-                    'platformListings' => fn ($q) =>
-                        $q->where('platform_id', $platform->id)->userVisible(),
-                    'variants.platformPricings' => fn ($q) =>
-                        $q->where('status', 'active'),
-                ])
-                ->latest()
-                ->paginate(12);
-
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'products' => $products->getCollection()
-                        ->map(fn ($p) => ProductListTransformer::transform($p)),
-                    'pagination' => [
-                        'current_page' => $products->currentPage(),
-                        'per_page' => $products->perPage(),
-                        'total' => $products->total(),
-                        'last_page' => $products->lastPage(),
-                    ],
-                ],
-            ]);
-        } catch (Throwable $e) {
-            Log::error('Landing Product API Error', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'message' => 'Something went wrong'], 500);
-        }
-    }
-
-    public function show(string $slug): JsonResponse
-    {
-        try {
-            $platform = Platform::getOwnWebsite();
-
-            $product = Product::query()
-                ->where('slug', $slug)
-                ->whereHas('platformListings', fn ($q) =>
-                    $q->where('platform_id', $platform->id)->userVisible()
-                )
-          ->with([
+        $products = Product::query()
+            ->whereHas('platformListings', fn ($q) =>
+                $q->where('platform_id', $platform->id)->userVisible()
+            )
+            ->with([
                 'category:id,name',
-
-                
-                'variants:id,product_id,variant_id,variant_value_id,quantity,selling_price,image_url,sku_suffix,status,color',
-
-                'variants.variant:id,name',
-                'variants.value:id,value',
-
+                'platformListings' => fn ($q) =>
+                    $q->where('platform_id', $platform->id)->userVisible(),
                 'variants.platformPricings' => fn ($q) =>
                     $q->where('status', 'active'),
+                'variants.platformPricings.platformProduct',
+                'variants'
             ])
+            ->latest()
+            ->paginate(12);
 
-                ->firstOrFail();
-   $click = ProductClick::firstOrCreate(
-    ['product_id' => $product->id],
-    [
-        'click_count' => 0,
-        'user_id' => auth()->id(),
-        'ip_address' => request()->ip(),
-        'device_id' => request()->header('X-Device-ID'),
-    ]
-);
-
-$click->increment('click_count');
-$product->click_count = $click->fresh()->click_count;
-
-            return response()->json([
-                'success' => true,
-                'data' => ProductDetailTransformer::transform($product),
-            ]);
-        } catch (Throwable $e) {
-            Log::error('Product Detail API Error', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'message' => 'Product not found'], 404);
+        // ✅ PO Data Fetch
+        $poData = [];
+        $purchaseItems = \App\Models\PurchaseOrderItem::with('variant', 'purchaseOrder')
+            ->whereHas('purchaseOrder', function($query) {
+                $query->where('status', '!=', 'cancelled');
+            })
+            ->get();
+        
+        foreach ($purchaseItems as $item) {
+            if ($item->product_variant_id) {
+                $poData[$item->product_variant_id] = [
+                    'quantity' => $item->quantity,
+                    'purchase_price' => $item->purchase_price,
+                    'po_number' => $item->purchaseOrder->po_number ?? 'N/A',
+                ];
+            }
         }
+
+        // ✅ Attach PO data and calculate available stock
+        $products->getCollection()->each(function ($product) use ($poData, $platform) {
+            $product->variants->each(function ($variant) use ($poData, $platform) {
+                if (isset($poData[$variant->id])) {
+                    $variant->po_quantity = $poData[$variant->id]['quantity'];
+                    $variant->po_purchase_price = $poData[$variant->id]['purchase_price'];
+                    $variant->po_number = $poData[$variant->id]['po_number'];
+                    $variant->has_po = true;
+                } else {
+                    $variant->po_quantity = 0;
+                    $variant->po_purchase_price = 0;
+                    $variant->po_number = null;
+                    $variant->has_po = false;
+                }
+
+                $totalPushed = 0;
+                if ($variant->platformPricings) {
+                    foreach ($variant->platformPricings as $pricing) {
+                        if ($pricing->platformProduct && $pricing->platformProduct->platform_id == $platform->id) {
+                            $totalPushed += $pricing->quantity;
+                        }
+                    }
+                }
+                
+                $variant->quantity = $variant->po_quantity - $totalPushed;
+                if ($variant->quantity < 0) {
+                    $variant->quantity = 0;
+                }
+                $variant->pushed_quantity = $totalPushed;
+            });
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'products' => $products->getCollection()
+                    ->map(fn ($p) => ProductListTransformer::transform($p)),
+                'pagination' => [
+                    'current_page' => $products->currentPage(),
+                    'per_page' => $products->perPage(),
+                    'total' => $products->total(),
+                    'last_page' => $products->lastPage(),
+                ],
+            ],
+        ]);
+    } catch (Throwable $e) {
+        Log::error('Landing Product API Error', ['error' => $e->getMessage()]);
+        return response()->json(['success' => false, 'message' => 'Something went wrong'], 500);
     }
-  public function showById(int $product_id): JsonResponse
-    {
-        try {
-            $product = Product::with([
+}
+
+   public function show(string $slug): JsonResponse
+{
+    try {
+        $platform = Platform::getOwnWebsite();
+
+        $product = Product::query()
+            ->where('slug', $slug)
+            ->whereHas('platformListings', fn ($q) =>
+                $q->where('platform_id', $platform->id)->userVisible()
+            )
+            ->with([
                 'category:id,name',
-                'variants:id,product_id,variant_id,variant_value_id,quantity,selling_price,image_url,sku_suffix,status,color',
+                'variants' => function($q) {
+                    $q->select('id','product_id','variant_id','variant_value_id','quantity','selling_price','image_url','sku_suffix','status','color');
+                },
                 'variants.variant:id,name',
                 'variants.value:id,value',
                 'variants.platformPricings' => fn ($q) =>
                     $q->where('status', 'active'),
-            ])->findOrFail($product_id);
-$click = ProductClick::firstOrCreate(
-    ['product_id' => $product->id],
-    [
-        'click_count' => 0,
-        'user_id' => auth()->id(),
-        'ip_address' => request()->ip(),
-        'device_id' => request()->header('X-Device-ID'),
-    ]
-);
+                'variants.platformPricings.platformProduct',
+            ])
+            ->firstOrFail();
 
-$click->increment('click_count');
-$product->click_count = $click->fresh()->click_count;
-            return response()->json([
-                'success' => true,
-                'data' => ProductDetailTransformer::transform($product),
-            ]);
-
-        } catch (Throwable $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Product not found',
-            ], 404);
+        // ✅ PO Data Fetch
+        $poData = [];
+        $purchaseItems = \App\Models\PurchaseOrderItem::with('variant', 'purchaseOrder')
+            ->whereHas('purchaseOrder', function($query) {
+                $query->where('status', '!=', 'cancelled');
+            })
+            ->get();
+        
+        foreach ($purchaseItems as $item) {
+            if ($item->product_variant_id) {
+                $poData[$item->product_variant_id] = [
+                    'quantity' => $item->quantity,
+                    'purchase_price' => $item->purchase_price,
+                    'po_number' => $item->purchaseOrder->po_number ?? 'N/A',
+                ];
+            }
         }
+
+        // ✅ Attach PO data and calculate available stock
+        $product->variants->each(function ($variant) use ($poData, $platform) {
+            if (isset($poData[$variant->id])) {
+                $variant->po_quantity = $poData[$variant->id]['quantity'];
+                $variant->po_purchase_price = $poData[$variant->id]['purchase_price'];
+                $variant->po_number = $poData[$variant->id]['po_number'];
+                $variant->has_po = true;
+            } else {
+                $variant->po_quantity = 0;
+                $variant->po_purchase_price = 0;
+                $variant->po_number = null;
+                $variant->has_po = false;
+            }
+
+            // ✅ Calculate total pushed quantity
+            $totalPushed = 0;
+            if ($variant->platformPricings && $variant->platformPricings->isNotEmpty()) {
+                foreach ($variant->platformPricings as $pricing) {
+                    if ($pricing->platformProduct && $pricing->platformProduct->platform_id == $platform->id) {
+                        $totalPushed += (int) $pricing->quantity;
+                    }
+                }
+            }
+            
+            // ✅ IMPORTANT: Override quantity with available stock
+            $variant->quantity = $variant->po_quantity - $totalPushed;
+            if ($variant->quantity < 0) {
+                $variant->quantity = 0;
+            }
+            $variant->pushed_quantity = $totalPushed;
+
+            // ✅ Debug log
+            \Log::info('Variant ' . $variant->id . ': PO=' . $variant->po_quantity . ', Pushed=' . $totalPushed . ', Available=' . $variant->quantity);
+        });
+
+        // ✅ Product level stock update
+        $product->stock = $product->variants->sum('quantity');
+
+        $click = ProductClick::firstOrCreate(
+            ['product_id' => $product->id],
+            [
+                'click_count' => 0,
+                'user_id' => auth()->id(),
+                'ip_address' => request()->ip(),
+                'device_id' => request()->header('X-Device-ID'),
+            ]
+        );
+        $click->increment('click_count');
+        $product->click_count = $click->fresh()->click_count;
+
+        return response()->json([
+            'success' => true,
+            'data' => ProductDetailTransformer::transform($product),
+        ]);
+    } catch (Throwable $e) {
+        Log::error('Product Detail API Error', ['error' => $e->getMessage()]);
+        return response()->json(['success' => false, 'message' => 'Product not found'], 404);
     }
+}
+  public function showById(int $product_id): JsonResponse
+{
+    try {
+        $platform = Platform::getOwnWebsite();
+        
+        $product = Product::with([
+            'category:id,name',
+            'variants:id,product_id,variant_id,variant_value_id,quantity,selling_price,image_url,sku_suffix,status,color',
+            'variants.variant:id,name',
+            'variants.value:id,value',
+            'variants.platformPricings' => fn ($q) =>
+                $q->where('status', 'active'),
+            'variants.platformPricings.platformProduct',
+        ])->findOrFail($product_id);
+
+        // ✅ Purchase Order Data Fetch
+        $poData = [];
+        $purchaseItems = \App\Models\PurchaseOrderItem::with('variant', 'purchaseOrder')
+            ->whereHas('purchaseOrder', function($query) {
+                $query->where('status', '!=', 'cancelled');
+            })
+            ->get();
+        
+        foreach ($purchaseItems as $item) {
+            if ($item->product_variant_id) {
+                $poData[$item->product_variant_id] = [
+                    'quantity' => $item->quantity,
+                    'purchase_price' => $item->purchase_price,
+                    'po_number' => $item->purchaseOrder->po_number ?? 'N/A',
+                ];
+            }
+        }
+
+        // ✅ Attach PO data and calculate available stock
+        $product->variants->each(function ($variant) use ($poData, $platform) {
+            if (isset($poData[$variant->id])) {
+                $variant->po_quantity = $poData[$variant->id]['quantity'];
+                $variant->po_purchase_price = $poData[$variant->id]['purchase_price'];
+                $variant->po_number = $poData[$variant->id]['po_number'];
+                $variant->has_po = true;
+            } else {
+                $variant->po_quantity = 0;
+                $variant->po_purchase_price = 0;
+                $variant->po_number = null;
+                $variant->has_po = false;
+            }
+
+            // ✅ Calculate total pushed quantity
+            $totalPushed = 0;
+            if ($variant->platformPricings) {
+                foreach ($variant->platformPricings as $pricing) {
+                    if ($pricing->platformProduct && $pricing->platformProduct->platform_id == $platform->id) {
+                        $totalPushed += $pricing->quantity;
+                    }
+                }
+            }
+            
+            // ✅ Override quantity with available stock
+            $variant->quantity = $variant->po_quantity - $totalPushed;
+            if ($variant->quantity < 0) {
+                $variant->quantity = 0;
+            }
+            $variant->pushed_quantity = $totalPushed;
+        });
+
+        $click = ProductClick::firstOrCreate(
+            ['product_id' => $product->id],
+            [
+                'click_count' => 0,
+                'user_id' => auth()->id(),
+                'ip_address' => request()->ip(),
+                'device_id' => request()->header('X-Device-ID'),
+            ]
+        );
+        $click->increment('click_count');
+        $product->click_count = $click->fresh()->click_count;
+
+        return response()->json([
+            'success' => true,
+            'data' => ProductDetailTransformer::transform($product),
+        ]);
+
+    } catch (Throwable $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Product not found',
+        ], 404);
+    }
+}
 public function topSelling(): JsonResponse
 {
     try {

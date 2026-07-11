@@ -9,7 +9,6 @@
 
             <div class="modal-body">
 
-                {{-- ✅ Hidden input for variant ID --}}
                 <input type="hidden" id="modalVariantId" value="">
 
                 @include('products.push._platform_selection')
@@ -18,12 +17,12 @@
                     @if(isset($platforms) && count($platforms) > 0)
                         @foreach($platforms as $platform)
                             @php
-                                // ✅ Get variant ID from hidden input
                                 $currentVariantId = request()->input('variant_id', null);
                             @endphp
                             @include('products.push._platform_pricing', [
                                 'platform' => $platform,
-                                'variantId' => $currentVariantId
+                                'variantId' => $currentVariantId,
+                                'purchaseOrderData' => $purchaseOrderData ?? [], // ✅ Ye add karo
                             ])
                         @endforeach
                     @else
