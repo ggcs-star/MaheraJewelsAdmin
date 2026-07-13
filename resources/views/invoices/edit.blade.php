@@ -159,10 +159,17 @@
                             
                             <td>
                                 <input type="number" 
-                                       name="items[{{ $i }}][qty]" 
-                                       class="qty text-center" 
-                                       value="{{ $item->quantity }}" 
-                                       style="width: 70px; margin: 0 auto; background: white; border: 1.8px solid #e9f0f5; border-radius: 16px; padding: 10px 4px; font-size: 0.9rem; font-weight: 600; color: #0a1e2f; text-align: center;">
+                                    name="items[{{ $i }}][qty]" 
+                                    class="qty text-center" 
+                                    value="{{ $item->quantity }}" 
+                                    style="width: 70px; margin: 0 auto; background: white; border: 1.8px solid #e9f0f5; border-radius: 16px; padding: 10px 4px; font-size: 0.9rem; font-weight: 600; color: #0a1e2f; text-align: center;">
+                                <div class="small mt-1 text-muted stock-info" style="display:none;">
+                                    Available: <strong class="available-stock">0</strong> | 
+                                    Remaining: <strong class="remaining-stock">0</strong>
+                                </div>
+                                <div id="stockError_{{ $i }}" class="text-danger small" style="display:none; margin-top:2px;">
+                                    ⚠️ Quantity exceeds available stock!
+                                </div>
                             </td>
                             
                             <td>
@@ -447,7 +454,11 @@
         <option value="{{ $product->id }}">{{ $product->name }}</option>
     @endforeach
 </select>
-
+<script>
+    window.poData = @json($poData ?? []);
+    window.pushedQuantities = @json($pushedQuantities ?? []);
+    window.offlinePricing = @json($offlinePricing ?? []);
+</script>
 <style>
 .modal-backdrop { z-index: 1040 !important; }
 .modal { z-index: 1050 !important; }

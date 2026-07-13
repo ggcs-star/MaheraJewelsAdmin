@@ -50,7 +50,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 100);
     }
 
-    // ===================== ADD ROW =====================
     function addRow() {
         var row = document.createElement('tr');
         row.innerHTML =
@@ -68,6 +67,63 @@ document.addEventListener('DOMContentLoaded', function() {
         itemsBody.appendChild(row);
         initProductSearch(row);
         initVariantSearch(row);
+        
+        // ✅ Naye row ke variant select pe change event
+        var newVariantSelect = row.querySelector('.variant-select');
+        if (newVariantSelect) {
+            $(newVariantSelect).on('change', function() {
+                var row = this.closest('tr');
+                var selectedOption = this.options[this.selectedIndex];
+                if (!selectedOption) return;
+
+                var variantId = selectedOption.value;
+                if (!variantId) return;
+
+                var offlineQty = parseInt(selectedOption.dataset.offlineQuantity) || 0;
+                var offlinePrice = parseFloat(selectedOption.dataset.offlinePrice) || 0;
+                var offlineDiscount = parseFloat(selectedOption.dataset.offlineDiscount) || 0;
+                var offlineDiscountType = selectedOption.dataset.offlineDiscountType || 'percentage';
+
+                var qtyInput = row.querySelector('.qty');
+                qtyInput.value = 1;
+                qtyInput.max = offlineQty;
+
+                // ✅ Stock info show karo
+                var stockInfo = row.querySelector('.stock-info');
+                if (stockInfo) {
+                    stockInfo.style.display = 'block';
+                    stockInfo.querySelector('.available-stock').innerText = offlineQty;
+                    var remaining = offlineQty - 1;
+                    if (remaining < 0) remaining = 0;
+                    stockInfo.querySelector('.remaining-stock').innerText = remaining;
+                }
+
+                row.dataset.available = offlineQty;
+
+                var rowIndex2 = Array.from(itemsBody.children).indexOf(row);
+                var errorDiv = document.getElementById('stockError_' + rowIndex2);
+                if (errorDiv) errorDiv.style.display = 'none';
+
+                if (offlinePrice > 0) {
+                    row.dataset.unitPrice = offlinePrice;
+                    row.querySelector('.price').value = offlinePrice;
+                } else {
+                    var unitPrice = parseFloat(selectedOption.dataset.price) || 0;
+                    row.dataset.unitPrice = unitPrice;
+                    row.querySelector('.price').value = unitPrice;
+                }
+
+                if (offlineDiscount > 0) {
+                    var discountInput = row.querySelector('.discount');
+                    var discountType = row.querySelector('.discount-type');
+                    if (discountInput) discountInput.value = offlineDiscount;
+                    if (discountType) discountType.value = offlineDiscountType === 'percentage' ? 'percent' : 'flat';
+                }
+
+                calcRow(row);
+            });
+        }
+        
         rowIndex++;
     }
 
@@ -117,6 +173,31 @@ document.addEventListener('DOMContentLoaded', function() {
     function calcRow(row) {
         var qty = parseInt(row.querySelector('.qty').value) || 0;
         var unitPrice = parseFloat(row.dataset.unitPrice) || 0;
+
+        // ✅ Agar unitPrice 0 hai toh variant select se price lein
+        if (unitPrice === 0) {
+            var variantSelect = row.querySelector('.variant-select');
+            var selectedOption = variantSelect.options[variantSelect.selectedIndex];
+            if (selectedOption && selectedOption.value) {
+                unitPrice = parseFloat(selectedOption.dataset.offlinePrice) || parseFloat(selectedOption.dataset.price) || 0;
+                row.dataset.unitPrice = unitPrice;
+                
+                // ✅ Stock info bhi set karo
+                var offlineQty = parseInt(selectedOption.dataset.offlineQuantity) || 0;
+                if (offlineQty > 0) {
+                    var stockInfo = row.querySelector('.stock-info');
+                    if (stockInfo) {
+                        stockInfo.style.display = 'block';
+                        stockInfo.querySelector('.available-stock').innerText = offlineQty;
+                        var remaining = offlineQty - qty;
+                        if (remaining < 0) remaining = 0;
+                        stockInfo.querySelector('.remaining-stock').innerText = remaining;
+                    }
+                    row.dataset.available = offlineQty;
+                    row.querySelector('.qty').max = offlineQty;
+                }
+            }
+        }
 
         if (qty === 0 || unitPrice === 0) {
             row.querySelector('.price').value = '0.00';
@@ -455,4 +536,53 @@ document.getElementById('saveCustomer')?.addEventListener('click', function() {
         console.error('Error:', error);
         alert('Failed to save customer. Please try again.');
     });
+});
+// ===================== EDIT PAGE - EXISTING ROWS INIT =====================
+document.querySelectorAll('#invoiceItems tr').forEach(function(row) {
+    var variantSelect = row.querySelector('.variant-select');
+    if (variantSelect && variantSelect.value) {
+        var variantId = variantSelect.value;
+        var selectedOption = variantSelect.options[variantSelect.selectedIndex];
+        if (selectedOption) {
+            var offlineQty = parseInt(selectedOption.dataset.offlineQuantity) || 0;
+            var offlinePrice = parseFloat(selectedOption.dataset.offlinePrice) || 0;
+            var offlineDiscount = parseFloat(selectedOption.dataset.offlineDiscount) || 0;
+            var offlineDiscountType = selectedOption.dataset.offlineDiscountType || 'percentage';
+
+            if (offlineQty === 0) {
+                var offline = window.offlinePricing[variantId] || {};
+                offlineQty = parseInt(offline.quantity) || 0;
+                offlinePrice = parseFloat(offline.price) || 0;
+                offlineDiscount = parseFloat(offline.discount_value) || 0;
+                offlineDiscountType = offline.discount_type || 'percentage';
+            }
+
+            var stockInfo = row.querySelector('.stock-info');
+            if (stockInfo) {
+                stockInfo.style.display = 'block';
+                stockInfo.querySelector('.available-stock').innerText = offlineQty;
+                var currentQty = parseInt(row.querySelector('.qty').value) || 0;
+                var remaining = offlineQty - currentQty;
+                if (remaining < 0) remaining = 0;
+                stockInfo.querySelector('.remaining-stock').innerText = remaining;
+            }
+
+            row.dataset.available = offlineQty;
+            row.querySelector('.qty').max = offlineQty;
+
+            if (offlinePrice > 0) {
+                row.dataset.unitPrice = offlinePrice;
+                row.querySelector('.price').value = offlinePrice;
+            }
+
+            if (offlineDiscount > 0) {
+                var discountInput = row.querySelector('.discount');
+                var discountType = row.querySelector('.discount-type');
+                if (discountInput) discountInput.value = offlineDiscount;
+                if (discountType) discountType.value = offlineDiscountType === 'percentage' ? 'percent' : 'flat';
+            }
+
+            calcRow(row);
+        }
+    }
 });
