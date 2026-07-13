@@ -31,7 +31,8 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NotificationSettingController;
 use App\Http\Controllers\InstagramController;
-use App\Http\Controllers\PurchaseOrderController;      
+use App\Http\Controllers\PurchaseOrderController;  
+use App\Http\Controllers\InventoryController;    
 use Google\Client;
 Route::get('/admin/instagram', function () {
     return view('admin.instagram.index');
@@ -115,7 +116,15 @@ Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:admin']
     ->group(function () {
 
 
+  Route::get('/inventory/dashboard', [InventoryController::class, 'dashboard'])
+            ->name('inventory.dashboard');
 
+        Route::get('/inventory/data', [InventoryController::class, 'getData'])
+            ->name('inventory.data');
+
+        Route::get('/inventory/{variant}/details', [InventoryController::class, 'details'])
+            ->name('inventory.details');
+    
 
 
         Route::resource('reels', ReelController::class);
