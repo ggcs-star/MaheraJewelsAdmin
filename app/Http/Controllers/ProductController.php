@@ -670,7 +670,7 @@ $data['is_best_seller'] = $request->boolean('is_best_seller');
 }
 
 
-        public function list()
+public function list()
 {
     $pushedProducts = PlatformProduct::with([
         'platform:id,display_name',
@@ -678,7 +678,7 @@ $data['is_best_seller'] = $request->boolean('is_best_seller');
         'product.supplier:id,name',
         'pricing.variant.variant:id,name',
         'pricing.variant.value:id,value'
-    ])->paginate(10);
+    ])->get();
 
     // ✅ Purchase Order Data Fetch
     $poData = [];

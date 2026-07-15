@@ -126,6 +126,8 @@ Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:admin']
             ->name('inventory.details');
     
 
+        Route::get('/inventory/{variantId}/details', [InventoryController::class, 'details'])
+            ->name('inventory.details');
 
         Route::resource('reels', ReelController::class);
         Route::post('/reels/{reel}/comment', [ReelController::class, 'addComment'])

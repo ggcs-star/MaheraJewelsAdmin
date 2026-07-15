@@ -11,7 +11,7 @@ use App\Models\PurchaseOrderItem;
 use App\Models\PlatformPricing;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use App\Models\StockMovement;
 class InvoiceController extends Controller
 {
     public function index(Request $request)
@@ -300,6 +300,18 @@ class InvoiceController extends Controller
                 if ($newQty < 0) $newQty = 0;
                 $offlinePricing->update(['quantity' => $newQty]);
             }
+            // ✅ StockMovement Entry
+            StockMovement::create([
+                'product_id' => $product->id,
+                'variant_id' => $variant->id,
+                'platform_id' => 4,
+                'movement' => 'OUT',
+                'quantity' => $item['qty'],
+                'balance' => $variant->quantity,
+                'reference_type' => 'Invoice',
+                'reference_id' => $invoice->id,
+                'remarks' => 'Invoice: ' . $invoice->invoice_number,
+            ]);
         }
     });
 
