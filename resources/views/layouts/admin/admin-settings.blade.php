@@ -17,7 +17,10 @@
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 
-<body class="bg-gray-50 text-gray-900" x-data="{ sidebarOpen: true }">
+<body
+    class="bg-gray-50 text-gray-900"
+    x-data="{ sidebarOpen: true, loaded: false }"
+    x-init="loaded = true">
 
 <div class="min-h-screen flex">
 
@@ -25,9 +28,8 @@
     @include('layouts.admin.admin-settings-sidebar')
 
     <div
-    class="flex-1 flex flex-col transition-all duration-300"
-    :class="sidebarOpen ? 'ml-[260px]' : 'ml-0'"
->
+    class="flex-1 flex flex-col transition-all duration-300 md:ml-[260px]"
+    :class="loaded ? (sidebarOpen ? 'md:ml-[260px]' : 'md:ml-0') : 'md:ml-[260px]'">
 
         {{-- ✅ SAME INVENTORY HEADER --}}
         <div class="sticky top-0 z-30">

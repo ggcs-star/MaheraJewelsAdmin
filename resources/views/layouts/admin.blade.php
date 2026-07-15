@@ -13,7 +13,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap"
         rel="stylesheet">
@@ -119,7 +119,10 @@
     </style>
 </head>
 
-<body class="bg-gray-50 text-gray-800 antialiased" x-data="{ sidebarOpen: true }">
+<body
+    class="bg-gray-50 text-gray-800 antialiased"
+    x-data="{ sidebarOpen: true, loaded: false }"
+    x-init="loaded = true">
     <div class="min-h-screen flex">
 
         @if(request()->routeIs('warehouses.*'))
@@ -183,8 +186,9 @@
             }
         </script>
 
-        <div class="flex-1 flex flex-col transition-all duration-300 ease-in-out"
-            :class="sidebarOpen ? 'md:ml-[260px]' : 'ml-0'">
+        <div
+    class="flex-1 flex flex-col transition-[margin-left] duration-300"
+    :class="loaded && sidebarOpen ? 'md:ml-[260px]' : 'md:ml-0'">
 
             @include('layouts.admin.header')
 
