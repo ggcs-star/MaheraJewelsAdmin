@@ -8,6 +8,8 @@ use App\Models\Platform;
 use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Models\Product;
+use Illuminate\Support\Str;
+use App\Jobs\GenerateBulkCouponJob;
 use Illuminate\Support\Facades\DB;
       use Illuminate\Support\Facades\Validator;
 
@@ -100,7 +102,17 @@ $validator = Validator::make($request->all(), [
 
     'coupon_name'        => 'required|string|max:255',
     'coupon_description' => 'nullable|string',
-    'code'               => 'required|string|max:50|unique:coupons,code',
+'generate_type' => 'required|in:single,bulk',
+
+'code' => $request->generate_type == 'single'
+    ? 'required|string|max:50|unique:coupons,code'
+    : 'nullable',
+
+'campaign_name' => 'required_if:generate_type,bulk|string|max:255',
+
+'prefix' => 'required_if:generate_type,bulk|string|max:20',
+
+'quantity' => 'required_if:generate_type,bulk|integer|min:1|max:10000',
     'coupon_type'        => 'required|in:NORMAL,BANK',
     'discount_type'      => 'required|in:FLAT,PERCENT',
     'value'              => 'required|numeric|min:0',
@@ -126,6 +138,17 @@ if ($validator->fails()) {
 }
 
 $data = $validator->validated();
+if ($request->generate_type == 'bulk') {
+
+    GenerateBulkCouponJob::dispatch(
+        $data,
+        $request->platform_ids
+    );
+
+    return redirect()
+        ->route('admin.coupons.index')
+        ->with('success', 'Bulk Coupon Generation Started.');
+}
         DB::transaction(function () use ($data, $request) {
             $coupon = Coupon::create([
                 'name'             => $data['coupon_name'],
