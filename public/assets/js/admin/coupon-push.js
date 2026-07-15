@@ -362,4 +362,82 @@ document.addEventListener('click', function (e) {
         window.location.href = url;
     }
 });
+// ======================================
+// Category -> Sub Category -> Product
+// ======================================
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    const category = document.getElementById('category_id');
+    const subCategory = document.getElementById('subcategory_id');
+    const product = document.getElementById('product_id');
+
+    if (!category || !subCategory || !product) return;
+
+    // Load Sub Categories
+    category.addEventListener('change', function () {
+
+        const id = this.value;
+
+        subCategory.innerHTML = '<option value="">Loading...</option>';
+        product.innerHTML = '<option value="">Select Product</option>';
+
+        if (!id) {
+            subCategory.innerHTML = '<option value="">Select Sub Category</option>';
+            return;
+        }
+
+        fetch('/admin/coupons/subcategories/' + id)
+            .then(response => response.json())
+            .then(data => {
+
+                subCategory.innerHTML = '<option value="">Select Sub Category</option>';
+
+                data.forEach(function (item) {
+
+                    subCategory.innerHTML +=
+                        `<option value="${item.id}">
+                            ${item.name}
+                        </option>`;
+
+                });
+
+            });
+
+    });
+
+    // Load Products
+    subCategory.addEventListener('change', function () {
+
+        const id = this.value;
+
+        product.innerHTML = '<option value="">Loading...</option>';
+
+        if (!id) {
+
+            product.innerHTML = '<option value="">Select Product</option>';
+
+            return;
+        }
+
+        fetch('/admin/coupons/products/' + id)
+            .then(response => response.json())
+            .then(data => {
+
+                product.innerHTML = '<option value="">Select Product</option>';
+
+                data.forEach(function (item) {
+
+                    product.innerHTML +=
+                        `<option value="${item.id}">
+                            ${item.name}
+                        </option>`;
+
+                });
+
+            });
+
+    });
+
+});
 

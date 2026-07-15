@@ -50,12 +50,17 @@ class CouponController extends Controller
     
     public function apply(Request $request): JsonResponse
     {
-        $request->validate([
-            'coupon_code' => 'required|string',
-            'cart_total' => 'required|numeric', // ✅ Frontend se total lo
-            'bank_id'     => 'nullable|integer',
-            'card_type'   => 'nullable|in:credit,debit',
-        ]);
+      $request->validate([
+    'coupon_code' => 'required|string',
+    'cart_total'  => 'required|numeric',
+
+    'product_id'  => 'required|integer',
+    'category_id' => 'required|integer',
+
+    'bank_id'     => 'nullable|integer',
+    'card_type'   => 'nullable|in:credit,debit',
+]);
+// dd($request->all());
 
         try {
             // ✅ Ab auth check nahi karte - Guest user allow
@@ -71,6 +76,50 @@ class CouponController extends Controller
                     'message' => 'Invalid or inactive coupon'
                 ], 422);
             }
+            // ================= PRODUCT RESTRICTION =================
+
+// Product Restriction
+if ($coupon->product_id) {
+
+    if ($coupon->product_id != $request->product_id) {
+
+        return response()->json([
+            'success' => false,
+            'message' => 'This coupon is valid only for selected product.'
+        ], 422);
+
+    }
+}
+
+// Sub Category Restriction
+if ($coupon->subcategory_id) {
+
+    if ($coupon->subcategory_id != $request->category_id) {
+
+        return response()->json([
+            'success' => false,
+            'message' => 'This coupon is valid only for selected sub category.'
+        ], 422);
+
+    }
+}
+
+// Parent Category Restriction
+if ($coupon->category_id) {
+
+    $childIds = \App\Models\Category::where('parent_id', $coupon->category_id)
+        ->pluck('id')
+        ->toArray();
+
+    if (!in_array($request->category_id, $childIds)) {
+
+        return response()->json([
+            'success' => false,
+            'message' => 'This coupon is valid only for selected category.'
+        ], 422);
+
+    }
+}
 
             $now = now();
 
@@ -148,12 +197,10 @@ class CouponController extends Controller
             ]);
 
         } catch (Throwable $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Coupon apply failed',
-                'error' => $e->getMessage()
-            ], 500);
-        }
+
+    throw $e;
+
+}
     }
 
     public function remove(): JsonResponse

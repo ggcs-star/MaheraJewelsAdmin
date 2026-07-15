@@ -34,6 +34,7 @@ use App\Http\Controllers\InstagramController;
 use App\Http\Controllers\PurchaseOrderController;  
 use App\Http\Controllers\InventoryController;    
 use Google\Client;
+
 Route::get('/admin/instagram', function () {
     return view('admin.instagram.index');
 })->middleware('auth')->name('admin.instagram');
@@ -323,7 +324,11 @@ Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:admin']
         // routes/admin.php
         Route::get('coupons/{coupon}', [CouponController::class, 'show'])
             ->name('coupons.show');
+Route::get('/coupons/subcategories/{category}', [CouponController::class, 'getSubCategories'])
+    ->name('coupons.subcategories');
 
+Route::get('/coupons/products/{subcategory}', [CouponController::class, 'getProducts'])
+    ->name('coupons.products');
         Route::get('/coupons/{coupon}', [CouponController::class, 'show'])->name('coupons.show');
         Route::get('/coupons/{coupon}/edit', [CouponController::class, 'edit'])->name('coupons.edit');
         Route::put('/coupons/{coupon}', [CouponController::class, 'update'])->name('coupons.update');
