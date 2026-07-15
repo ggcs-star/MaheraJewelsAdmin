@@ -152,6 +152,7 @@ class CheckoutController extends Controller
             $total = round($afterDiscount + $shipping + $platformFee + $tax, 2);
 
             $order = Order::create([
+                
                 'user_id' => $userId,
                 'order_number' => 'ORD-' . now()->format('Ymd') . '-' . rand(100, 999),
                 'status' => 'pending',
@@ -167,6 +168,26 @@ class CheckoutController extends Controller
                 'billing_address_id' => $request->billing_address_id,
                 'payment_method_id' => $request->payment_method_id,
             ]);
+            // Update coupon usage after successful order creation
+if ($request->filled('coupon_code')) {
+
+    $coupon = Coupon::where('code', strtoupper($request->coupon_code))->first();
+
+    if ($coupon) {
+
+        $coupon->increment('used_count');
+
+        // Disable coupon if usage limit reached
+        if (
+            $coupon->usage_limit &&
+            ($coupon->used_count + 1) >= $coupon->usage_limit
+        ) {
+            $coupon->update([
+                'is_active' => false
+            ]);
+        }
+    }
+}
 
             foreach ($cart->items as $item) {
 
@@ -241,6 +262,25 @@ class CheckoutController extends Controller
         if (!$coupon) {
             return 0;
         }
+        // Coupon usage limit
+if (
+    $coupon->usage_limit &&
+    $coupon->used_count >= $coupon->usage_limit
+) {
+    return 0;
+}
+
+// One time per user
+if ($coupon->one_time_per_user) {
+
+    $alreadyUsed = Order::where('user_id', auth()->id())
+        ->where('coupon_code', strtoupper($coupon->code))
+        ->exists();
+
+    if ($alreadyUsed) {
+        return 0;
+    }
+}
 
         if ($coupon->min_order_amount && $subtotal < $coupon->min_order_amount) {
             return 0;
@@ -478,7 +518,25 @@ class CheckoutController extends Controller
                 'shipping_address_id' => $meta['shipping_address_id'],
                 'billing_address_id' => $meta['billing_address_id'],
             ]);
+if ($payment->coupon_code) {
 
+    $coupon = Coupon::where('code', strtoupper($payment->coupon_code))->first();
+
+    if ($coupon) {
+
+        $coupon->increment('used_count');
+        $coupon->refresh();
+
+        if (
+            $coupon->usage_limit &&
+            $coupon->used_count >= $coupon->usage_limit
+        ) {
+            $coupon->update([
+                'is_active' => false
+            ]);
+        }
+    }
+}
             foreach ($cart->items as $item) {
 
                 OrderItem::create([

@@ -188,10 +188,15 @@
                         <label class="form-label fw-semibold mb-2">
                             <i class="fas fa-align-left text-primary me-1"></i>Description
                         </label>
-                        <textarea name="coupon_description" 
+
+                        <textarea
+name="coupon_description"
+class="form-control"
+rows="3">{{ old('coupon_description') }}</textarea>
+                        <!-- <textarea name="coupon_description" 
                                   class="form-control"
                                   rows="3"
-                                  placeholder="Describe the coupon offer (optional)..."></textarea>
+                                  placeholder="Describe the coupon offer (optional)..."></textarea> -->
                         <div class="form-text mt-2">
                             <i class="fas fa-comment-dots text-primary me-1"></i> Optional details about this coupon offer
                         </div>
@@ -459,12 +464,22 @@
                         <label class="form-label fw-semibold mb-2">
                             <i class="fas fa-bank text-primary me-1"></i>Bank
                         </label>
-                        <select name="bank_id" id="bank_id" class="form-select"></select>
+
+                        <select name="bank_id" id="bank_id" class="form-select">
+    <option value="">Select Bank</option>
+
+    @foreach($banks as $bank)
+        <option value="{{ $bank->id }}">
+            {{ $bank->name }}
+        </option>
+    @endforeach
+</select>
+                        <!-- <select name="bank_id" id="bank_id" class="form-select"></select>
                             <option value="">Select Bank</option>
                             @foreach($banks as $bank)
                                 <option value="{{ $bank->id }}">{{ $bank->name }}</option>
                             @endforeach
-                        </select>
+                        </select> -->
                         <div class="form-text mt-2">
                             Select bank for this offer
                         </div>
@@ -488,7 +503,108 @@
                 </div>
             </div>
         </div>
+<div class="mb-5">
 
+    <div class="mb-4">
+        <h6 class="fw-bold text-dark mb-3">
+            <i class="fas fa-box text-primary me-2"></i>
+            Product Restriction
+        </h6>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-md-3">
+            <label class="form-label fw-semibold">
+                Category
+            </label>
+
+            <select
+                name="category_id"
+                id="category_id"
+                class="form-select">
+
+                <option value="">
+                    All Categories
+                </option>
+
+                @foreach($categories as $category)
+
+                    <option
+                        value="{{ $category->id }}">
+
+                        {{ $category->name }}
+
+                    </option>
+
+                @endforeach
+
+            </select>
+        </div>
+
+        <div class="col-md-3">
+
+            <label class="form-label fw-semibold">
+                Sub Category
+            </label>
+
+            <select
+                name="subcategory_id"
+                id="subcategory_id"
+                class="form-select">
+
+                <option value="">
+                    Select Sub Category
+                </option>
+
+            </select>
+
+        </div>
+
+        <div class="col-md-3">
+
+            <label class="form-label fw-semibold">
+                Product
+            </label>
+
+            <select
+                name="product_id"
+                id="product_id"
+                class="form-select">
+
+                <option value="">
+                    Select Product
+                </option>
+
+            </select>
+
+        </div>
+
+        <div class="col-md-3">
+
+            <label class="form-label fw-semibold">
+                One Time Per User
+            </label>
+
+            <select
+                name="one_time_per_user"
+                class="form-select">
+
+                <option value="0">
+                    No
+                </option>
+
+                <option value="1">
+                    Yes
+                </option>
+
+            </select>
+
+        </div>
+
+    </div>
+
+</div>
         <!-- ================= SECTION 7: STATUS ================= -->
         <div class="mb-5">
             <div class="mb-4">

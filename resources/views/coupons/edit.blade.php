@@ -311,7 +311,98 @@
                 </div>
             </div>
         </div>
+<hr class="my-6 border-gray-200">
 
+<div class="mb-6">
+    <h6 class="font-semibold text-gray-800 mb-3">
+        Product Restriction
+    </h6>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+        <div>
+            <label>Category</label>
+
+            <select id="category_id" name="category_id" class="w-full border rounded-lg px-3 py-2">
+
+                <option value="">All Categories</option>
+
+                @foreach($categories as $category)
+
+                    <option value="{{ $category->id }}"
+                        {{ $coupon->category_id == $category->id ? 'selected' : '' }}>
+                        {{ $category->name }}
+                    </option>
+
+                @endforeach
+
+            </select>
+        </div>
+
+        <div>
+            <label>Sub Category</label>
+
+            <select id="subcategory_id" name="subcategory_id" class="w-full border rounded-lg px-3 py-2">
+
+                <option value="">Select Sub Category</option>
+
+                @foreach($subCategories as $sub)
+
+                    <option value="{{ $sub->id }}"
+                        {{ $coupon->subcategory_id == $sub->id ? 'selected' : '' }}>
+                        {{ $sub->name }}
+                    </option>
+
+                @endforeach
+
+            </select>
+
+        </div>
+
+        <div>
+
+            <label>Product</label>
+
+            <select id="product_id" name="product_id" class="w-full border rounded-lg px-3 py-2">
+
+                <option value="">Select Product</option>
+
+                @foreach($products as $product)
+
+                    <option value="{{ $product->id }}"
+                        {{ $coupon->product_id == $product->id ? 'selected' : '' }}>
+                        {{ $product->name }}
+                    </option>
+
+                @endforeach
+
+            </select>
+
+        </div>
+
+        <div>
+
+            <label>One Time Per User</label>
+
+            <select name="one_time_per_user" class="w-full border rounded-lg px-3 py-2">
+
+                <option value="1"
+                    {{ $coupon->one_time_per_user ? 'selected' : '' }}>
+                    Yes
+                </option>
+
+                <option value="0"
+                    {{ !$coupon->one_time_per_user ? 'selected' : '' }}>
+                    No
+                </option>
+
+            </select>
+
+        </div>
+
+    </div>
+
+</div>
         <div class="bank-field {{ $coupon->coupon_type === 'BANK' ? '' : 'hidden' }} mb-6">
             <hr class="my-6 border-gray-200">
             <h6 class="font-semibold text-gray-800 mb-3">
@@ -407,6 +498,48 @@ document.addEventListener('DOMContentLoaded', function() {
         couponType.addEventListener('change', toggleBankField);
         toggleBankField();
     }
+});
+const category = document.getElementById('category_id');
+const subCategory = document.getElementById('subcategory_id');
+const product = document.getElementById('product_id');
+
+category?.addEventListener('change', async function () {
+
+    const res = await fetch('/admin/coupons/subcategories/' + this.value);
+
+    const data = await res.json();
+
+    subCategory.innerHTML =
+        '<option value="">Select Sub Category</option>';
+
+    data.forEach(item => {
+
+        subCategory.innerHTML +=
+            `<option value="${item.id}">${item.name}</option>`;
+
+    });
+
+    product.innerHTML =
+        '<option value="">Select Product</option>';
+
+});
+
+subCategory?.addEventListener('change', async function () {
+
+    const res = await fetch('/admin/coupons/products/' + this.value);
+
+    const data = await res.json();
+
+    product.innerHTML =
+        '<option value="">Select Product</option>';
+
+    data.forEach(item => {
+
+        product.innerHTML +=
+            `<option value="${item.id}">${item.name}</option>`;
+
+    });
+
 });
 </script>
 
