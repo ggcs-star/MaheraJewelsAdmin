@@ -7,6 +7,26 @@
 
 @push('scripts')
 <script src="{{ asset('assets/js/admin/coupon-push.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const generateType = document.getElementById('generate_type');
+    const couponCodeField = document.getElementById('coupon_code_field');
+    const bulkFields = document.getElementById('bulk_fields');
+    
+    function toggleFields() {
+        if (generateType.value === 'bulk') {
+            couponCodeField.style.display = 'none';
+            bulkFields.style.display = 'block';
+        } else {
+            couponCodeField.style.display = 'block';
+            bulkFields.style.display = 'none';
+        }
+    }
+    
+    generateType.addEventListener('change', toggleFields);
+    toggleFields(); // Run on page load
+});
+</script>
 @endpush
 
 <div class="container-fluid py-4">
@@ -32,6 +52,43 @@
     <div class="card-body p-4">
 <form method="POST" action="{{ route('admin.coupons.store') }}">
         @csrf
+
+        <!-- ================= SECTION: GENERATE TYPE ================= -->
+        <div class="mb-5">
+            <div class="mb-4">
+                <h6 class="fw-bold text-dark mb-3">
+                    <i class="fas fa-cog text-primary me-2"></i>Generate Type
+                </h6>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label fw-semibold mb-2">
+                            <i class="fas fa-code-branch text-primary me-1"></i>Generate Type <span class="text-danger">*</span>
+                        </label>
+                        <select name="generate_type" 
+                                id="generate_type" 
+                                class="form-select @error('generate_type') is-invalid @enderror">
+                            <option value="single" {{ old('generate_type', 'single') == 'single' ? 'selected' : '' }}>
+                                Single Coupon
+                            </option>
+                            <option value="bulk" {{ old('generate_type') == 'bulk' ? 'selected' : '' }}>
+                                Bulk Coupon
+                            </option>
+                        </select>
+                        @error('generate_type')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <div class="form-text mt-2">
+                            <i class="fas fa-info-circle text-primary me-1"></i> Choose how to generate coupons
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-5">
 
         <!-- ================= SECTION 1: PLATFORMS ================= -->
         <div class="mb-5">
@@ -160,8 +217,8 @@
                     </div>
                 </div>
 
-                <!-- Coupon Code -->
-                <div class="col-md-6">
+                <!-- Coupon Code (Single) - Hidden for Bulk -->
+                <div class="col-md-6" id="coupon_code_field">
                     <div class="form-group">
                         <label class="form-label fw-semibold mb-2">
                             <i class="fas fa-hashtag text-primary me-1"></i>Coupon Code <span class="text-danger">*</span>
@@ -182,6 +239,59 @@
                     </div>
                 </div>
 
+                <!-- Bulk Fields -->
+                <div id="bulk_fields" style="display: none;">
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label fw-semibold mb-2">
+                                    <i class="fas fa-flag text-primary me-1"></i>Campaign Name <span class="text-danger">*</span>
+                                </label>
+                                <input type="text"
+                                       name="campaign_name"
+                                       value="{{ old('campaign_name') }}"
+                                       class="form-control @error('campaign_name') is-invalid @enderror"
+                                       placeholder="e.g., Summer Sale 2024">
+                                @error('campaign_name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label fw-semibold mb-2">
+                                    <i class="fas fa-font text-primary me-1"></i>Coupon Prefix <span class="text-danger">*</span>
+                                </label>
+                                <input type="text"
+                                       name="prefix"
+                                       value="{{ old('prefix') }}"
+                                       class="form-control @error('prefix') is-invalid @enderror"
+                                       placeholder="e.g., SALE">
+                                @error('prefix')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-label fw-semibold mb-2">
+                                    <i class="fas fa-sort-numeric-up text-primary me-1"></i>Quantity <span class="text-danger">*</span>
+                                </label>
+                                <input type="number"
+                                       name="quantity"
+                                       value="{{ old('quantity') }}"
+                                       class="form-control @error('quantity') is-invalid @enderror"
+                                       placeholder="e.g., 100"
+                                       min="1"
+                                       max="1000">
+                                @error('quantity')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Description -->
                 <div class="col-12">
                     <div class="form-group">
@@ -193,10 +303,6 @@
 name="coupon_description"
 class="form-control"
 rows="3">{{ old('coupon_description') }}</textarea>
-                        <!-- <textarea name="coupon_description" 
-                                  class="form-control"
-                                  rows="3"
-                                  placeholder="Describe the coupon offer (optional)..."></textarea> -->
                         <div class="form-text mt-2">
                             <i class="fas fa-comment-dots text-primary me-1"></i> Optional details about this coupon offer
                         </div>
@@ -474,12 +580,6 @@ rows="3">{{ old('coupon_description') }}</textarea>
         </option>
     @endforeach
 </select>
-                        <!-- <select name="bank_id" id="bank_id" class="form-select"></select>
-                            <option value="">Select Bank</option>
-                            @foreach($banks as $bank)
-                                <option value="{{ $bank->id }}">{{ $bank->name }}</option>
-                            @endforeach
-                        </select> -->
                         <div class="form-text mt-2">
                             Select bank for this offer
                         </div>
