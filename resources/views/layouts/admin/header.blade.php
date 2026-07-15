@@ -1,6 +1,6 @@
 <header
     class="fixed top-0 right-0 left-0 bg-white/95 backdrop-blur-md border-b border-gray-100 h-[64px] flex items-center justify-between px-6 md:px-8 z-20 shadow-sm transition-all duration-300"
-    :class="sidebarOpen ? 'md:left-[260px]' : 'left-0'">
+    :class="loaded ? (sidebarOpen ? 'md:left-[260px]' : 'md:left-0') : 'md:left-[260px]'">
     <div class="flex items-center gap-4">
         <button @click="sidebarOpen = !sidebarOpen"
             class="p-2 rounded-lg hover:bg-gray-50 hover:text-[#8B2452] transition-all duration-200 group">
