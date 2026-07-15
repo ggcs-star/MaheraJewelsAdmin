@@ -108,11 +108,11 @@ $validator = Validator::make($request->all(), [
     ? 'required|string|max:50|unique:coupons,code'
     : 'nullable',
 
-'campaign_name' => 'required_if:generate_type,bulk|string|max:255',
+'campaign_name' => 'nullable|required_if:generate_type,bulk|string|max:255',
 
-'prefix' => 'required_if:generate_type,bulk|string|max:20',
+'prefix' => 'nullable|required_if:generate_type,bulk|string|max:20',
 
-'quantity' => 'required_if:generate_type,bulk|integer|min:1|max:10000',
+'quantity' => 'nullable|required_if:generate_type,bulk|integer|min:1|max:10000',
     'coupon_type'        => 'required|in:NORMAL,BANK',
     'discount_type'      => 'required|in:FLAT,PERCENT',
     'value'              => 'required|numeric|min:0',
