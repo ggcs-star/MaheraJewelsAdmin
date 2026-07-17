@@ -59,7 +59,7 @@
             <svg class="w-5 h-5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
             </svg>
-            <span class="text-sm">Purchases</span>
+            <span class="text-sm">Items</span>
         </a>
         <a href="{{ admin_route('purchase-orders.index') }}"
             class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200
@@ -80,7 +80,7 @@
             <svg class="w-5 h-5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
             </svg>
-            <span class="text-sm">Products</span>
+            <span class="text-sm">Push Products</span>
         </a>
 
         
@@ -93,12 +93,7 @@
             <span class="text-sm">Orders</span>
         </a>
 
-        <a href="{{ admin_route('banks.index') }}"
-           class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200
-           {{ request()->routeIs('banks.*') ? 'bg-[#8B2452] text-white font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-[#8B2452]' }}">
-            <i class="fas fa-university w-5 h-5 text-center" style="font-weight: 900;"></i>
-            <span class="text-sm">Banks</span>
-        </a>
+   
 
         <a href="{{ admin_route('invoices.index') }}"
            class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200
@@ -125,14 +120,14 @@
             <span class="text-sm">Banners</span>
         </a>
 
-        <a href="{{ admin_route('reels.index') }}"
+        <!-- <a href="{{ admin_route('reels.index') }}"
            class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200
            {{ request()->routeIs('reels.*') ? 'bg-[#8B2452] text-white font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-[#8B2452]' }}">
             <svg class="w-5 h-5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 4h10M7 8h10M7 12h10M5 4v16l14-8L5 4z"/>
             </svg>
             <span class="text-sm">Reels</span>
-        </a>
+        </a> -->
         <a href="{{ route('admin.instagram') }}"
    class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200
    {{ request()->routeIs('admin.instagram') ? 'bg-[#8B2452] text-white font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-[#8B2452]' }}">
@@ -178,7 +173,7 @@
         </a>
 
 
-        <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-500 hover:bg-gray-50 hover:text-[#8B2452]">
+        <!-- <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-500 hover:bg-gray-50 hover:text-[#8B2452]">
             <svg class="w-5 h-5 stroke-[2.5]" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M6.012 18H21V8a2 2 0 0 0-2-2h-8L9 4H3a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h1.012a3 3 0 1 0 6 0m5 0h4.976a3 3 0 1 0 6 0H11z"/>
             </svg>
@@ -190,8 +185,13 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 17v-2m3 2v-4m3 4v-6" />
             </svg>
             <span class="text-sm">Reports</span>
+        </a> -->
+     <a href="{{ admin_route('banks.index') }}"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200
+           {{ request()->routeIs('banks.*') ? 'bg-[#8B2452] text-white font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-[#8B2452]' }}">
+            <i class="fas fa-university w-5 h-5 text-center" style="font-weight: 900;"></i>
+            <span class="text-sm">Banks</span>
         </a>
-
         <a href="{{ admin_route('warehouses.index') }}"
            class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200
            {{ request()->routeIs('warehouses.*') ? 'bg-[#8B2452] text-white font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-[#8B2452]' }}">

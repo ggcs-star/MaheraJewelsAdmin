@@ -87,7 +87,8 @@ document.addEventListener('DOMContentLoaded', () => {
             modalText.innerText =
                 `Are you sure you want to delete ${checked.length} selected coupon(s)?`;
 
-            new bootstrap.Modal(modalEl).show();
+modalEl.classList.remove('hidden');
+modalEl.classList.add('show');
         };
     }
 
@@ -96,8 +97,8 @@ document.addEventListener('DOMContentLoaded', () => {
             activeSingleForm = btn.closest('.singleDeleteForm');
             activeSingleForm.action = btn.dataset.action;
             modalText.innerText = 'Are you sure you want to delete this coupon?';
-            new bootstrap.Modal(modalEl).show();
-        };
+modalEl.classList.add('hidden');
+modalEl.classList.remove('show');        };
     });
 
     if (confirmBtn) {
@@ -258,8 +259,8 @@ document.addEventListener('DOMContentLoaded', () => {
             modalText.innerText =
                 `Are you sure you want to delete ${checked.length} selected coupon(s)?`;
 
-            new bootstrap.Modal(modalEl).show();
-        };
+modalEl.classList.remove('hidden');
+modalEl.classList.add('show');        };
     }
 
     document.querySelectorAll('.openSingleDeleteModal').forEach(btn => {
