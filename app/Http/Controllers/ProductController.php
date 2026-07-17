@@ -745,7 +745,14 @@ public function list()
                 'selling_price'  => $v->selling_price,
             ];
         });
+$gallery = is_array($product->gallery_images)
+    ? $product->gallery_images
+    : json_decode($product->gallery_images, true);
 
+$product->image = (!empty($gallery) && !empty($gallery[0]))
+    ? \App\Helpers\S3Helper::url($gallery[0])
+    : asset('images/no-image.png');
+    
         return $product;
     });
 

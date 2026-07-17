@@ -59,7 +59,7 @@
             <svg class="w-5 h-5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
             </svg>
-            <span class="text-sm">Products</span>
+            <span class="text-sm">Items</span>
         </a>
         <a href="{{ admin_route('purchase-orders.index') }}"
             class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200
@@ -92,6 +92,8 @@
             </svg>
             <span class="text-sm">Orders</span>
         </a>
+
+   
 
         <a href="{{ admin_route('invoices.index') }}"
            class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200
@@ -169,12 +171,6 @@
             <i class="fas fa-user-friends w-5 h-5 text-center" style="font-weight: 900;"></i>
             <span class="text-sm">Customers</span>
         </a>
-        <a href="{{ admin_route('banks.index') }}"
-           class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200
-           {{ request()->routeIs('banks.*') ? 'bg-[#8B2452] text-white font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-[#8B2452]' }}">
-            <i class="fas fa-university w-5 h-5 text-center" style="font-weight: 900;"></i>
-            <span class="text-sm">Banks</span>
-        </a>
 
 
         <!-- <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-500 hover:bg-gray-50 hover:text-[#8B2452]">
@@ -190,7 +186,12 @@
             </svg>
             <span class="text-sm">Reports</span>
         </a> -->
-
+     <a href="{{ admin_route('banks.index') }}"
+           class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200
+           {{ request()->routeIs('banks.*') ? 'bg-[#8B2452] text-white font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-[#8B2452]' }}">
+            <i class="fas fa-university w-5 h-5 text-center" style="font-weight: 900;"></i>
+            <span class="text-sm">Banks</span>
+        </a>
         <a href="{{ admin_route('warehouses.index') }}"
            class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200
            {{ request()->routeIs('warehouses.*') ? 'bg-[#8B2452] text-white font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-[#8B2452]' }}">

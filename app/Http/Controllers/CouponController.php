@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Support\Str;
-use App\Jobs\GenerateBulkCouponJob;
+
 use Illuminate\Support\Facades\DB;
       use Illuminate\Support\Facades\Validator;
 
@@ -138,16 +138,60 @@ if ($validator->fails()) {
 }
 
 $data = $validator->validated();
+// if ($request->generate_type == 'bulk') {
+
+//     GenerateBulkCouponJob::dispatch(
+//         $data,
+//         $request->platform_ids
+//     );
+
+//     return redirect()
+//         ->route('admin.coupons.index')
+//         ->with('success', 'Bulk Coupon Generation Started.');
+// }
 if ($request->generate_type == 'bulk') {
 
-    GenerateBulkCouponJob::dispatch(
-        $data,
-        $request->platform_ids
-    );
+    DB::transaction(function () use ($data, $request) {
+
+        for ($i = 1; $i <= $data['quantity']; $i++) {
+
+            do {
+                $code = strtoupper($data['prefix']) . strtoupper(Str::random(8));
+            } while (Coupon::where('code', $code)->exists());
+
+            $coupon = Coupon::create([
+                'name'               => $data['coupon_name'],
+                'description'        => $data['coupon_description'] ?? null,
+                'code'               => $code,
+                'campaign_name' => $data['campaign_name'],
+                'coupon_type'        => $data['coupon_type'],
+                'discount_type'      => $data['discount_type'],
+                'value'              => $data['value'],
+                'min_order_amount'   => $data['min_order_amount'] ?? null,
+                'max_discount'       => $data['max_discount'] ?? null,
+                'usage_limit'        => $data['usage_limit'],
+                'used_count'         => 0,
+                'is_active'          => $data['is_active'],
+                'starts_at'          => $data['starts_at'] ?? null,
+                'expires_at'         => $data['expires_at'] ?? null,
+                'bank_id'            => $data['coupon_type'] === 'BANK' ? $data['bank_id'] : null,
+                'card_type'          => $data['coupon_type'] === 'BANK' ? $data['card_type'] : null,
+                'category_id'        => $data['category_id'] ?? null,
+                'subcategory_id'     => $data['subcategory_id'] ?? null,
+                'product_id'         => $data['product_id'] ?? null,
+                'one_time_per_user'  => $data['one_time_per_user'],
+            ]);
+
+            if ($request->filled('platform_ids')) {
+                $coupon->platforms()->sync($request->platform_ids);
+            }
+        }
+
+    });
 
     return redirect()
         ->route('admin.coupons.index')
-        ->with('success', 'Bulk Coupon Generation Started.');
+        ->with('success', 'Bulk Coupons Generated Successfully.');
 }
         DB::transaction(function () use ($data, $request) {
             $coupon = Coupon::create([
