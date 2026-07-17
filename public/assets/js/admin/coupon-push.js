@@ -441,4 +441,46 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 });
+document.addEventListener('DOMContentLoaded', function () {
+
+    const generateType = document.getElementById('generate_type');
+    const couponCodeField = document.getElementById('coupon_code_field');
+    const bulkFields = document.getElementById('bulk_fields');
+
+    const campaign = document.querySelector('[name="campaign_name"]');
+    const prefix = document.querySelector('[name="prefix"]');
+    const quantity = document.querySelector('[name="quantity"]');
+
+    if (!generateType) return;
+
+    function toggleFields() {
+
+        if (generateType.value === 'bulk') {
+
+            couponCodeField.style.display = 'none';
+            bulkFields.style.display = 'block';
+
+            campaign.removeAttribute('disabled');
+            prefix.removeAttribute('disabled');
+            quantity.removeAttribute('disabled');
+
+        } else {
+
+            couponCodeField.style.display = 'block';
+            bulkFields.style.display = 'none';
+
+            campaign.value = '';
+            prefix.value = '';
+            quantity.value = '';
+
+            campaign.setAttribute('disabled', true);
+            prefix.setAttribute('disabled', true);
+            quantity.setAttribute('disabled', true);
+        }
+    }
+
+    generateType.addEventListener('change', toggleFields);
+
+    toggleFields();
+});
 
