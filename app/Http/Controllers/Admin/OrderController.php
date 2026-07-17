@@ -13,31 +13,52 @@ class OrderController extends Controller
 {
 
     public function index(Request $request)
-    {
-        $query = Order::with(['user']);
+{
+    $query = Order::with(['user']);
 
-        if ($request->filled('search')) {
-            $query->where('order_number', 'like', '%' . $request->search . '%');
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        $orders = $query->latest()->paginate(10);
-
-        $stats = [
-            'total' => Order::count(),
-            'pending' => Order::where('status', 'pending')->count(),
-            'confirmed' => Order::where('status', 'confirmed')->count(),
-            'processing' => Order::where('status', 'processing')->count(),
-            'shipped' => Order::where('status', 'shipped')->count(),
-            'delivered' => Order::where('status', 'delivered')->count(),
-            'cancelled' => Order::where('status', 'cancelled')->count(),
-        ];
-
-        return view('admin.orders.index', compact('orders', 'stats'));
+    if ($request->filled('search')) {
+        $query->where('order_number', 'like', '%' . $request->search . '%');
     }
+
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    if ($request->filled('platform')) {
+        $query->where('platform', $request->platform);
+    }
+
+    $orders = $query->latest()->paginate(10);
+
+    $stats = [
+        'total' => Order::count(),
+        'pending' => Order::where('status', 'pending')->count(),
+        'confirmed' => Order::where('status', 'confirmed')->count(),
+        'processing' => Order::where('status', 'processing')->count(),
+        'shipped' => Order::where('status', 'shipped')->count(),
+        'delivered' => Order::where('status', 'delivered')->count(),
+        'cancelled' => Order::where('status', 'cancelled')->count(),
+    ];
+
+    // ✅ Platform Stats
+    $platformStats = [
+        'website' => [
+            'orders' => Order::where('platform', 'website')->count(),
+            'total' => Order::where('platform', 'website')->sum('total'),
+        ],
+        'amazon' => [
+            'orders' => Order::where('platform', 'amazon')->count(),
+            'total' => Order::where('platform', 'amazon')->sum('total'),
+        ],
+        'flipkart' => [
+            'orders' => Order::where('platform', 'flipkart')->count(),
+            'total' => Order::where('platform', 'flipkart')->sum('total'),
+        ],
+        'total_revenue' => Order::sum('total'),
+    ];
+
+    return view('admin.orders.index', compact('orders', 'stats', 'platformStats'));
+}
 
 
    public function show($id)
@@ -105,8 +126,13 @@ class OrderController extends Controller
             $order->shipped_at = now();
         }
 
-        if ($newStatus === 'delivered') {
+       if ($newStatus === 'delivered') {
             $order->delivered_at = now();
+            
+            // ✅ COD order delivered = paid
+            if ($order->payment_method_id == 1 || $order->payment_method == 'cod') {
+                $order->payment_status = 'paid';
+            }
         }
 
         $order->save();
@@ -138,20 +164,21 @@ class OrderController extends Controller
         return back()->with('success', 'Order status updated to ' . ucfirst($newStatus));
     }
 
-    public function invoice($id)
-    {
-        $order = Order::with([
-            'items.product',
-            'items.variant',
-            'user',
-            'shippingAddress',
-            'payment'
-        ])->findOrFail($id);
+  public function invoice($id)
+{
+    $order = Order::with([
+        'items.product',
+        'items.variant',
+        'user',
+        'shippingAddress',
+        'payment'
+    ])->findOrFail($id);
 
-        $company = Organization::first();
+    $company = Organization::first();
 
-        return view('admin.orders.invoice', compact('order', 'company'));
-    }
+    // ✅ Return invoice view (no admin layout)
+    return view('admin.orders.invoice', compact('order', 'company'));
+}
 
     public function cancel($id)
     {

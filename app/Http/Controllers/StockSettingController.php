@@ -12,7 +12,7 @@ class StockSettingController extends Controller
         $setting = StockSetting::first();
         if(!$setting) {
             $setting = StockSetting::create([
-                'threshold' => 5,
+                'threshold' => 10,
                 'admin_email' => 'admin@gmail.com'
             ]);
         }

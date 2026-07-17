@@ -68,22 +68,27 @@ class InventoryController extends Controller
                     $q->where('platform_id', 3);
                 })->sum('quantity');
 
-            $offlineCurrentStock = PlatformPricing::where('product_variant_id', $variant->id)
+            $offlinePushed = PlatformPricing::where('product_variant_id', $variant->id)
                 ->whereHas('platformProduct', function($q) {
                     $q->where('platform_id', 4);
                 })->sum('quantity');
 
+            // ✅ Website Sold = Order Items
             $websiteSold = OrderItem::where('variant_id', $variant->id)->sum('quantity');
 
+            // ✅ Offline Sold = Invoice Items
             $offlineSold = InvoiceItem::where('product_variant_id', $variant->id)->sum('quantity');
 
-            // ✅ Total Offline Pushed = Sold + Available
-            $offlinePushed = $offlineSold + $offlineCurrentStock;
-
+            // ✅ Platform-wise Available Stock
             $websiteAvailable = max(0, $websitePushed - $websiteSold);
-            $offlineAvailable = max(0, $offlineCurrentStock);
+            $offlineAvailable = max(0, $offlinePushed - $offlineSold);
+
+            // ✅ Total Available = Website + Offline (SAHI)
+            $finalStock = $websiteAvailable + $offlineAvailable;
+
+            // ✅ Total Pushed
+            $totalPushed = $websitePushed + $offlinePushed;
             $totalSold = $websiteSold + $offlineSold;
-            $finalStock = max(0, $poQty - $totalSold);
 
             $totalStock += $poQty;
             $totalWebsite += $websitePushed;
@@ -174,4 +179,19 @@ class InventoryController extends Controller
 
 //     return view('inventory.details', compact('variant', 'poQty', 'websitePushed', 'offlinePushed', 'stockMovements'));
 // }
+public function searchSuggestions(Request $request)
+{
+    $query = $request->get('q');
+    
+    if (empty($query)) {
+        return response()->json([]);
+    }
+    
+    $results = \App\Models\Product::where('name', 'LIKE', "%{$query}%")
+        ->orWhere('sku', 'LIKE', "%{$query}%")
+        ->limit(10)
+        ->get(['name', 'sku']);
+    
+    return response()->json($results);
+}
 }
