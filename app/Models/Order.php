@@ -8,21 +8,21 @@ class Order extends Model
 {
 
     protected $fillable = [
-        'order_number',
-        'user_id',
-        'shipping_address_id',
-        'billing_address_id',
-        'subtotal',
-        'tax',
-        'shipping',
-        'platform_fee',
-        'discount',
-        'total',
-        'coupon_code',
-        'payment_method',
-        'status',
-        'payment_status'
-        ];
+    'order_number',
+    'user_id',
+    'shipping_address_id',
+    'billing_address_id',
+    'subtotal',
+    'tax',
+    'shipping',
+    'platform_fee',
+    'discount',
+    'total',
+    'coupon_code',
+    'payment_method',
+    'status',
+    'payment_status',
+    ];
 
     protected static function boot()
     {

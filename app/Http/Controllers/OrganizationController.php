@@ -100,6 +100,9 @@ class OrganizationController extends Controller
         if ($request->hasFile('logo')) {
             $data['logo_path'] = $this->uploadLogo($request, $data['name']);
         }
+         if ($request->hasFile('invoice_logo')) {
+        $data['invoice_logo'] = $this->uploadInvoiceLogo($request, $data['name']);
+    }
 
         Organization::create($data);
 
@@ -115,12 +118,17 @@ class OrganizationController extends Controller
 
     public function update(Request $request, Organization $organization)
     {
+        
         $data = $this->validated($request);
 
         if ($request->hasFile('logo')) {
             $this->deleteLogo($organization->logo_path);
             $data['logo_path'] = $this->uploadLogo($request, $data['name']);
         }
+         if ($request->hasFile('invoice_logo')) {
+        $this->deleteLogo($organization->invoice_logo);
+        $data['invoice_logo'] = $this->uploadInvoiceLogo($request, $data['name']);
+    }
 
         $organization->update($data);
 
@@ -158,9 +166,12 @@ class OrganizationController extends Controller
     {
         return $request->validate([
             'name'      => 'required|string|max:255',
+            'invoice_name' => 'nullable|string|max:255',
             'email'     => 'nullable|email|max:255',
             'mobile'    => 'nullable|string|max:20',
             'website'   => 'nullable|url|max:255',
+            'invoice_email' => 'nullable|email|max:255', 
+             'invoice_logo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
 
             'logo'      => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'business_hours' => 'nullable|string|max:255',
@@ -223,4 +234,17 @@ public function destroyNotificationEmail($id)
             S3Helper::delete($path);
         }
     }
+    // ✅ Invoice Logo Upload Method
+private function uploadInvoiceLogo(Request $request, string $name): ?string
+{
+    $folder = Str::slug($name);
+    $path   = "admin/organization/{$folder}/invoice-logo";
+
+    return S3Helper::storeAs(
+        $request->file('invoice_logo'),
+        $path,
+        'invoice-logo.' . $request->file('invoice_logo')->getClientOriginalExtension()
+    );
+}
+
 }

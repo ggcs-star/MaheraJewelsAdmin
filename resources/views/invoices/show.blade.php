@@ -11,22 +11,22 @@
 
 <div class="container my-4">
 
-   <div class="no-print text-end mb-3">
-
-  <a href="{{ admin_route('invoices.index') }}"
-       class="btn btn-secondary">
+   <div class="no-print d-flex justify-content-between align-items-center mb-3">
+    {{-- LEFT SIDE - Back Button --}}
+    <a href="{{ admin_route('invoices.index') }}" class="btn btn-secondary">
         <i class="fas fa-arrow-left me-1"></i> Back
     </a>
 
-    <div class="no-print text-end mt-4">
-    <button onclick="printInvoice()" class="btn btn-primary">
-        Print
-    </button>
+    {{-- RIGHT SIDE - Print & Download Buttons --}}
+    <div class="d-flex gap-2">
+        <button onclick="printInvoice()" class="btn btn-primary">
+            <i class="fas fa-print me-1"></i> Print
+        </button>
+        <button onclick="downloadPDF()" class="btn btn-success">
+            <i class="fas fa-file-pdf me-1"></i> Download PDF
+        </button>
+    </div>
 
-    <button onclick="downloadPDF()" class="btn btn-success">
-        Download PDF
-    </button>
-</div>
 
 </div>
 
@@ -37,10 +37,14 @@
         {{-- HEADER --}}
         <div class="row align-items-center mb-4">
             <div class="col-md-6">
-                @if($invoice->organization?->logo_url)
+                @if($invoice->organization?->invoice_logo)
+                    <img src="{{ \App\Helpers\S3Helper::url($invoice->organization->invoice_logo) }}"
+                        alt="Invoice Logo"
+                        style="max-height:80px">
+                @elseif($invoice->organization?->logo_url)
                     <img src="{{ $invoice->organization->logo_url }}"
-                         alt="Logo"
-                         style="max-height:80px">
+                        alt="Logo"
+                        style="max-height:80px">
                 @endif
             </div>
 
@@ -60,11 +64,11 @@
         <div class="row mb-4">
             <div class="col-md-6">
                 <span class="badge bg-success mb-2">Billing From</span>
-                <h5 class="fw-bold">{{ $invoice->organization->name }}</h5>
+                <h5 class="fw-bold">{{ $invoice->organization->invoice_name ?? $invoice->organization->name }}</h5>
                 <div>{{ $invoice->organization->address }}</div>
                 <div>{{ $invoice->organization->city }}, {{ $invoice->organization->state }}</div>
                 <div>Mobile: {{ $invoice->organization->mobile }}</div>
-                <div>Email: {{ $invoice->organization->email }}</div>
+                <div>Email: {{ $invoice->organization->invoice_email ?? $invoice->organization->email }}</div>
             </div>
 
             <div class="col-md-6 text-end">

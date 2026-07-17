@@ -34,6 +34,7 @@
         </div>
     </div>
 
+    {{-- STATS CARDS --}}
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-all border border-emerald-200">
             <div class="flex items-center gap-2 mb-2">
@@ -88,7 +89,9 @@
         </div>
     </div>
 
+    {{-- MAIN CONTENT --}}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {{-- LEFT COLUMN - Organization Overview --}}
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
             <div class="px-5 py-3 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
                 <div class="flex items-center gap-2">
@@ -123,6 +126,7 @@
             </div>
         </div>
 
+        {{-- RIGHT COLUMN - Basic Information --}}
         <div class="lg:col-span-2">
             <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                 <div class="px-5 py-3 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
@@ -135,30 +139,54 @@
                 </div>
                 <div class="p-5">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Email -->
                         <div class="p-3 rounded-lg border border-gray-100 bg-gray-50/50">
                             <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Email</p>
                             <p class="text-sm font-semibold text-gray-800">{{ $organization->email ?? '—' }}</p>
                         </div>
+                        <!-- Mobile -->
                         <div class="p-3 rounded-lg border border-gray-100 bg-gray-50/50">
                             <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Mobile</p>
                             <p class="text-sm font-semibold text-gray-800">{{ $organization->mobile ?? '—' }}</p>
                         </div>
+                        <!-- Website -->
                         <div class="p-3 rounded-lg border border-gray-100 bg-gray-50/50">
                             <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Website</p>
                             <p class="text-sm font-semibold text-gray-800">{{ $organization->website ?? '—' }}</p>
                         </div>
+                        <!-- Address -->
                         <div class="p-3 rounded-lg border border-gray-100 bg-gray-50/50">
                             <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Address</p>
                             <p class="text-sm font-semibold text-gray-800">{{ $organization->address ?? '—' }}</p>
                         </div>
+                        <!-- Business Hours -->
                         <div class="p-3 rounded-lg border border-gray-100 bg-gray-50/50">
-                            <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
-                                Business Hours
-                            </p>
+                            <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Business Hours</p>
+                            <p class="text-sm font-semibold text-gray-800">{{ $organization->business_hours ?? '—' }}</p>
+                        </div>
 
-                            <p class="text-sm font-semibold text-gray-800">
-                                {{ $organization->business_hours ?? '—' }}
-                            </p>
+                        <!-- ✅ INVOICE NAME -->
+                        <div class="p-3 rounded-lg border border-gray-100 bg-gray-50/50">
+                            <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Invoice Name</p>
+                            <p class="text-sm font-semibold text-gray-800">{{ $organization->invoice_name ?? '—' }}</p>
+                        </div>
+
+                        <!-- ✅ INVOICE EMAIL -->
+                        <div class="p-3 rounded-lg border border-gray-100 bg-gray-50/50">
+                            <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Invoice Email</p>
+                            <p class="text-sm font-semibold text-gray-800">{{ $organization->invoice_email ?? '—' }}</p>
+                        </div>
+
+                        <!-- ✅ INVOICE LOGO -->
+                        <div class="p-3 rounded-lg border border-gray-100 bg-gray-50/50">
+                            <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Invoice Logo</p>
+                            @if($organization->invoice_logo)
+                                <div class="mt-1">
+                                    <img src="{{ \App\Helpers\S3Helper::url($organization->invoice_logo) }}" alt="Invoice Logo" class="w-16 h-16 rounded-lg border border-gray-200 object-cover">
+                                </div>
+                            @else
+                                <p class="text-sm font-semibold text-gray-800">—</p>
+                            @endif
                         </div>
                     </div>
                 </div>

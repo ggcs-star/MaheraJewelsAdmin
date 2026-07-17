@@ -48,5 +48,21 @@ class ProductVariant extends Model
     {
         return $this->belongsTo(VariantValue::class, 'variant_value_id');
     }
+     public function purchaseOrderItems()
+    {
+        return $this->hasMany(PurchaseOrderItem::class, 'product_variant_id');
+    }
+
+    // ✅ YEH RELATIONSHIP ADD KARO
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class, 'variant_id');
+    }
+
+    // ✅ YEH RELATIONSHIP ADD KARO (Optional - Invoice Items ke liye)
+    public function invoiceItems()
+    {
+        return $this->hasMany(InvoiceItem::class, 'product_variant_id');
+    }
 
     }
