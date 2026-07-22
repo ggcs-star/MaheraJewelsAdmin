@@ -139,7 +139,7 @@
                                         style="width: 100%; background: #f9fcff; border: 1.8px solid #e9f0f5; border-radius: 16px; padding: 10px 12px; font-size: 0.9rem; color: #0a1e2f; outline: none;">
                                     @foreach($products as $product)
                                         <option value="{{ $product->id }}" @selected($item->product_id == $product->id)>
-                                            {{ $product->name }}
+                                            {{ $product->name }} ({{ $product->sku }})
                                         </option>
                                     @endforeach
                                 </select>
@@ -451,7 +451,7 @@
 <select id="productOptionsTemplate" class="d-none">
     <option value="">Select Product</option>
     @foreach($products as $product)
-        <option value="{{ $product->id }}">{{ $product->name }}</option>
+        <option value="{{ $product->id }}">{{ $product->name }} ({{ $product->sku }})</option>
     @endforeach
 </select>
 <script>
