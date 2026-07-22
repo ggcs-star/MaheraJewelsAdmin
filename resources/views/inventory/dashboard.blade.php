@@ -440,52 +440,40 @@
 
     {{-- ===== CHANNEL SUMMARY WITH LOGOS ===== --}}
     <div class="row g-2 mb-4">
-        <div class="col-md-2 col-6">
-            <div class="card border-0 shadow-sm rounded-4 p-3 text-center channel-card" style="background: white;">
-                <div class="channel-label">
-                    <img src="https://img.icons8.com/color/20/000000/domain.png" class="channel-logo" alt="Website">
-                    Website
+        @foreach($platforms as $platform)
+            @php 
+                $name = strtolower($platform->name);
+                $icon = '📱';
+                if(str_contains($name, 'amazon')) $icon = '🛒';
+                elseif(str_contains($name, 'flipkart')) $icon = '🛒';
+                elseif(str_contains($name, 'website') || str_contains($name, 'online')) $icon = '🌐';
+                elseif(str_contains($name, 'offline')) $icon = '🏪';
+                elseif(str_contains($name, 'meesho')) $icon = '🛍️';
+            @endphp
+            <div class="col-md-2 col-6">
+                <div class="card border-0 shadow-sm rounded-4 p-3 text-center channel-card" style="background: white;">
+                    <div class="channel-label">
+                        <span style="font-size:1.2rem;">{{ $icon }}</span>
+                        {{ $platform->display_name ?? ucfirst($platform->name) }}
+                    </div>
+                    <h4 class="fw-bold mb-0" style="color: #1a56db; font-size: 1.4rem;">
+                        @php
+                            $summaryKey = match($name) {
+                                'website', 'online', 'own website' => 'total_website',
+                                'offline' => 'total_offline',
+                                default => 'total_' . $name
+                            };
+                        @endphp
+                        {{ $summary[$summaryKey] ?? 0 }}
+                    </h4>
+                    <span style="font-size: 0.55rem; color: #7c9eb2;">Units Available</span>
                 </div>
-                <h4 class="fw-bold mb-0" style="color: #1a56db; font-size: 1.4rem;">{{ $summary['total_website'] }}</h4>
-                <span style="font-size: 0.55rem; color: #7c9eb2;">Units Available</span>
             </div>
-        </div>
-        <div class="col-md-2 col-6">
-            <div class="card border-0 shadow-sm rounded-4 p-3 text-center channel-card" style="background: white;">
-                <div class="channel-label">
-                    <img src="https://img.icons8.com/color/20/000000/amazon.png" class="channel-logo" alt="Amazon">
-                    Amazon
-                </div>
-                <h4 class="fw-bold mb-0" style="color: #f59e0b; font-size: 1.4rem;">0</h4>
-                <span style="font-size: 0.55rem; color: #7c9eb2;">Units Available</span>
-            </div>
-        </div>
-        <div class="col-md-2 col-6">
-            <div class="card border-0 shadow-sm rounded-4 p-3 text-center channel-card" style="background: white;">
-                <div class="channel-label">
-                    <img src="{{ asset('storage/logo/flipkartlogo.jpg') }}" class="channel-logo" alt="Flipkart" onerror="this.style.display='none'">
-                    Flipkart
-                </div>
-                <h4 class="fw-bold mb-0" style="color: #ec489a; font-size: 1.4rem;">0</h4>
-                <span style="font-size: 0.55rem; color: #7c9eb2;">Units Available</span>
-            </div>
-        </div>
-        <div class="col-md-2 col-6">
-            <div class="card border-0 shadow-sm rounded-4 p-3 text-center channel-card" style="background: white;">
-                <div class="channel-label">
-                    <img src="https://img.icons8.com/color/20/000000/shop.png" class="channel-logo" alt="Offline">
-                    Offline
-                </div>
-                <h4 class="fw-bold mb-0" style="color: #0f7b4b; font-size: 1.4rem;">{{ $summary['total_offline'] }}</h4>
-                <span style="font-size: 0.55rem; color: #7c9eb2;">Units Available</span>
-            </div>
-        </div>
+        @endforeach
         <div class="col-md-4 col-12">
             <div class="card border-0 shadow-sm rounded-4 p-3 text-center channel-card overall">
                 <span style="font-size: 0.6rem; color: #7c9eb2; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Overall Available Stock</span>
                 <h4 class="fw-bold mb-0" style="color: #8B2452; font-size: 1.8rem;">{{ $summary['total_available'] }}</h4>
-                
-                {{-- ===== GRAPH / PROGRESS BAR ===== --}}
                 @php
                     $maxStock = max($summary['total_available'], 1);
                     $overallPercent = min(($summary['total_available'] / $maxStock) * 100, 100);
@@ -498,6 +486,38 @@
         </div>
     </div>
 
+    {{-- ===== VIEW TABS ===== --}}
+   {{-- ===== VIEW TABS ===== --}}
+<div class="row mb-3">
+    <div class="col-12">
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: white; padding: 6px 16px; border-radius: 30px; border: 1px solid #e9f0f5; display: inline-flex;">
+            <span style="font-size: 0.65rem; font-weight: 700; color: #7c9eb2; text-transform: uppercase; letter-spacing: 0.5px;">View:</span>
+            
+            {{-- ALL CHANNELS --}}
+            <a href="{{ url('admin/inventory/dashboard') }}{{ request()->has('search') ? '?search='.request('search') : '' }}{{ request()->has('brand') ? '&brand='.request('brand') : '' }}{{ request()->has('category') ? '&category='.request('category') : '' }}{{ request()->has('supplier') ? '&supplier='.request('supplier') : '' }}" 
+               class="btn btn-sm {{ !request('channel') ? 'active' : '' }}" 
+               style="border-radius: 30px; padding: 4px 16px; font-size: 0.7rem; font-weight: 600; border: none; transition: all 0.3s ease; {{ !request('channel') ? 'background: #8B2452; color: white; box-shadow: 0 2px 8px rgba(139,36,82,0.25);' : 'background: transparent; color: #3e6579;' }}">
+                📊 All Channels
+            </a>
+            
+           @foreach($platforms as $platform)
+   @php 
+    $name = strtolower($platform->name);
+    $channelParam = match($name) {
+        'website', 'online', 'own website', 'own_website' => 'website',
+        'offline', 'ofline' => 'offline',  // ✅ YEH LINE CHANGE KIYA
+        default => $name
+    };
+@endphp
+    <a href="{{ url('admin/inventory/dashboard?channel=' . $channelParam) }}{{ request()->has('search') ? '&search='.request('search') : '' }}{{ request()->has('brand') ? '&brand='.request('brand') : '' }}{{ request()->has('category') ? '&category='.request('category') : '' }}{{ request()->has('supplier') ? '&supplier='.request('supplier') : '' }}" 
+       class="btn btn-sm {{ request('channel') == $channelParam ? 'active' : '' }}" 
+       style="border-radius: 30px; padding: 4px 16px; font-size: 0.7rem; font-weight: 600; border: none; transition: all 0.3s ease; {{ request('channel') == $channelParam ? 'background: #8B2452; color: white; box-shadow: 0 2px 8px rgba(139,36,82,0.25);' : 'background: transparent; color: #3e6579;' }}">
+        {{ $icon }} {{ ucfirst($platform->name) }}
+    </a>
+@endforeach
+        </div>
+    </div>
+</div>
     {{-- ===== FILTERS WITH AJAX SEARCH ===== --}}
     <div class="filter-bar mb-4">
         <form method="GET" action="{{ url('admin/inventory/dashboard') }}" class="row g-2 align-items-end" id="filterForm">
@@ -505,10 +525,10 @@
                 <label style="font-size: 0.55rem; font-weight: 700; color: #7c9eb2; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Search</label>
                 <div class="search-wrapper">
                     <input type="text" name="search" id="searchInput" class="form-control form-control-sm" 
-                           placeholder="Search Product, SKU..." 
-                           value="{{ request('search') }}" 
-                           style="border-radius: 30px; border-color: #e2ecf5; font-size: 0.8rem; padding: 8px 16px; background: #fafcff;" 
-                           autocomplete="off">
+                        placeholder="Search Product, SKU..." 
+                        value="{{ request('search') }}" 
+                        style="border-radius: 30px; border-color: #e2ecf5; font-size: 0.8rem; padding: 8px 16px; background: #fafcff;" 
+                        autocomplete="off">
                     <div id="searchSuggestions" class="search-suggestions"></div>
                 </div>
             </div>
@@ -539,14 +559,17 @@
                     @endforeach
                 </select>
             </div>
+
+            {{-- ✅ CHANNEL FILTER - ADD KARO --}}
             <div class="col-lg-2 col-md-4 col-6">
-                <label style="font-size: 0.55rem; font-weight: 700; color: #7c9eb2; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">All Channels</label>
+                <label style="font-size: 0.55rem; font-weight: 700; color: #7c9eb2; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Channels</label>
                 <select name="channel" class="form-select form-select-sm" style="border-radius: 30px; border-color: #e2ecf5; font-size: 0.8rem; padding: 8px 16px; background: #fafcff;">
-                    <option value="">All Channels</option>
-                    <option value="website" {{ request('channel') == 'website' ? 'selected' : '' }}>Website</option>
-                    <option value="offline" {{ request('channel') == 'offline' ? 'selected' : '' }}>Offline</option>
+                    <option value="">📊 All Channels</option>
+                    <option value="website" {{ request('channel') == 'website' ? 'selected' : '' }}>🏪 Own Website</option>
+                    <option value="offline" {{ request('channel') == 'offline' ? 'selected' : '' }}>🏬 Offline</option>
                 </select>
             </div>
+
             <div class="col-lg-2 col-md-4 col-12">
                 <div class="d-flex gap-2 mt-md-0 mt-2">
                     <button type="submit" class="btn-filter w-100">
@@ -584,21 +607,33 @@
                             <th style="min-width: 200px;">PRODUCT</th>
                             <th class="text-center" style="min-width: 80px;">VARIANTS</th>
                             <th class="text-center" style="min-width: 100px;">MASTER STOCK</th>
-                            
+                            <th class="text-center" style="min-width: 90px;">
+                                TOTAL PUSHED
+                                <div style="font-size:0.5rem; font-weight:400; color:#7c9eb2; margin-top:2px;">
+                                    @if(request('channel') == 'website')
+                                        Website
+                                    @elseif(request('channel') == 'offline')
+                                        Offline
+                                    @else
+                                        All Channels
+                                    @endif
+                                </div>
+                            </th>
                             {{-- ===== CHANNEL LOGOS IN HEADER ===== --}}
-                            <th class="text-center" style="min-width: 80px;">
-                                <img src="https://img.icons8.com/color/18/000000/domain.png" style="width:18px;height:18px;vertical-align:middle;"> WEBSITE
-                            </th>
-                            <th class="text-center" style="min-width: 80px;">
-                                <img src="https://img.icons8.com/color/18/000000/amazon.png" style="width:18px;height:18px;vertical-align:middle;"> AMAZON
-                            </th>
-                            <th class="text-center" style="min-width: 80px;">
-                                <img src="{{ asset('storage/logo/flipkartlogo.jpg') }}" style="width:18px;height:18px;vertical-align:middle;" alt="Flipkart" onerror="this.style.display='none'"> FLIPKART
-                            </th>
-                            <th class="text-center" style="min-width: 80px;">
-                                <img src="https://img.icons8.com/color/18/000000/shop.png" style="width:18px;height:18px;vertical-align:middle;"> OFFLINE
-                            </th>
-                            
+                            @foreach($platforms as $platform)
+                                @php 
+                                    $name = strtolower($platform->name);
+                                    $icon = '📱';
+                                    if(str_contains($name, 'amazon')) $icon = '🛒';
+                                    elseif(str_contains($name, 'flipkart')) $icon = '🛒';
+                                    elseif(str_contains($name, 'website') || str_contains($name, 'online')) $icon = '🌐';
+                                    elseif(str_contains($name, 'offline')) $icon = '🏪';
+                                    elseif(str_contains($name, 'meesho')) $icon = '🛍️';
+                                @endphp
+                                <th class="text-center" style="min-width: 80px;">
+                                    {{ $icon }} {{ $platform->display_name ?? ucfirst($platform->name) }}
+                                </th>
+                            @endforeach
                             <th class="text-center" style="min-width: 85px;">AVAILABLE</th>
                             <th class="text-center" style="min-width: 100px;">SYNC STATUS</th>
                             <th class="text-center" style="min-width: 90px;">ACTIONS</th>
@@ -615,7 +650,10 @@
                                         'sku' => $item['sku'],
                                         'image_url' => $item['image_url'],
                                         'total_stock' => 0,
+                                        'total_pushed' => 0,
+                                        'website_pushed' => 0,
                                         'website_available' => 0,
+                                        'offline_pushed' => 0,
                                         'offline_available' => 0,
                                         'final_stock' => 0,
                                         'website_sold' => 0,
@@ -624,7 +662,10 @@
                                     ];
                                 }
                                 $groupedProducts[$productKey]['total_stock'] += $item['total_stock'];
+                                $groupedProducts[$productKey]['total_pushed'] += $item['total_pushed'] ?? 0;
+                                $groupedProducts[$productKey]['website_pushed'] += $item['website_pushed'] ?? 0;
                                 $groupedProducts[$productKey]['website_available'] += $item['website_available'];
+                                $groupedProducts[$productKey]['offline_pushed'] += $item['offline_pushed'] ?? 0;
                                 $groupedProducts[$productKey]['offline_available'] += $item['offline_available'];
                                 $groupedProducts[$productKey]['final_stock'] += $item['final_stock'];
                                 $groupedProducts[$productKey]['website_sold'] += $item['website_sold'];
@@ -633,7 +674,10 @@
                                     'variant_name' => $item['variant_name'],
                                     'sku' => $item['sku'],
                                     'total_stock' => $item['total_stock'],
+                                    'total_pushed' => $item['total_pushed'] ?? 0,
+                                    'website_pushed' => $item['website_pushed'] ?? 0,
                                     'website_available' => $item['website_available'],
+                                    'offline_pushed' => $item['offline_pushed'] ?? 0,
                                     'offline_available' => $item['offline_available'],
                                     'final_stock' => $item['final_stock'],
                                     'website_sold' => $item['website_sold'],
@@ -662,10 +706,23 @@
                                 </td>
                                 <td class="text-center" style="font-weight: 600; color: #8B2452;">{{ $variantsCount }}</td>
                                 <td class="text-center fw-bold">{{ $product['total_stock'] }}</td>
-                                <td class="text-center" style="color: #1a56db; font-weight: 500;">{{ $product['website_available'] }}</td>
-                                <td class="text-center" style="color: #f59e0b; font-weight: 500;">0</td>
-                                <td class="text-center" style="color: #ec489a; font-weight: 500;">0</td>
-                                <td class="text-center" style="color: #0f7b4b; font-weight: 500;">{{ $product['offline_available'] }}</td>
+                                <td class="text-center fw-bold" style="color: #8B2452; font-size:0.85rem;">{{ $product['total_pushed'] ?? 0 }}</td>
+                                
+                                {{-- ===== DYNAMIC PLATFORM COLUMNS (SOLD) ===== --}}
+                               {{-- ===== PLATFORM COLUMNS (SOLD) ===== --}}
+                                <td class="text-center" style="color: #E74C3C; font-weight: 600;">
+                                    {{ $product['website_sold'] ?? 0 }}
+                                </td>
+                                <td class="text-center" style="color: #E74C3C; font-weight: 600;">
+                                    {{ $product['offline_sold'] ?? 0 }}
+                                </td>
+                                <td class="text-center" style="color: #E74C3C; font-weight: 600;">
+                                    {{ $product['amazon_sold'] ?? 0 }}
+                                </td>
+                                <td class="text-center" style="color: #E74C3C; font-weight: 600;">
+                                    {{ $product['flipkart_sold'] ?? 0 }}
+                                </td>
+                                
                                 <td class="text-center fw-bold" style="color: #0f7b4b;">{{ $product['final_stock'] }}</td>
                                 <td class="text-center">
                                     <span class="{{ $syncBadgeClass }}">
@@ -689,6 +746,7 @@
                                                     <th style="text-align:left;">VARIANT</th>
                                                     <th>SKU</th>
                                                     <th>MASTER STOCK</th>
+                                                    <th>TOTAL PUSHED</th>
                                                     <th>WEBSITE</th>
                                                     <th>AMAZON</th>
                                                     <th>FLIPKART</th>
@@ -714,10 +772,22 @@
                                                         <td style="text-align:left; font-weight:500;">{{ $variant['variant_name'] }}</td>
                                                         <td style="font-family: monospace; color: #7c9eb2;">{{ $variant['sku'] }}</td>
                                                         <td style="font-weight:600;">{{ $variant['total_stock'] }}</td>
-                                                        <td style="color: #1a56db;">{{ $variant['website_available'] }}</td>
-                                                        <td style="color: #f59e0b;">0</td>
-                                                        <td style="color: #ec489a;">0</td>
-                                                        <td style="color: #0f7b4b;">{{ $variant['offline_available'] }}</td>
+                                                        <td style="font-weight:600; color:#8B2452;">{{ $variant['total_pushed'] ?? 0 }}</td>
+                                                        
+                                                        {{-- ===== DYNAMIC VARIANT PLATFORM COLUMNS (SOLD) ===== --}}
+                                                       {{-- ===== VARIANT PLATFORM COLUMNS (SOLD) ===== --}}
+<td style="color: #E74C3C; font-weight:600;">
+    {{ $variant['website_sold'] ?? 0 }}
+</td>
+<td style="color: #E74C3C; font-weight:600;">
+    {{ $variant['amazon_sold'] ?? 0 }}
+</td>
+<td style="color: #E74C3C; font-weight:600;">
+    {{ $variant['flipkart_sold'] ?? 0 }}
+</td>
+<td style="color: #E74C3C; font-weight:600;">
+    {{ $variant['offline_sold'] ?? 0 }}
+</td>
                                                         <td style="font-weight:600; color: #0f7b4b;">{{ $variant['final_stock'] }}</td>
                                                         <td>
                                                             <span class="{{ $vStatusBadge }}" style="font-size: 0.55rem; padding: 2px 12px;">
@@ -733,7 +803,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="11" class="text-center py-5">
+                                <td colspan="{{ 6 + count($platforms) }}" class="text-center py-5">
                                     <i class="fas fa-box-open" style="font-size: 2.5rem; color: #d4e2f0;"></i>
                                     <p class="text-muted mt-2" style="font-size: 0.9rem;">No products found in inventory</p>
                                 </td>

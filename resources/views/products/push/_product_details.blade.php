@@ -1,38 +1,43 @@
-<div class="card mb-4 shadow-sm" id="productDetailsCard" style="display:none;">
-    <div class="card-header fw-semibold">ℹ️ Product Details</div>
-    <div class="card-body row g-3">
-
-        <!-- First Row: 4 columns -->
-        <div class="col-md-3">
-            <label class="text-muted">Category</label>
-            <div class="form-control bg-light" id="displayCategory"></div>
+<div class="card border-0 shadow-sm rounded-4 mb-4" id="productDetailsCard" style="display:none;">
+    <div class="card-header bg-white border-bottom py-3">
+        <h5 class="fw-bold mb-0">📋 Product Details</h5>
+    </div>
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-2 text-center">
+                <img id="productDetailImage" 
+                     src="{{ asset('images/no-image.png') }}" 
+                     class="rounded-3 border" 
+                     style="width:100px; height:100px; object-fit:cover;">
+            </div>
+            <div class="col-md-10">
+                <div class="row">
+                    <div class="col-md-3">
+                        <small class="text-muted d-block">Category</small>
+                        <strong id="displayCategory">-</strong>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted d-block">Sub Category</small>
+                        <strong id="displaySubCategory">-</strong>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted d-block">SKU</small>
+                        <strong id="displaySku">-</strong>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted d-block">Brand</small>
+                        <strong id="displayBrand">-</strong>
+                    </div>
+                    <div class="col-md-3 mt-2">
+                        <small class="text-muted d-block">Warehouse</small>
+                        <strong id="displayWarehouse">-</strong>
+                    </div>
+                    <div class="col-md-3 mt-2">
+                        <small class="text-muted d-block">Slug</small>
+                        <strong id="displaySlug">-</strong>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div class="col-md-3">
-            <label class="text-muted">Sub Category</label>
-            <div class="form-control bg-light" id="displaySubCategory"></div>
-        </div>
-
-        <div class="col-md-3">
-            <label class="text-muted">SKU</label>
-            <div class="form-control bg-light" id="displaySku"></div>
-        </div>
-
-        <div class="col-md-3">
-            <label class="text-muted">Slug</label>
-            <div class="form-control bg-light" id="displaySlug"></div>
-        </div>
-
-        <!-- Second Row: Warehouse and Brand in 2 columns -->
-        <div class="col-md-6">
-            <label class="text-muted">Warehouse</label>
-            <div class="form-control bg-light" id="displayWarehouse"></div>
-        </div>
-
-        <div class="col-md-6">
-            <label class="text-muted">Brand</label>
-            <div class="form-control bg-light" id="displayBrand"></div>
-        </div>
-
     </div>
 </div>

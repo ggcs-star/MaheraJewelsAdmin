@@ -1,5 +1,5 @@
 @verbatim
-<script>
+ <script>
 document.addEventListener('DOMContentLoaded', function () {
 
     const productSelect      = document.getElementById('productSelect');
