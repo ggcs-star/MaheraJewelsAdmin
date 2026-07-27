@@ -10,7 +10,7 @@ use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use App\Models\StockMovement;
 use App\Models\PlatformProduct;
-
+use App\Models\Platform;
 class InventoryController extends Controller
 {
     private function getOfflinePlatformId()
@@ -137,38 +137,37 @@ class InventoryController extends Controller
             }
 
             $inventoryData[] = [
-    'variant_id' => $variant->id,
-    'sku' => $variant->sku_suffix ?? 'N/A',
-    'product_name' => $variant->product ? $variant->product->name : 'N/A',
-    'brand' => $variant->product ? $variant->product->brand : '',
-    'category' => $variant->product && $variant->product->category ? $variant->product->category->name : '',
-    'supplier' => $variant->product && $variant->product->supplier ? $variant->product->supplier->name : '',
-    'variant_name' => optional($variant->variant)->name . ': ' . optional($variant->value)->value,
-    'total_stock' => $poQty,
-    'total_pushed' => $channel == 'website' ? $websitePushed : ($channel == 'offline' ? $offlinePushed : $websitePushed + $offlinePushed),
-    
-    // ✅ SABHI PLATFORMS KE LIYE KEYS (CHAHE DATA HO YA NA HO)
-    'website_pushed' => $websitePushed,
-    'website_available' => $websiteAvailable,
-    'website_sold' => $websiteSold,
-    
-    'offline_pushed' => $offlinePushed,
-    'offline_available' => $offlineAvailable,
-    'offline_sold' => $offlineSold,
-    
-    'amazon_pushed' => 0,
-    'amazon_available' => 0,
-    'amazon_sold' => 0,
-    
-    'flipkart_pushed' => 0,
-    'flipkart_available' => 0,
-    'flipkart_sold' => 0,
-    
-    'total_sold' => $websiteSold + $offlineSold,
-    'final_stock' => $finalStock,
-    'status' => $finalStock > 10 ? 'In Stock' : ($finalStock > 0 ? 'Low Stock' : 'Out of Stock'),
-    'image_url' => $variant->image_url,
-];
+            'variant_id' => $variant->id,
+            'sku' => $variant->sku_suffix ?? 'N/A',
+            'product_name' => $variant->product ? $variant->product->name : 'N/A',
+            'brand' => $variant->product ? $variant->product->brand : '',
+            'category' => $variant->product && $variant->product->category ? $variant->product->category->name : '',
+            'supplier' => $variant->product && $variant->product->supplier ? $variant->product->supplier->name : '',
+            'variant_name' => optional($variant->variant)->name . ': ' . optional($variant->value)->value,
+            'total_stock' => $poQty,
+            'total_pushed' => $channel == 'website' ? $websitePushed : ($channel == 'offline' ? $offlinePushed : $websitePushed + $offlinePushed),
+
+            'website_pushed' => $websitePushed,
+            'website_available' => $websiteAvailable,
+            'website_sold' => $websiteSold,
+            
+            'offline_pushed' => $offlinePushed,
+            'offline_available' => $offlineAvailable,
+            'offline_sold' => $offlineSold,
+            
+            'amazon_pushed' => 0,
+            'amazon_available' => 0,
+            'amazon_sold' => 0,
+            
+            'flipkart_pushed' => 0,
+            'flipkart_available' => 0,
+            'flipkart_sold' => 0,
+            
+            'total_sold' => $websiteSold + $offlineSold,
+            'final_stock' => $finalStock,
+            'status' => $finalStock > 10 ? 'In Stock' : ($finalStock > 0 ? 'Low Stock' : 'Out of Stock'),
+            'image_url' => $variant->image_url,
+        ];
         }
         $currentPage = (int) $request->get('page', 1);
         $offset = ($currentPage - 1) * $perPage;
