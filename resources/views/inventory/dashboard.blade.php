@@ -487,37 +487,43 @@
     </div>
 
     {{-- ===== VIEW TABS ===== --}}
-   {{-- ===== VIEW TABS ===== --}}
-<div class="row mb-3">
-    <div class="col-12">
-        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: white; padding: 6px 16px; border-radius: 30px; border: 1px solid #e9f0f5; display: inline-flex;">
-            <span style="font-size: 0.65rem; font-weight: 700; color: #7c9eb2; text-transform: uppercase; letter-spacing: 0.5px;">View:</span>
-            
-            {{-- ALL CHANNELS --}}
-            <a href="{{ url('admin/inventory/dashboard') }}{{ request()->has('search') ? '?search='.request('search') : '' }}{{ request()->has('brand') ? '&brand='.request('brand') : '' }}{{ request()->has('category') ? '&category='.request('category') : '' }}{{ request()->has('supplier') ? '&supplier='.request('supplier') : '' }}" 
-               class="btn btn-sm {{ !request('channel') ? 'active' : '' }}" 
-               style="border-radius: 30px; padding: 4px 16px; font-size: 0.7rem; font-weight: 600; border: none; transition: all 0.3s ease; {{ !request('channel') ? 'background: #8B2452; color: white; box-shadow: 0 2px 8px rgba(139,36,82,0.25);' : 'background: transparent; color: #3e6579;' }}">
-                📊 All Channels
-            </a>
-            
-           @foreach($platforms as $platform)
-   @php 
-    $name = strtolower($platform->name);
-    $channelParam = match($name) {
-        'website', 'online', 'own website', 'own_website' => 'website',
-        'offline', 'ofline' => 'offline',  // ✅ YEH LINE CHANGE KIYA
-        default => $name
-    };
-@endphp
-    <a href="{{ url('admin/inventory/dashboard?channel=' . $channelParam) }}{{ request()->has('search') ? '&search='.request('search') : '' }}{{ request()->has('brand') ? '&brand='.request('brand') : '' }}{{ request()->has('category') ? '&category='.request('category') : '' }}{{ request()->has('supplier') ? '&supplier='.request('supplier') : '' }}" 
-       class="btn btn-sm {{ request('channel') == $channelParam ? 'active' : '' }}" 
-       style="border-radius: 30px; padding: 4px 16px; font-size: 0.7rem; font-weight: 600; border: none; transition: all 0.3s ease; {{ request('channel') == $channelParam ? 'background: #8B2452; color: white; box-shadow: 0 2px 8px rgba(139,36,82,0.25);' : 'background: transparent; color: #3e6579;' }}">
-        {{ $icon }} {{ ucfirst($platform->name) }}
-    </a>
-@endforeach
+    <div class="row mb-3">
+        <div class="col-12">
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: white; padding: 6px 16px; border-radius: 30px; border: 1px solid #e9f0f5; display: inline-flex;">
+                <span style="font-size: 0.65rem; font-weight: 700; color: #7c9eb2; text-transform: uppercase; letter-spacing: 0.5px;">View:</span>
+                
+                {{-- ALL CHANNELS --}}
+                <a href="{{ url('admin/inventory/dashboard') }}{{ request()->has('search') ? '?search='.request('search') : '' }}{{ request()->has('brand') ? '&brand='.request('brand') : '' }}{{ request()->has('category') ? '&category='.request('category') : '' }}{{ request()->has('supplier') ? '&supplier='.request('supplier') : '' }}" 
+                   class="btn btn-sm {{ !request('channel') ? 'active' : '' }}" 
+                   style="border-radius: 30px; padding: 4px 16px; font-size: 0.7rem; font-weight: 600; border: none; transition: all 0.3s ease; {{ !request('channel') ? 'background: #8B2452; color: white; box-shadow: 0 2px 8px rgba(139,36,82,0.25);' : 'background: transparent; color: #3e6579;' }}">
+                    📊 All Channels
+                </a>
+                
+                @foreach($platforms as $platform)
+                    @php 
+                        $name = strtolower($platform->name);
+                        $channelParam = match($name) {
+                            'website', 'online', 'own website', 'own_website' => 'website',
+                            'offline', 'ofline' => 'offline',
+                            default => $name
+                        };
+                        $icon = '📱';
+                        if(str_contains($name, 'amazon')) $icon = '🛒';
+                        elseif(str_contains($name, 'flipkart')) $icon = '🛒';
+                        elseif(str_contains($name, 'website') || str_contains($name, 'online')) $icon = '🌐';
+                        elseif(str_contains($name, 'offline')) $icon = '🏪';
+                        elseif(str_contains($name, 'meesho')) $icon = '🛍️';
+                    @endphp
+                    <a href="{{ url('admin/inventory/dashboard?channel=' . $channelParam) }}{{ request()->has('search') ? '&search='.request('search') : '' }}{{ request()->has('brand') ? '&brand='.request('brand') : '' }}{{ request()->has('category') ? '&category='.request('category') : '' }}{{ request()->has('supplier') ? '&supplier='.request('supplier') : '' }}" 
+                       class="btn btn-sm {{ request('channel') == $channelParam ? 'active' : '' }}" 
+                       style="border-radius: 30px; padding: 4px 16px; font-size: 0.7rem; font-weight: 600; border: none; transition: all 0.3s ease; {{ request('channel') == $channelParam ? 'background: #8B2452; color: white; box-shadow: 0 2px 8px rgba(139,36,82,0.25);' : 'background: transparent; color: #3e6579;' }}">
+                        {{ $icon }} {{ ucfirst($platform->display_name ?? $platform->name) }}
+                    </a>
+                @endforeach
+            </div>
         </div>
     </div>
-</div>
+
     {{-- ===== FILTERS WITH AJAX SEARCH ===== --}}
     <div class="filter-bar mb-4">
         <form method="GET" action="{{ url('admin/inventory/dashboard') }}" class="row g-2 align-items-end" id="filterForm">
@@ -560,13 +566,23 @@
                 </select>
             </div>
 
-            {{-- ✅ CHANNEL FILTER - ADD KARO --}}
+            {{-- ✅ CHANNEL FILTER - DYNAMIC --}}
             <div class="col-lg-2 col-md-4 col-6">
                 <label style="font-size: 0.55rem; font-weight: 700; color: #7c9eb2; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Channels</label>
                 <select name="channel" class="form-select form-select-sm" style="border-radius: 30px; border-color: #e2ecf5; font-size: 0.8rem; padding: 8px 16px; background: #fafcff;">
                     <option value="">📊 All Channels</option>
-                    <option value="website" {{ request('channel') == 'website' ? 'selected' : '' }}>🏪 Own Website</option>
-                    <option value="offline" {{ request('channel') == 'offline' ? 'selected' : '' }}>🏬 Offline</option>
+                    @foreach($platforms as $platform)
+                        @php 
+                            $channelVal = match(strtolower($platform->name)) {
+                                'website', 'online', 'own website', 'own_website' => 'website',
+                                'offline', 'ofline' => 'offline',
+                                default => strtolower($platform->name)
+                            };
+                        @endphp
+                        <option value="{{ $channelVal }}" {{ request('channel') == $channelVal ? 'selected' : '' }}>
+                            {{ $platform->display_name ?? ucfirst($platform->name) }}
+                        </option>
+                    @endforeach
                 </select>
             </div>
 
@@ -619,20 +635,21 @@
                                     @endif
                                 </div>
                             </th>
-                            {{-- ===== CHANNEL LOGOS IN HEADER ===== --}}
+                            {{-- ===== DYNAMIC PLATFORM COLUMNS IN HEADER (Sirf selected channel) ===== --}}
                             @foreach($platforms as $platform)
                                 @php 
                                     $name = strtolower($platform->name);
-                                    $icon = '📱';
-                                    if(str_contains($name, 'amazon')) $icon = '🛒';
-                                    elseif(str_contains($name, 'flipkart')) $icon = '🛒';
-                                    elseif(str_contains($name, 'website') || str_contains($name, 'online')) $icon = '🌐';
-                                    elseif(str_contains($name, 'offline')) $icon = '🏪';
-                                    elseif(str_contains($name, 'meesho')) $icon = '🛍️';
+                                    $channelParam = match($name) {
+                                        'website', 'online', 'own website', 'own_website' => 'website',
+                                        'offline', 'ofline' => 'offline',
+                                        default => $name
+                                    };
                                 @endphp
-                                <th class="text-center" style="min-width: 80px;">
-                                    {{ $icon }} {{ $platform->display_name ?? ucfirst($platform->name) }}
-                                </th>
+                                @if(!request('channel') || request('channel') == $channelParam)
+                                    <th class="text-center" style="min-width: 80px;">
+                                        {{ $platform->display_name ?? ucfirst($platform->name) }}
+                                    </th>
+                                @endif
                             @endforeach
                             <th class="text-center" style="min-width: 85px;">AVAILABLE</th>
                             <th class="text-center" style="min-width: 100px;">SYNC STATUS</th>
@@ -655,9 +672,13 @@
                                         'website_available' => 0,
                                         'offline_pushed' => 0,
                                         'offline_available' => 0,
+                                        'amazon_pushed' => 0,
+                                        'flipkart_pushed' => 0,
                                         'final_stock' => 0,
                                         'website_sold' => 0,
                                         'offline_sold' => 0,
+                                        'amazon_sold' => 0,
+                                        'flipkart_sold' => 0,
                                         'variants' => [],
                                     ];
                                 }
@@ -667,9 +688,13 @@
                                 $groupedProducts[$productKey]['website_available'] += $item['website_available'];
                                 $groupedProducts[$productKey]['offline_pushed'] += $item['offline_pushed'] ?? 0;
                                 $groupedProducts[$productKey]['offline_available'] += $item['offline_available'];
+                                $groupedProducts[$productKey]['amazon_pushed'] += $item['amazon_pushed'] ?? 0;
+                                $groupedProducts[$productKey]['flipkart_pushed'] += $item['flipkart_pushed'] ?? 0;
                                 $groupedProducts[$productKey]['final_stock'] += $item['final_stock'];
                                 $groupedProducts[$productKey]['website_sold'] += $item['website_sold'];
                                 $groupedProducts[$productKey]['offline_sold'] += $item['offline_sold'];
+                                $groupedProducts[$productKey]['amazon_sold'] += $item['amazon_sold'] ?? 0;
+                                $groupedProducts[$productKey]['flipkart_sold'] += $item['flipkart_sold'] ?? 0;
                                 $groupedProducts[$productKey]['variants'][] = [
                                     'variant_name' => $item['variant_name'],
                                     'sku' => $item['sku'],
@@ -679,9 +704,13 @@
                                     'website_available' => $item['website_available'],
                                     'offline_pushed' => $item['offline_pushed'] ?? 0,
                                     'offline_available' => $item['offline_available'],
+                                    'amazon_pushed' => $item['amazon_pushed'] ?? 0,
+                                    'flipkart_pushed' => $item['flipkart_pushed'] ?? 0,
                                     'final_stock' => $item['final_stock'],
                                     'website_sold' => $item['website_sold'],
                                     'offline_sold' => $item['offline_sold'],
+                                    'amazon_sold' => $item['amazon_sold'] ?? 0,
+                                    'flipkart_sold' => $item['flipkart_sold'] ?? 0,
                                 ];
                             }
                         @endphp
@@ -706,29 +735,37 @@
                                 </td>
                                 <td class="text-center" style="font-weight: 600; color: #8B2452;">{{ $variantsCount }}</td>
                                 <td class="text-center fw-bold">{{ $product['total_stock'] }}</td>
-                               <td class="text-center fw-bold" style="color: #8B2452; font-size:0.85rem;">
-    @if(request('channel') == 'website')
-        {{ $product['website_pushed'] ?? 0 }}
-    @elseif(request('channel') == 'offline')
-        {{ $product['offline_pushed'] ?? 0 }}
-    @else
-        {{ $product['total_pushed'] ?? 0 }}
-    @endif
-</td>
-                                {{-- ===== DYNAMIC PLATFORM COLUMNS (SOLD) ===== --}}
-                               {{-- ===== PLATFORM COLUMNS (SOLD) ===== --}}
-                                <td class="text-center" style="color: #E74C3C; font-weight: 600;">
-                                    {{ $product['website_sold'] ?? 0 }}
+                                <td class="text-center fw-bold" style="color: #8B2452; font-size:0.85rem;">
+                                    @if(request('channel') == 'website')
+                                        {{ $product['website_pushed'] ?? 0 }}
+                                    @elseif(request('channel') == 'offline')
+                                        {{ $product['offline_pushed'] ?? 0 }}
+                                    @elseif(request('channel') == 'amazon')
+                                        {{ $product['amazon_pushed'] ?? 0 }}
+                                    @elseif(request('channel') == 'flipkart')
+                                        {{ $product['flipkart_pushed'] ?? 0 }}
+                                    @else
+                                        {{ $product['total_pushed'] ?? 0 }}
+                                    @endif
                                 </td>
-                                <td class="text-center" style="color: #E74C3C; font-weight: 600;">
-                                    {{ $product['offline_sold'] ?? 0 }}
-                                </td>
-                                <td class="text-center" style="color: #E74C3C; font-weight: 600;">
-                                    {{ $product['amazon_sold'] ?? 0 }}
-                                </td>
-                                <td class="text-center" style="color: #E74C3C; font-weight: 600;">
-                                    {{ $product['flipkart_sold'] ?? 0 }}
-                                </td>
+                                
+                                {{-- ===== DYNAMIC PLATFORM COLUMNS (Sirf selected channel) ===== --}}
+                                @foreach($platforms as $platform)
+                                    @php 
+                                        $name = strtolower($platform->name);
+                                        $channelParam = match($name) {
+                                            'website', 'online', 'own website', 'own_website' => 'website',
+                                            'offline', 'ofline' => 'offline',
+                                            default => $name
+                                        };
+                                        $soldKey = $name . '_sold';
+                                    @endphp
+                                    @if(!request('channel') || request('channel') == $channelParam)
+                                        <td class="text-center" style="color: #E74C3C; font-weight: 600;">
+                                            {{ $product[$soldKey] ?? 0 }}
+                                        </td>
+                                    @endif
+                                @endforeach
                                 
                                 <td class="text-center fw-bold" style="color: #0f7b4b;">{{ $product['final_stock'] }}</td>
                                 <td class="text-center">
@@ -744,8 +781,16 @@
                             </tr>
 
                             {{-- ===== VARIANT DROPDOWN ===== --}}
+                            @php
+                                $visibleCols = 6; // PRODUCT, SKU, MASTER STOCK, TOTAL PUSHED, AVAILABLE, STATUS
+                                if(!request('channel')) {
+                                    $visibleCols += count($platforms);
+                                } else {
+                                    $visibleCols += 1;
+                                }
+                            @endphp
                             <tr class="variant-row" style="display:none;">
-                                <td colspan="11" style="padding: 0 !important;">
+                                <td colspan="{{ $visibleCols }}" style="padding: 0 !important;">
                                     <div class="variant-table-wrapper">
                                         <table class="variant-table">
                                             <thead>
@@ -754,10 +799,19 @@
                                                     <th>SKU</th>
                                                     <th>MASTER STOCK</th>
                                                     <th>TOTAL PUSHED</th>
-                                                    <th>WEBSITE</th>
-                                                    <th>AMAZON</th>
-                                                    <th>FLIPKART</th>
-                                                    <th>OFFLINE</th>
+                                                    @foreach($platforms as $platform)
+                                                        @php 
+                                                            $name = strtolower($platform->name);
+                                                            $channelParam = match($name) {
+                                                                'website', 'online', 'own website', 'own_website' => 'website',
+                                                                'offline', 'ofline' => 'offline',
+                                                                default => $name
+                                                            };
+                                                        @endphp
+                                                        @if(!request('channel') || request('channel') == $channelParam)
+                                                            <th>{{ $platform->display_name ?? ucfirst($platform->name) }}</th>
+                                                        @endif
+                                                    @endforeach
                                                     <th>AVAILABLE</th>
                                                     <th>STATUS</th>
                                                 </tr>
@@ -784,24 +838,33 @@
                                                                 {{ $variant['website_pushed'] ?? 0 }}
                                                             @elseif(request('channel') == 'offline')
                                                                 {{ $variant['offline_pushed'] ?? 0 }}
+                                                            @elseif(request('channel') == 'amazon')
+                                                                {{ $variant['amazon_pushed'] ?? 0 }}
+                                                            @elseif(request('channel') == 'flipkart')
+                                                                {{ $variant['flipkart_pushed'] ?? 0 }}
                                                             @else
                                                                 {{ $variant['total_pushed'] ?? 0 }}
                                                             @endif
-                                                        </td>                                                        
-                                                                                                                {{-- ===== DYNAMIC VARIANT PLATFORM COLUMNS (SOLD) ===== --}}
-                                                                                                            {{-- ===== VARIANT PLATFORM COLUMNS (SOLD) ===== --}}
-                                                        <td style="color: #E74C3C; font-weight:600;">
-                                                            {{ $variant['website_sold'] ?? 0 }}
                                                         </td>
-                                                        <td style="color: #E74C3C; font-weight:600;">
-                                                            {{ $variant['amazon_sold'] ?? 0 }}
-                                                        </td>
-                                                        <td style="color: #E74C3C; font-weight:600;">
-                                                            {{ $variant['flipkart_sold'] ?? 0 }}
-                                                        </td>
-                                                        <td style="color: #E74C3C; font-weight:600;">
-                                                            {{ $variant['offline_sold'] ?? 0 }}
-                                                        </td>
+                                                        
+                                                        {{-- ===== DYNAMIC VARIANT PLATFORM COLUMNS (Sirf selected channel) ===== --}}
+                                                        @foreach($platforms as $platform)
+                                                            @php 
+                                                                $name = strtolower($platform->name);
+                                                                $channelParam = match($name) {
+                                                                    'website', 'online', 'own website', 'own_website' => 'website',
+                                                                    'offline', 'ofline' => 'offline',
+                                                                    default => $name
+                                                                };
+                                                                $soldKey = $name . '_sold';
+                                                            @endphp
+                                                            @if(!request('channel') || request('channel') == $channelParam)
+                                                                <td style="color: #E74C3C; font-weight:600;">
+                                                                    {{ $variant[$soldKey] ?? 0 }}
+                                                                </td>
+                                                            @endif
+                                                        @endforeach
+                                                        
                                                         <td style="font-weight:600; color: #0f7b4b;">{{ $variant['final_stock'] }}</td>
                                                         <td>
                                                             <span class="{{ $vStatusBadge }}" style="font-size: 0.55rem; padding: 2px 12px;">
@@ -817,7 +880,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="{{ 6 + count($platforms) }}" class="text-center py-5">
+                                <td colspan="{{ $visibleCols ?? 10 }}" class="text-center py-5">
                                     <i class="fas fa-box-open" style="font-size: 2.5rem; color: #d4e2f0;"></i>
                                     <p class="text-muted mt-2" style="font-size: 0.9rem;">No products found in inventory</p>
                                 </td>
