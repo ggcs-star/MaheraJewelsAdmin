@@ -43,7 +43,7 @@ class LowStockAlert extends Mailable
         return $mail;
     }
     
-    private function generateExcel()
+   private function generateExcel()
 {
     try {
         $spreadsheet = new Spreadsheet();
@@ -51,39 +51,71 @@ class LowStockAlert extends Mailable
         
         $sheet->setTitle('Low Stock Report');
         
-        // ✅ Headers
-        $sheet->setCellValue('A1', 'Product Name');
-        $sheet->setCellValue('B1', 'Variant Name');
-        $sheet->setCellValue('C1', 'Color');
-        $sheet->setCellValue('D1', 'Total Stock');
-        $sheet->setCellValue('E1', 'Status');
+        // ✅ HEADERS - EMAIL TEMPLATE KE HISAB SE
+        $headers = [
+            'A1' => 'Product Name',
+            'B1' => 'Variant',
+            'C1' => 'Color',
+            'D1' => 'Color Hex',
+            'E1' => 'Available Stock',
+            'F1' => 'Status'
+        ];
         
-        $sheet->getStyle('A1:E1')->getFont()->setBold(true);
-        $sheet->getStyle('A1:E1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('8B2452');
-        $sheet->getStyle('A1:E1')->getFont()->getColor()->setRGB('FFFFFF');
+        foreach ($headers as $cell => $value) {
+            $sheet->setCellValue($cell, $value);
+        }
+        
+        $sheet->getStyle('A1:F1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:F1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('8B2452');
+        $sheet->getStyle('A1:F1')->getFont()->getColor()->setRGB('FFFFFF');
         
         $row = 2;
         foreach ($this->lowStockItems as $item) {
-            // ✅ 'remaining_qty' → 'total_stock' with fallback
-            $stock = $item['total_stock'] ?? $item['remaining_qty'] ?? 0;
-            $status = $item['status'] ?? ($stock <= 0 ? 'Out of Stock' : 'Low Stock');
             
-            $sheet->setCellValue('A' . $row, $item['product_name'] ?? 'Unknown');
-            $sheet->setCellValue('B' . $row, $item['variant_name'] ?? 'Default');
-            $sheet->setCellValue('C' . $row, $item['color_name'] ?? '—');
-            $sheet->setCellValue('D' . $row, $stock);
-            $sheet->setCellValue('E' . $row, $status);
+            // ✅ EMAIL TEMPLATE KE HISAB SE DATA
+            $productName = $item['product_name'] ?? 'Unknown';
+            $variantName = $item['variant_name'] ?? 'Default';
+            $colorName = $item['color_name'] ?? $item['color'] ?? '—';
+            $colorHex = $item['color_hex'] ?? $item['color'] ?? '#FFFFFF';
             
-            if ($stock <= 2) {
-                $sheet->getStyle('D' . $row)->getFont()->setBold(true)->getColor()->setRGB('DC2626');
-            } elseif ($stock <= 5) {
-                $sheet->getStyle('D' . $row)->getFont()->setBold(true)->getColor()->setRGB('F97316');
+            // ✅ AVAILABLE STOCK - EMAIL TEMPLATE MEIN YAHI USE HO RAHA HAI
+            $availableStock = $item['available_stock'] ?? 
+                              $item['final_stock'] ?? 
+                              $item['remaining_qty'] ?? 
+                              $item['quantity'] ?? 
+                              $item['stock'] ?? 
+                              0;
+            
+            $status = $item['status'] ?? ($availableStock <= 0 ? 'Out of Stock' : 'Low Stock');
+            
+            $sheet->setCellValue('A' . $row, $productName);
+            $sheet->setCellValue('B' . $row, $variantName);
+            $sheet->setCellValue('C' . $row, $colorName);
+            $sheet->setCellValue('D' . $row, $colorHex);
+            $sheet->setCellValue('E' . $row, $availableStock);
+            $sheet->setCellValue('F' . $row, $status);
+            
+            // ✅ COLOR CODING
+            if ($availableStock <= 0) {
+                $sheet->getStyle('E' . $row)->getFont()->setBold(true)->getColor()->setRGB('DC2626');
+                $sheet->getStyle('F' . $row)->getFont()->setBold(true)->getColor()->setRGB('DC2626');
+            } elseif ($availableStock <= 5) {
+                $sheet->getStyle('E' . $row)->getFont()->setBold(true)->getColor()->setRGB('F97316');
             }
             $row++;
         }
         
-        foreach(range('A','E') as $col) {
+        foreach(range('A','F') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+        
+        // ✅ COLOR HEX COLUMN MEIN COLOR SHOW KARO
+        $sheet->getStyle('D2:D' . ($row - 1))->getFill()->setFillType(Fill::FILL_SOLID);
+        foreach ($this->lowStockItems as $index => $item) {
+            $rowNum = $index + 2;
+            $colorHex = $item['color_hex'] ?? $item['color'] ?? '#FFFFFF';
+            $sheet->getStyle('D' . $rowNum)->getFill()->getStartColor()->setRGB(str_replace('#', '', $colorHex));
+            $sheet->getStyle('D' . $rowNum)->getFont()->getColor()->setRGB('FFFFFF');
         }
         
         $tempPath = storage_path('app/temp/low_stock_' . time() . '.xlsx');
@@ -97,6 +129,7 @@ class LowStockAlert extends Mailable
         return $tempPath;
         
     } catch (\Exception $e) {
+        \Log::error('Excel generation failed: ' . $e->getMessage());
         return null;
     }
 }

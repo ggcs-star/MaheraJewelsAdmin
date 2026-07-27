@@ -706,8 +706,15 @@
                                 </td>
                                 <td class="text-center" style="font-weight: 600; color: #8B2452;">{{ $variantsCount }}</td>
                                 <td class="text-center fw-bold">{{ $product['total_stock'] }}</td>
-                                <td class="text-center fw-bold" style="color: #8B2452; font-size:0.85rem;">{{ $product['total_pushed'] ?? 0 }}</td>
-                                
+                               <td class="text-center fw-bold" style="color: #8B2452; font-size:0.85rem;">
+    @if(request('channel') == 'website')
+        {{ $product['website_pushed'] ?? 0 }}
+    @elseif(request('channel') == 'offline')
+        {{ $product['offline_pushed'] ?? 0 }}
+    @else
+        {{ $product['total_pushed'] ?? 0 }}
+    @endif
+</td>
                                 {{-- ===== DYNAMIC PLATFORM COLUMNS (SOLD) ===== --}}
                                {{-- ===== PLATFORM COLUMNS (SOLD) ===== --}}
                                 <td class="text-center" style="color: #E74C3C; font-weight: 600;">
@@ -772,22 +779,29 @@
                                                         <td style="text-align:left; font-weight:500;">{{ $variant['variant_name'] }}</td>
                                                         <td style="font-family: monospace; color: #7c9eb2;">{{ $variant['sku'] }}</td>
                                                         <td style="font-weight:600;">{{ $variant['total_stock'] }}</td>
-                                                        <td style="font-weight:600; color:#8B2452;">{{ $variant['total_pushed'] ?? 0 }}</td>
-                                                        
-                                                        {{-- ===== DYNAMIC VARIANT PLATFORM COLUMNS (SOLD) ===== --}}
-                                                       {{-- ===== VARIANT PLATFORM COLUMNS (SOLD) ===== --}}
-<td style="color: #E74C3C; font-weight:600;">
-    {{ $variant['website_sold'] ?? 0 }}
-</td>
-<td style="color: #E74C3C; font-weight:600;">
-    {{ $variant['amazon_sold'] ?? 0 }}
-</td>
-<td style="color: #E74C3C; font-weight:600;">
-    {{ $variant['flipkart_sold'] ?? 0 }}
-</td>
-<td style="color: #E74C3C; font-weight:600;">
-    {{ $variant['offline_sold'] ?? 0 }}
-</td>
+                                                        <td style="font-weight:600; color:#8B2452;">
+                                                            @if(request('channel') == 'website')
+                                                                {{ $variant['website_pushed'] ?? 0 }}
+                                                            @elseif(request('channel') == 'offline')
+                                                                {{ $variant['offline_pushed'] ?? 0 }}
+                                                            @else
+                                                                {{ $variant['total_pushed'] ?? 0 }}
+                                                            @endif
+                                                        </td>                                                        
+                                                                                                                {{-- ===== DYNAMIC VARIANT PLATFORM COLUMNS (SOLD) ===== --}}
+                                                                                                            {{-- ===== VARIANT PLATFORM COLUMNS (SOLD) ===== --}}
+                                                        <td style="color: #E74C3C; font-weight:600;">
+                                                            {{ $variant['website_sold'] ?? 0 }}
+                                                        </td>
+                                                        <td style="color: #E74C3C; font-weight:600;">
+                                                            {{ $variant['amazon_sold'] ?? 0 }}
+                                                        </td>
+                                                        <td style="color: #E74C3C; font-weight:600;">
+                                                            {{ $variant['flipkart_sold'] ?? 0 }}
+                                                        </td>
+                                                        <td style="color: #E74C3C; font-weight:600;">
+                                                            {{ $variant['offline_sold'] ?? 0 }}
+                                                        </td>
                                                         <td style="font-weight:600; color: #0f7b4b;">{{ $variant['final_stock'] }}</td>
                                                         <td>
                                                             <span class="{{ $vStatusBadge }}" style="font-size: 0.55rem; padding: 2px 12px;">

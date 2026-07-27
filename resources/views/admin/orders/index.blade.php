@@ -256,7 +256,7 @@
                     <tbody>
                         @forelse($orders as $order)
                             @php
-                                $platform = $order->platform ?? 'website';
+                                $platform = isset($order->amazon_order_id) ? 'amazon' : ($order->platform ?? 'website');
                                 $platformLabel = $platform == 'website' ? 'Our Website' : ($platform == 'amazon' ? 'Amazon' : ($platform == 'flipkart' ? 'Flipkart' : 'Offline'));
                                 $platformColor = $platform == 'website' ? '#1a56db' : ($platform == 'amazon' ? '#f59e0b' : ($platform == 'flipkart' ? '#ec489a' : '#0f7b4b'));
                                 $platformIcon = $platform == 'website' ? 'domain.png' : ($platform == 'amazon' ? 'amazon.png' : ($platform == 'flipkart' ? 'flipkartlogo.jpg' : 'shop.png'));
@@ -271,7 +271,9 @@
                             @endphp
                             <tr style="border-bottom: 1px solid #f0f6fa; transition: background 0.15s ease;">
                                 <td style="padding: 12px 14px;">
-                                    <div style="font-weight: 700; color: #0a1e2f; font-size: 0.85rem;">{{ $order->order_number ?? 'N/A' }}</div>
+                                    <div style="font-weight: 700; color: #0a1e2f; font-size: 0.85rem;">{{ $platform == 'amazon'
+    ? $order->amazon_order_id
+    : $order->order_number }}</div>
                                     <div style="font-size: 0.6rem; color: #7c9eb2;">
                                         #{{ $order->id ?? 'N/A' }} 
                                         @if($order->tracking_number)
