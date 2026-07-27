@@ -9,55 +9,90 @@ use Illuminate\Http\Request;
 use App\Models\ProductVariant;
 use App\Models\StockMovement;
 use App\Helpers\S3Helper;
+use App\Models\AmazonOrder;
 class OrderController extends Controller
 {
 
-    public function index(Request $request)
+public function index(Request $request)
 {
-    $query = Order::with(['user']);
+    $source = $request->get('source', 'website');
 
-    if ($request->filled('search')) {
-        $query->where('order_number', 'like', '%' . $request->search . '%');
+    if ($source === 'amazon') {
+
+        $query = AmazonOrder::with('items');
+
+        if ($request->filled('search')) {
+            $query->where('amazon_order_id', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('status')) {
+            $query->where('order_status', $request->status);
+        }
+
+        $orders = $query->orderByDesc('purchase_date')->paginate(10);
+
+        $stats = [
+            'total' => AmazonOrder::count(),
+            'pending' => AmazonOrder::where('order_status', 'Pending')->count(),
+            'confirmed' => 0,
+            'processing' => 0,
+            'shipped' => AmazonOrder::where('order_status', 'Shipped')->count(),
+            'delivered' => AmazonOrder::where('order_status', 'Delivered')->count(),
+            'cancelled' => AmazonOrder::whereIn('order_status', ['Canceled', 'Cancelled'])->count(),
+        ];
+
+    } else {
+
+        $query = Order::with('user');
+
+        if ($request->filled('search')) {
+            $query->where('order_number', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('platform')) {
+            $query->where('platform', $request->platform);
+        }
+
+        $orders = $query->latest()->paginate(10);
+
+        $stats = [
+            'total' => Order::count(),
+            'pending' => Order::where('status', 'pending')->count(),
+            'confirmed' => Order::where('status', 'confirmed')->count(),
+            'processing' => Order::where('status', 'processing')->count(),
+            'shipped' => Order::where('status', 'shipped')->count(),
+            'delivered' => Order::where('status', 'delivered')->count(),
+            'cancelled' => Order::where('status', 'cancelled')->count(),
+        ];
     }
 
-    if ($request->filled('status')) {
-        $query->where('status', $request->status);
-    }
-
-    if ($request->filled('platform')) {
-        $query->where('platform', $request->platform);
-    }
-
-    $orders = $query->latest()->paginate(10);
-
-    $stats = [
-        'total' => Order::count(),
-        'pending' => Order::where('status', 'pending')->count(),
-        'confirmed' => Order::where('status', 'confirmed')->count(),
-        'processing' => Order::where('status', 'processing')->count(),
-        'shipped' => Order::where('status', 'shipped')->count(),
-        'delivered' => Order::where('status', 'delivered')->count(),
-        'cancelled' => Order::where('status', 'cancelled')->count(),
-    ];
-
-    // ✅ Platform Stats
+    // Platform Stats (Website Orders)
     $platformStats = [
         'website' => [
             'orders' => Order::where('platform', 'website')->count(),
             'total' => Order::where('platform', 'website')->sum('total'),
         ],
         'amazon' => [
-            'orders' => Order::where('platform', 'amazon')->count(),
-            'total' => Order::where('platform', 'amazon')->sum('total'),
+            'orders' => AmazonOrder::count(),
+            'total' => AmazonOrder::sum('order_total'),
         ],
         'flipkart' => [
             'orders' => Order::where('platform', 'flipkart')->count(),
             'total' => Order::where('platform', 'flipkart')->sum('total'),
         ],
-        'total_revenue' => Order::sum('total'),
+        'total_revenue' => Order::sum('total') + AmazonOrder::sum('order_total'),
     ];
 
-    return view('admin.orders.index', compact('orders', 'stats', 'platformStats'));
+    return view('admin.orders.index', compact(
+        'orders',
+        'stats',
+        'platformStats',
+        'source'
+    ));
 }
 
 
