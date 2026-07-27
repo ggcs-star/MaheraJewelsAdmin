@@ -9,8 +9,29 @@ use App\Models\InvoiceItem;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use App\Models\StockMovement;
+use App\Models\PlatformProduct;
+use App\Models\Platform;
+
 class InventoryController extends Controller
 {
+    private function getOfflinePlatformId()
+    {
+        $platform = Platform::where('display_name', 'Offline')->first();
+        if (!$platform) {
+            throw new \Exception('Offline platform not found. Please check platforms table.');
+        }
+        return $platform->id;
+    }
+
+    private function getWebsitePlatformId()
+    {
+        $platform = Platform::where('display_name', 'Our Website')->first();
+        if (!$platform) {
+            throw new \Exception('Website platform not found. Please check platforms table.');
+        }
+        return $platform->id;
+    }
+
     public function dashboard(Request $request)
     {
         $filter = $request->get('filter', 'all');
@@ -18,14 +39,18 @@ class InventoryController extends Controller
         $brand = $request->get('brand', '');
         $category = $request->get('category', '');
         $supplier = $request->get('supplier', '');
+        $channel = $request->get('channel', '');
         $stockStatus = $request->get('stock_status', '');
         $perPage = (int) $request->get('per_page', 15);
-        
+
+        $offlinePlatformId = $this->getOfflinePlatformId();
+        $websitePlatformId = $this->getWebsitePlatformId();
+
         $variants = ProductVariant::with(['product', 'product.category', 'product.supplier', 'platformPricings.platformProduct'])
             ->whereHas('product')
-            ->whereHas('platformPricings', function($q) {
-                $q->whereHas('platformProduct', function($sub) {
-                    $sub->whereIn('platform_id', [3, 4]);
+            ->whereHas('platformPricings', function($q) use ($offlinePlatformId, $websitePlatformId) {
+                $q->whereHas('platformProduct', function($sub) use ($offlinePlatformId, $websitePlatformId) {
+                    $sub->whereIn('platform_id', [$websitePlatformId, $offlinePlatformId]);
                 });
             })
             ->when($search, function($q) use ($search) {
@@ -63,27 +88,27 @@ class InventoryController extends Controller
 
             $poQty = PurchaseOrderItem::where('product_variant_id', $variant->id)->sum('quantity');
 
+            // ✅ WEBSITE - PlatformPricing se fetch
             $websitePushed = PlatformPricing::where('product_variant_id', $variant->id)
-                ->whereHas('platformProduct', function($q) {
-                    $q->where('platform_id', 3);
-                })->sum('quantity');
+                ->whereHas('platformProduct', function($q) use ($websitePlatformId) {
+                    $q->where('platform_id', $websitePlatformId);
+                })
+                ->sum('quantity');
 
-            $offlineCurrentStock = PlatformPricing::where('product_variant_id', $variant->id)
-                ->whereHas('platformProduct', function($q) {
-                    $q->where('platform_id', 4);
-                })->sum('quantity');
+            // ✅ OFFLINE - PlatformPricing se fetch
+            $offlinePushed = PlatformPricing::where('product_variant_id', $variant->id)
+                ->whereHas('platformProduct', function($q) use ($offlinePlatformId) {
+                    $q->where('platform_id', $offlinePlatformId);
+                })
+                ->sum('quantity');
 
             $websiteSold = OrderItem::where('variant_id', $variant->id)->sum('quantity');
-
             $offlineSold = InvoiceItem::where('product_variant_id', $variant->id)->sum('quantity');
 
-            // ✅ Total Offline Pushed = Sold + Available
-            $offlinePushed = $offlineSold + $offlineCurrentStock;
-
             $websiteAvailable = max(0, $websitePushed - $websiteSold);
-            $offlineAvailable = max(0, $offlineCurrentStock);
-            $totalSold = $websiteSold + $offlineSold;
-            $finalStock = max(0, $poQty - $totalSold);
+            $offlineAvailable = max(0, $offlinePushed - $offlineSold);
+
+            $finalStock = $websiteAvailable + $offlineAvailable;
 
             $totalStock += $poQty;
             $totalWebsite += $websitePushed;
@@ -114,17 +139,40 @@ class InventoryController extends Controller
                 'supplier' => $variant->product && $variant->product->supplier ? $variant->product->supplier->name : '',
                 'variant_name' => optional($variant->variant)->name . ': ' . optional($variant->value)->value,
                 'total_stock' => $poQty,
+                'total_pushed' => $websitePushed + $offlinePushed,
+                
                 'website_pushed' => $websitePushed,
                 'website_available' => $websiteAvailable,
                 'website_sold' => $websiteSold,
+                
                 'offline_pushed' => $offlinePushed,
                 'offline_available' => $offlineAvailable,
                 'offline_sold' => $offlineSold,
-                'total_sold' => $totalSold,
+                
+                'amazon_pushed' => 0,
+                'amazon_available' => 0,
+                'amazon_sold' => 0,
+                
+                'flipkart_pushed' => 0,
+                'flipkart_available' => 0,
+                'flipkart_sold' => 0,
+                
+                'total_sold' => $websiteSold + $offlineSold,
                 'final_stock' => $finalStock,
                 'status' => $finalStock > 10 ? 'In Stock' : ($finalStock > 0 ? 'Low Stock' : 'Out of Stock'),
                 'image_url' => $variant->image_url,
             ];
+        }
+
+        // ✅ CHANNEL FILTER - SIRF DISPLAY KE LIYE
+        if ($channel == 'website') {
+            $inventoryData = array_filter($inventoryData, function($item) {
+                return $item['website_available'] > 0 || $item['website_sold'] > 0;
+            });
+        } elseif ($channel == 'offline') {
+            $inventoryData = array_filter($inventoryData, function($item) {
+                return $item['offline_available'] > 0 || $item['offline_sold'] > 0;
+            });
         }
 
         $currentPage = (int) $request->get('page', 1);
@@ -147,31 +195,32 @@ class InventoryController extends Controller
         $categories = \App\Models\Category::select('id', 'name')->get();
         $suppliers = \App\Models\Supplier::select('id', 'name')->where('status', 'active')->get();
 
-        return view('inventory.dashboard', compact('paginatedData', 'inventoryData', 'summary', 'totalItems', 'perPage', 'currentPage', 'filter', 'search', 'brand', 'category', 'supplier', 'stockStatus', 'brands', 'categories', 'suppliers'));
+        $platforms = Platform::where('is_enabled', true)
+            ->where('status', 'active')
+            ->distinct('name')
+            ->get();
+
+        return view('inventory.dashboard', compact(
+            'paginatedData', 'inventoryData', 'summary', 'totalItems', 
+            'perPage', 'currentPage', 'filter', 'search', 'brand', 
+            'category', 'supplier', 'stockStatus', 'brands', 'categories', 
+            'suppliers', 'channel', 'platforms'
+        ));
     }
 
-//     public function details($variantId)
-// {
-//     $variant = ProductVariant::with(['product', 'platformPricings.platformProduct'])->findOrFail($variantId);
-
-//     $poQty = PurchaseOrderItem::where('product_variant_id', $variantId)->sum('quantity');
-//     $websitePushed = PlatformPricing::where('product_variant_id', $variantId)
-//         ->whereHas('platformProduct', function($q) {
-//             $q->where('platform_id', 3);
-//         })->sum('quantity');
-//     $offlineCurrentStock = PlatformPricing::where('product_variant_id', $variantId)
-//         ->whereHas('platformProduct', function($q) {
-//             $q->where('platform_id', 4);
-//         })->sum('quantity');
-//     $offlineSold = InvoiceItem::where('product_variant_id', $variantId)->sum('quantity');
-//     $offlinePushed = $offlineSold + $offlineCurrentStock;
-
-//     $stockMovements = StockMovement::where('variant_id', $variantId)
-//         ->with(['platform'])
-//         ->orderBy('created_at', 'desc')
-//         ->limit(50)
-//         ->get();
-
-//     return view('inventory.details', compact('variant', 'poQty', 'websitePushed', 'offlinePushed', 'stockMovements'));
-// }
+    public function searchSuggestions(Request $request)
+    {
+        $query = $request->get('q');
+        
+        if (empty($query)) {
+            return response()->json([]);
+        }
+        
+        $results = \App\Models\Product::where('name', 'LIKE', "%{$query}%")
+            ->orWhere('sku', 'LIKE', "%{$query}%")
+            ->limit(10)
+            ->get(['name', 'sku']);
+        
+        return response()->json($results);
+    }
 }

@@ -22,6 +22,23 @@ use App\Models\PurchaseOrderItem;
 
 class ProductController extends Controller
 {
+    private function getOfflinePlatformId()
+{
+    $platform = Platform::where('display_name', 'Offline')->first();
+    if (!$platform) {
+        throw new \Exception('Offline platform not found. Please check platforms table.');
+    }
+    return $platform->id;
+}
+
+private function getWebsitePlatformId()
+{
+    $platform = Platform::where('display_name', 'Our Website')->first();
+    if (!$platform) {
+        throw new \Exception('Website platform not found. Please check platforms table.');
+    }
+    return $platform->id;
+}
 private function isUploadedFile($file): bool
 {
     return $file instanceof \Illuminate\Http\UploadedFile;
@@ -701,8 +718,11 @@ public function list()
     return view('products.list', compact('pushedProducts', 'poData'));
 }
 
-    public function push(Request $request)
+public function push(Request $request)
 {
+    $websitePlatformId = $this->getWebsitePlatformId();
+    $offlinePlatformId = $this->getOfflinePlatformId();
+
     $poProductIds = PurchaseOrderItem::whereHas('purchaseOrder', function($query) {
         $query->where('status', '!=', 'cancelled');
     })->pluck('product_id')->unique()->toArray();
@@ -720,9 +740,7 @@ public function list()
     ->orderBy('name')
     ->get()
     ->map(function ($product) {
-
         $category = $product->category;
-
         if ($category) {
             if ($category->parent) {
                 $product->display_category = $category->parent->name;
@@ -732,7 +750,6 @@ public function list()
                 $product->display_subcategory = null;
             }
         }
-
         $product->variant_payload = $product->variants->map(function ($v) {
             return [
                 'id' => $v->id,
@@ -745,26 +762,20 @@ public function list()
                 'selling_price'  => $v->selling_price,
             ];
         });
-$gallery = is_array($product->gallery_images)
-    ? $product->gallery_images
-    : json_decode($product->gallery_images, true);
-
-$product->image = (!empty($gallery) && !empty($gallery[0]))
-    ? \App\Helpers\S3Helper::url($gallery[0])
-    : asset('images/no-image.png');
-    
+        $gallery = is_array($product->gallery_images)
+            ? $product->gallery_images
+            : json_decode($product->gallery_images, true);
+        $product->image = (!empty($gallery) && !empty($gallery[0]))
+            ? \App\Helpers\S3Helper::url($gallery[0])
+            : asset('images/no-image.png');
         return $product;
     });
 
     $existingConfig = [];
-
     foreach ($products as $product) {
         foreach ($product->variants as $variant) {
-
             foreach ($variant->platformPricings as $pricing) {
-
                 $platformId = $pricing->platformProduct->platform_id;
-
                 $existingConfig[$variant->id][$platformId] = [
                     'price' => $pricing->price,
                     'qty'   => $pricing->quantity,
@@ -781,17 +792,16 @@ $product->image = (!empty($gallery) && !empty($gallery[0]))
         ->get();
 
     $pushedQuantities = [];
-    $pushedData = PlatformPricing::with('platformProduct')
-        ->whereHas('platformProduct', function($q) {
-            $q->where('platform_id', 1);
+    $allPushedData = PlatformPricing::with('platformProduct')
+        ->whereHas('platformProduct', function($q) use ($websitePlatformId, $offlinePlatformId) {
+            $q->whereIn('platform_id', [$websitePlatformId, $offlinePlatformId]);
         })
         ->get();
-    
-    foreach ($pushedData as $pricing) {
+
+    foreach ($allPushedData as $pricing) {
         $variantId = $pricing->product_variant_id;
         $pushedQuantities[$variantId] = ($pushedQuantities[$variantId] ?? 0) + $pricing->quantity;
     }
-    
 
     $purchaseOrderData = [];
     $purchaseItems = PurchaseOrderItem::with('variant', 'purchaseOrder')
@@ -803,7 +813,6 @@ $product->image = (!empty($gallery) && !empty($gallery[0]))
     foreach ($purchaseItems as $item) {
         if ($item->product_variant_id) {
             $variant = ProductVariant::find($item->product_variant_id);
-            
             $totalPoQty = $item->quantity;
             $alreadyPushed = $pushedQuantities[$item->product_variant_id] ?? 0;
             $availableStock = $totalPoQty - $alreadyPushed;
@@ -831,7 +840,6 @@ $product->image = (!empty($gallery) && !empty($gallery[0]))
         'pushedQuantities' => $pushedQuantities,
     ]);
 }
-
 public function pushStore(Request $request)
 {
     \Log::info('PUSH DATA', $request->all());
@@ -860,7 +868,6 @@ public function pushStore(Request $request)
                     ->lockForUpdate()
                     ->firstOrFail();
 
-                // ✅ PO Quantity fetch
                 $poItem = PurchaseOrderItem::where('product_variant_id', $variantId)
                     ->whereHas('purchaseOrder', function($q) {
                         $q->where('status', '!=', 'cancelled');
@@ -880,6 +887,16 @@ public function pushStore(Request $request)
                 foreach ($platforms as $platformId => $p) {
 
                     if (!isset($p['qty']) || $p['qty'] <= 0) continue;
+
+                    // ✅ OFFLINE PLATFORM MAPPING - UI ID 4 → DB ID 5
+                    if ($platformId == 4) {
+                        $platformId = 5;  // Offline
+                    }
+
+                    // ✅ WEBSITE PLATFORM MAPPING - UI ID 3 → DB ID 3
+                    if ($platformId == 3) {
+                        $platformId = 3;  // Website
+                    }
 
                     $platformProduct = PlatformProduct::firstOrCreate(
                         [
@@ -903,14 +920,12 @@ public function pushStore(Request $request)
 
                     $discountType = $p['discount_type'] === 'percent' ? 'percentage' : 'fixed';
                     
-                    // ✅ FIND existing record
                     $existingPricing = PlatformPricing::where([
                         'platform_product_id' => $platformProduct->id,
                         'product_variant_id'  => $variantId,
                     ])->first();
 
                     if ($existingPricing) {
-                        // ✅ UPDATE: Quantity ADD karo
                         $existingPricing->quantity += $p['qty'];
                         $existingPricing->price = $p['price'];
                         $existingPricing->discount_type = $discountType;
@@ -918,7 +933,6 @@ public function pushStore(Request $request)
                         $existingPricing->final_price = $p['final_total'] / max($existingPricing->quantity, 1);
                         $existingPricing->save();
                     } else {
-                        // ✅ CREATE: Naya record
                         PlatformPricing::create([
                             'platform_product_id' => $platformProduct->id,
                             'product_variant_id'  => $variantId,
@@ -932,22 +946,18 @@ public function pushStore(Request $request)
                         ]);
                     }
 
-                    // ✅ Update platform stock
                     $platformProduct->platform_stock = PlatformPricing::where('platform_product_id', $platformProduct->id)->sum('quantity');
                     $platformProduct->save();
                 }
 
-                // ✅ Total pushed calculate karo
                 $totalPushed = PlatformPricing::where('product_variant_id', $variantId)->sum('quantity');
                 
-                // ✅ Safety check
                 if ($totalPushed > $poQuantity) {
                     throw new \Exception(
                         "Not enough stock! PO Qty: {$poQuantity}, Total Pushed: {$totalPushed}"
                     );
                 }
 
-                // ✅ Update ProductVariant.quantity = Available Stock
                 $availableStock = $poQuantity - $totalPushed;
                 $variant->quantity = $availableStock;
                 $variant->save();
@@ -963,7 +973,6 @@ public function pushStore(Request $request)
         return back()->with('error', $e->getMessage());
     }
 }
-
         public function bulkDelete(Request $request)
         {
             $ids = $request->ids;
