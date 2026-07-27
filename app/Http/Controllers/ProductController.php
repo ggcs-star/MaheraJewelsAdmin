@@ -888,23 +888,22 @@ public function pushStore(Request $request)
 
                     if (!isset($p['qty']) || $p['qty'] <= 0) continue;
 
-                    // ✅ OFFLINE PLATFORM MAPPING - UI ID 4 → DB ID 5
                     if ($platformId == 4) {
-                        $platformId = 5;  // Offline
+                        $platformId = 5;
                     }
 
-                    // ✅ WEBSITE PLATFORM MAPPING - UI ID 3 → DB ID 3
                     if ($platformId == 3) {
-                        $platformId = 3;  // Website
+                        $platformId = 3;
                     }
 
                     $platformProduct = PlatformProduct::firstOrCreate(
                         [
                             'platform_id' => $platformId,
                             'product_id'  => $variant->product_id,
+                            'product_variant_id' => $variant->id,
                         ],
                         [
-                            'platform_sku'   => $variant->product->sku . ($variant->sku_suffix ?? ''),
+                            'platform_sku'   => $variant->sku_suffix ?? $variant->product->sku,
                             'platform_price' => $p['price'],
                             'platform_stock' => 0,
                             'status'         => 'active',
@@ -913,7 +912,7 @@ public function pushStore(Request $request)
                     );
 
                     $platformProduct->update([
-                        'platform_sku'   => $variant->product->sku . ($variant->sku_suffix ?? ''),
+                        'platform_sku'   => $variant->sku_suffix ?? $variant->product->sku,
                         'platform_price' => $p['price'],
                         'status'         => 'active',
                     ]);
@@ -972,8 +971,7 @@ public function pushStore(Request $request)
     } catch (\Throwable $e) {
         return back()->with('error', $e->getMessage());
     }
-}
-        public function bulkDelete(Request $request)
+}        public function bulkDelete(Request $request)
         {
             $ids = $request->ids;
 

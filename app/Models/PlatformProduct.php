@@ -9,6 +9,7 @@ class PlatformProduct extends Model
     protected $fillable = [
         'platform_id',
         'product_id',
+        'product_variant_id',
         'platform_sku',
         'platform_price',
         'platform_stock',
