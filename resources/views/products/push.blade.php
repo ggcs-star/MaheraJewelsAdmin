@@ -1616,48 +1616,57 @@ function updatePageSummary() {
     let remaining = availableStock - currentAllocated;
     if (remaining < 0) remaining = 0;
 
-    let totalPurchaseValue = poQty * poPrice;
+    let totalPurchaseValue = totalAllocated * poPrice;
     let expectedProfit = totalRevenue - totalPurchaseValue;
     let avgSellingPrice = totalItems > 0 ? totalRevenue / totalItems : 0;
     let expectedMargin = totalRevenue > 0 ? (expectedProfit / totalRevenue) * 100 : 0;
 
-    document.getElementById('pageMasterStockNum').innerText = poQty;
-    document.getElementById('pageAllocated').innerText = totalAllocated;
-    document.getElementById('pageRemaining').innerText = remaining;
+    const setText = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = value;
+    };
+    const setHTML = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = value;
+    };
+    const setStyle = (id, prop, value) => {
+        const el = document.getElementById(id);
+        if (el) el.style[prop] = value;
+    };
 
-    document.getElementById('pageSummaryMaster').innerText = poQty + ' Units';
-    document.getElementById('pageSummaryAllocated').innerText = totalAllocated + ' Units';
-    document.getElementById('pageSummaryRemaining').innerText = remaining + ' Units';
-    document.getElementById('pageSummaryMasterSmall').innerText = poQty;
-    document.getElementById('pageSummaryAllocatedSmall').innerText = totalAllocated;
-    document.getElementById('pageSummaryRemainingSmall').innerText = remaining;
+    setText('pageMasterStockNum', poQty);
+    setText('pageAllocated', totalAllocated);
+    setText('pageRemaining', remaining);
+
+    setText('pageSummaryMaster', poQty + ' Units');
+    setText('pageSummaryAllocated', totalAllocated + ' Units');
+    setText('pageSummaryRemaining', remaining + ' Units');
+    setText('pageSummaryMasterSmall', poQty);
+    setText('pageSummaryAllocatedSmall', totalAllocated);
+    setText('pageSummaryRemainingSmall', remaining);
 
     const percent = availableStock > 0 ? (currentAllocated / availableStock * 100) : 0;
-    document.getElementById('pageSummaryProgress').style.width = Math.min(percent, 100) + '%';
-    document.getElementById('pageMasterProgress').style.width = Math.min(percent, 100) + '%';
+    setStyle('pageSummaryProgress', 'width', Math.min(percent, 100) + '%');
+    setStyle('pageMasterProgress', 'width', Math.min(percent, 100) + '%');
 
-    document.getElementById('pageSummaryPurchase').innerHTML = '₹' + totalPurchaseValue.toFixed(2);
-    document.getElementById('pageSummaryRevenue').innerHTML = '₹' + totalRevenue.toFixed(2);
-    document.getElementById('pageSummaryProfit').innerHTML = '₹' + expectedProfit.toFixed(2);
-    document.getElementById('pageSummaryAvgPrice').innerHTML = '₹' + avgSellingPrice.toFixed(2) + ' / Unit';
-    document.getElementById('pageSummaryMargin').innerHTML = expectedMargin.toFixed(1) + '%';
+    setHTML('pageSummaryPurchase', '₹' + totalPurchaseValue.toFixed(2));
+    setHTML('pageSummaryRevenue', '₹' + totalRevenue.toFixed(2));
+    setHTML('pageSummaryProfit', '₹' + expectedProfit.toFixed(2));
+    setHTML('pageSummaryAvgPrice', '₹' + avgSellingPrice.toFixed(2) + ' / Unit');
+    setHTML('pageSummaryMargin', expectedMargin.toFixed(1) + '%');
 
-    document.getElementById('pageFooterMaster').innerText = poQty;
-    document.getElementById('pageFooterAllocated').innerText = totalAllocated;
-    document.getElementById('pageFooterRemaining').innerText = remaining;
+    setText('pageFooterMaster', poQty);
+    setText('pageFooterAllocated', totalAllocated);
+    setText('pageFooterRemaining', remaining);
 
     const statusEl = document.getElementById('pageSummaryStatus');
     const statusEl2 = document.getElementById('pageStockStatus');
     if (currentAllocated <= availableStock) {
-        statusEl.innerHTML = '✅ Stock allocation is valid.';
-        statusEl.className = 'status-valid';
-        statusEl2.innerHTML = '✅ Stock allocation is valid.';
-        statusEl2.className = 'footer-status-text success';
+        if (statusEl) { statusEl.innerHTML = '✅ Stock allocation is valid.'; statusEl.className = 'status-valid'; }
+        if (statusEl2) { statusEl2.innerHTML = '✅ Stock allocation is valid.'; statusEl2.className = 'footer-status-text success'; }
     } else {
-        statusEl.innerHTML = '⚠️ Stock allocation exceeds available stock!';
-        statusEl.className = 'status-valid error';
-        statusEl2.innerHTML = '⚠️ Stock allocation exceeds available stock!';
-        statusEl2.className = 'footer-status-text error';
+        if (statusEl) { statusEl.innerHTML = '⚠️ Stock allocation exceeds available stock!'; statusEl.className = 'status-valid error'; }
+        if (statusEl2) { statusEl2.innerHTML = '⚠️ Stock allocation exceeds available stock!'; statusEl2.className = 'footer-status-text error'; }
     }
 }
 
