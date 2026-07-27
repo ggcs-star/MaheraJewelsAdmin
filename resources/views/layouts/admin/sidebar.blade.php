@@ -178,9 +178,9 @@
                 <path d="M6.012 18H21V8a2 2 0 0 0-2-2h-8L9 4H3a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h1.012a3 3 0 1 0 6 0m5 0h4.976a3 3 0 1 0 6 0H11z"/>
             </svg>
             <span class="text-sm">Marketplace</span>
-        </a>
+        </a> -->
 
-        <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-500 hover:bg-gray-50 hover:text-[#8B2452]">
+        <!-- <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-500 hover:bg-gray-50 hover:text-[#8B2452]">
             <svg class="w-5 h-5 stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 17v-2m3 2v-4m3 4v-6" />
             </svg>

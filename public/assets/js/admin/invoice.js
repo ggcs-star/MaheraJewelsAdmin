@@ -55,10 +55,15 @@ document.addEventListener('DOMContentLoaded', function() {
         row.innerHTML =
             '<td><select name="items[' + rowIndex + '][product_id]" class="form-select product-select">' + productTemplate + '</select></td>' +
             '<td><select name="items[' + rowIndex + '][variant_id]" class="form-select variant-select"><option value="">Select Variant</option></select></td>' +
-            '<td>' +
-            '<input type="number" name="items[' + rowIndex + '][qty]" class="form-control qty" value="1" min="1">' +
-            '<div class="small mt-1 text-muted stock-info" style="display:none;">Available: <strong class="available-stock">0</strong> | Remaining: <strong class="remaining-stock">0</strong></div>' +
-            '<div id="stockError_' + rowIndex + '" class="text-danger small" style="display:none; margin-top:2px;">⚠️ Quantity exceeds available stock!</div>' +
+            '<td style="min-width: 140px; text-align: center; vertical-align: middle;">' +
+            '<div style="display: flex; flex-direction: column; align-items: center; gap: 0px;">' +
+            '   <input type="number" name="items[' + rowIndex + '][qty]" class="form-control qty" value="1" min="1" style="width: 55px; text-align: center; display: block; padding: 2px 4px; font-size: 0.85rem; margin: 0 auto;">' +
+            '   <div class="stock-info" style="display:none; text-align: center; line-height: 1.2; margin-top: 1px;">' +
+            '       <span style="font-size: 0.55rem; font-weight: 500; color: #0f7b4b; background: #e8f5e9; padding: 0px 6px; border-radius: 8px; display: inline-block;">Avail: <strong class="available-stock">0</strong></span>' +
+            '       <span style="font-size: 0.55rem; font-weight: 500; color: #b85e00; background: #fff4e5; padding: 0px 6px; border-radius: 8px; display: inline-block;">Rem: <strong class="remaining-stock">0</strong></span>' +
+            '   </div>' +
+            '</div>' +
+            '<div id="stockError_' + rowIndex + '" class="text-danger small" style="display:none; margin-top:1px; font-size: 0.5rem; text-align: center;">⚠️ Exceeds!</div>' +
             '</td>' +
             '<td><input type="number" name="items[' + rowIndex + '][price]" class="form-control price" readonly></td>' +
             '<td><div class="input-group"><input type="number" name="items[' + rowIndex + '][discount]" class="form-control discount" value="0" min="0"><select class="form-select discount-type" name="items[' + rowIndex + '][discount_type]"><option value="percent" selected>%</option><option value="flat">₹</option></select></div></td>' +

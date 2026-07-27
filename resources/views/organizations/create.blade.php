@@ -131,6 +131,25 @@
                             <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                         @enderror
                     </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Invoice Name</label>
+                        <input type="text" name="invoice_name" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm" value="{{ old('invoice_name') }}" placeholder="Business Name for Invoice">
+                        <p class="text-xs text-gray-400 mt-1">Leave blank to use main name</p>
+                    </div>
+
+                    <!-- ✅ INVOICE EMAIL -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Invoice Email</label>
+                        <input type="email" name="invoice_email" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm" value="{{ old('invoice_email') }}" placeholder="Email for Invoice">
+                        <p class="text-xs text-gray-400 mt-1">Leave blank to use main email</p>
+                    </div>
+
+                    <!-- ✅ INVOICE LOGO -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Invoice Logo</label>
+                        <input type="file" name="invoice_logo" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm file:mr-2 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#8B2452]/10 file:text-[#8B2452] hover:file:bg-[#8B2452]/20">
+                        <p class="text-xs text-gray-400 mt-1">Leave blank to use main logo</p>
+                    </div>
                 </div>
             </div>
 

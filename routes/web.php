@@ -147,7 +147,7 @@ Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:admin']
 
         Route::get('/inventory/{variant}/details', [InventoryController::class, 'details'])
             ->name('inventory.details');
-    
+    Route::get('/inventory/search-suggestions', [InventoryController::class, 'searchSuggestions'])->name('inventory.search');
 
         Route::get('/inventory/{variantId}/details', [InventoryController::class, 'details'])
             ->name('inventory.details');

@@ -24,12 +24,16 @@ body {
     background: #F3F4F6 !important;
 }
 
+/* ============================================
+   MAIN WRAPPER
+   ============================================ */
 .push-wrapper {
     max-width: 1440px;
     margin: 0 auto;
     padding: 20px 24px 40px;
 }
 
+/* HEADER */
 .page-head {
     display: flex;
     align-items: center;
@@ -69,6 +73,9 @@ body {
     text-decoration: none;
 }
 
+/* ============================================
+   CARD
+   ============================================ */
 .card-ref {
     background: #FFFFFF;
     border: 1px solid #E5E7EB;
@@ -115,6 +122,9 @@ body {
     gap: 8px;
 }
 
+/* ============================================
+   PRODUCT INFO ROW
+   ============================================ */
 .product-info-row {
     display: flex;
     align-items: flex-start;
@@ -177,6 +187,9 @@ body {
     display: inline-block;
 }
 
+/* ============================================
+   VARIANT + PO + MASTER
+   ============================================ */
 .variant-po-master {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -295,6 +308,9 @@ body {
 .master-box-ref .ms-sub .allocated { color: #A3006B; font-weight: 600; }
 .master-box-ref .ms-sub .remaining { color: #14B86A; font-weight: 600; }
 
+/* ============================================
+   PLATFORM CARDS
+   ============================================ */
 .platform-cards-wrap {
     display: flex;
     flex-wrap: wrap;
@@ -347,6 +363,9 @@ body {
     color: #111827;
 }
 
+/* ============================================
+   PRICING TABLE
+   ============================================ */
 .pricing-table-wrap {
     overflow-x: auto;
 }
@@ -412,6 +431,7 @@ body {
     white-space: nowrap;
 }
 
+/* QTY INPUT */
 .qty-input-wrap {
     position: relative;
     display: inline-block;
@@ -596,6 +616,9 @@ body {
     color: #E74C3C;
 }
 
+/* ============================================
+   SUMMARY - WITH LIGHT PURPLE BG
+   ============================================ */
 .summary-ref {
     background: #F7F3FF;
     border: 1px solid #E5E7EB;
@@ -699,6 +722,9 @@ body {
     color: #111827;
 }
 
+/* ============================================
+   FOOTER
+   ============================================ */
 .footer-badge {
     font-size: 12px;
     color: #6B7280;
@@ -720,6 +746,9 @@ body {
 .footer-status-text.success { color: #14B86A; }
 .footer-status-text.error { color: #E74C3C; }
 
+/* ============================================
+   BUTTONS
+   ============================================ */
 .btn-success-ref {
     background: #14B86A;
     border: none;
@@ -791,6 +820,9 @@ body {
     color: #FFFFFF;
 }
 
+/* ============================================
+   RESPONSIVE
+   ============================================ */
 @media (max-width: 992px) {
     .variant-po-master {
         grid-template-columns: 1fr 1fr;
@@ -825,6 +857,9 @@ body {
     }
 }
 
+/* ============================================
+   MODAL
+   ============================================ */
 .modal-ref .modal-content {
     border-radius: 16px;
     border: 1px solid #E5E7EB;
@@ -875,8 +910,12 @@ body {
 }
 </style>
 
+<!-- ============================================
+   MAIN WRAPPER
+   ============================================ -->
 <div class="push-wrapper">
 
+    <!-- HEADER -->
     <div class="page-head">
         <div>
             <h1>Push Product to Marketplace</h1>
@@ -904,6 +943,9 @@ body {
         <input type="hidden" name="product_id" id="selectedProductId">
         <input type="hidden" name="variant_platform_data" id="variantPlatformDataInput">
 
+        <!-- ==========================================
+        SELECT PRODUCT
+        ========================================== -->
         <div id="productSelectSection">
             <div class="card-ref">
                 <div class="card-head">
@@ -944,10 +986,14 @@ body {
             </div>
         </div>
 
+        <!-- ==========================================
+        CONFIGURE VARIANT
+        ========================================== -->
         <div id="configureVariantSection" style="display:none;">
 
             <div class="card-ref">
 
+                <!-- HEADER WITH LIGHT PURPLE BG -->
                 <div class="card-head">
                     <h5>⚙️ Configure Variant</h5>
                     <small>Set platform wise stock, price and discount</small>
@@ -955,8 +1001,12 @@ body {
 
                 <div class="card-body">
 
+                    <!-- ==========================================
+                    PRODUCT INFO + VARIANT + PO + MASTER
+                    ========================================== -->
                     <div class="row g-3">
 
+                        <!-- PRODUCT INFO -->
                         <div class="col-md-5">
                             <div class="product-info-row">
                                 <img id="pageProductImage"
@@ -975,9 +1025,11 @@ body {
                             </div>
                         </div>
 
+                        <!-- VARIANT + PO + MASTER -->
                         <div class="col-md-7">
                             <div class="variant-po-master">
 
+                                <!-- Select Variant - LIGHT PURPLE BG -->
                                 <div class="select-variant-box">
                                     <label>Select Variant</label>
                                     <select id="variantSelect">
@@ -985,6 +1037,7 @@ body {
                                     </select>
                                 </div>
 
+                                <!-- PO - LIGHT PURPLE BG -->
                                 <div class="po-box-ref">
                                     <div class="po-title">Purchase Order (PO)</div>
                                     <div class="po-row">
@@ -1001,6 +1054,7 @@ body {
                                     </div>
                                 </div>
 
+                                <!-- Master Stock - GREEN BG -->
                                 <div class="master-box-ref">
                                     <div class="ms-label">Master Stock</div>
                                     <div class="ms-value"><span id="pageMasterStockNum">0</span> Units</div>
@@ -1015,6 +1069,9 @@ body {
 
                     </div>
 
+                    <!-- ==========================================
+                    SELECT SALES PLATFORMS
+                    ========================================== -->
                     <div style="margin-top:20px;">
                         <div style="background:#FFFFFF; border:1px solid #E5E7EB; border-radius:12px; overflow:hidden;">
                             <div style="padding:10px 16px; border-bottom:1px solid #E5E7EB; display:flex; align-items:center; justify-content:space-between; background:#F7F3FF;">
@@ -1057,10 +1114,14 @@ body {
                         </div>
                     </div>
 
+                    <!-- ==========================================
+                    PLATFORM ALLOCATION & PRICING
+                    ========================================== -->
                     <div id="pagePricingSection" style="display:none; margin-top:16px;">
 
                         <div class="row g-3">
 
+                            <!-- LEFT: TABLE -->
                             <div class="col-lg-8">
                                 <div style="background:#FFFFFF; border:1px solid #E5E7EB; border-radius:12px; overflow:hidden;">
                                     <div style="padding:10px 16px; border-bottom:1px solid #E5E7EB; background:#F7F3FF;">
@@ -1089,6 +1150,7 @@ body {
                                                                 <div class="pricing-row-ref" id="pagePricingCard_{{ $platform->id }}" style="display:none; padding:4px 8px;">
                                                                     <div style="display:flex; align-items:center; gap:0; width:100%;">
 
+                                                                        <!-- Platform -->
                                                                         <div style="flex:0 0 13%; min-width:13%; padding:0 4px; text-align:left;">
                                                                             <span class="platform-name">
                                                                                 @if(str_contains($name, 'amazon')) 🛒 Amazon
@@ -1101,6 +1163,7 @@ body {
                                                                             </span>
                                                                         </div>
 
+                                                                        <!-- Allocate Stock -->
                                                                         <div style="flex:0 0 14%; min-width:14%; padding:0 4px; text-align:center;">
                                                                             <div class="qty-input-wrap">
                                                                                 <input type="number"
@@ -1113,6 +1176,7 @@ body {
                                                                             </div>
                                                                         </div>
 
+                                                                        <!-- Selling Price -->
                                                                         <div style="flex:0 0 14%; min-width:14%; padding:0 4px; text-align:center;">
                                                                             <input type="number"
                                                                                    step="0.01"
@@ -1123,6 +1187,7 @@ body {
                                                                                    value="">
                                                                         </div>
 
+                                                                        <!-- Discount -->
                                                                         <div style="flex:0 0 14%; min-width:14%; padding:0 4px; text-align:center;">
                                                                             <div class="discount-group-ref">
                                                                                 <input type="number"
@@ -1139,6 +1204,7 @@ body {
                                                                             <span class="discount-off-text" id="page_discount_text_{{ $platform->id }}"></span>
                                                                         </div>
 
+                                                                        <!-- Final Price -->
                                                                         <div style="flex:0 0 14%; min-width:14%; padding:0 4px; text-align:center;">
                                                                             <input type="text"
                                                                                    id="page_final_price_{{ $platform->id }}"
@@ -1147,6 +1213,7 @@ body {
                                                                                    readonly>
                                                                         </div>
 
+                                                                        <!-- Total Selling -->
                                                                         <div style="flex:0 0 16%; min-width:16%; padding:0 4px; text-align:center;">
                                                                             <input type="text"
                                                                                    id="page_total_selling_{{ $platform->id }}"
@@ -1155,10 +1222,12 @@ body {
                                                                                    readonly>
                                                                         </div>
 
+                                                                        <!-- Status -->
                                                                         <div style="flex:0 0 9%; min-width:9%; padding:0 4px; text-align:center;">
                                                                             <span class="status-pill-ref active" id="page_status_{{ $platform->id }}">Active</span>
                                                                         </div>
 
+                                                                        <!-- Delete -->
                                                                         <div style="flex:0 0 6%; min-width:6%; padding:0 4px; text-align:center;">
                                                                             <button type="button" class="btn-delete-row page-delete-row" data-platform-id="{{ $platform->id }}" style="display:none;">✕</button>
                                                                         </div>
@@ -1177,9 +1246,11 @@ body {
                                 </div>
                             </div>
 
+                            <!-- RIGHT: SUMMARY - LIGHT PURPLE BG -->
                             <div class="col-lg-4">
                                 <div class="summary-ref">
 
+                                    <!-- Allocation Summary -->
                                     <div class="sum-title">Allocation Summary</div>
                                     <div class="sum-item">
                                         <span class="label">Master Stock</span>
@@ -1196,6 +1267,7 @@ body {
 
                                     <div class="divider"></div>
 
+                                    <!-- Financial Summary -->
                                     <div class="sum-title" style="margin-top:2px;">Financial Summary</div>
                                     <div class="sum-item">
                                         <span class="label">Total Purchase Value</span>
@@ -1220,6 +1292,7 @@ body {
 
                                     <div class="divider"></div>
 
+                                    <!-- Progress -->
                                     <div class="progress-summary">
                                         <div class="ps-row">
                                             <span>Master: <strong id="pageSummaryMasterSmall">0</strong></span>
@@ -1231,8 +1304,10 @@ body {
                                         </div>
                                     </div>
 
+                                    <!-- Status -->
                                     <div class="status-valid" id="pageSummaryStatus">✅ Stock allocation is valid.</div>
 
+                                    <!-- Note - LIGHT YELLOW BG -->
                                     <div class="note-box-ref">
                                         <strong>Note:</strong> Discount is applied per unit.<br>
                                         Example: Selling Price ₹500 - 10% = ₹450 per unit.<br>
@@ -1246,12 +1321,18 @@ body {
 
                     </div>
 
+                    <!-- ==========================================
+                    ADD MORE PLATFORM
+                    ========================================== -->
                     <div class="text-center mt-3">
                         <button type="button" class="btn-add-ref">+ Add More Platform</button>
                     </div>
 
                 </div>
 
+                <!-- ==========================================
+                CARD FOOTER
+                ========================================== -->
                 <div class="card-foot">
                     <div class="d-flex align-items-center flex-wrap gap-2">
                         <span class="footer-status-text success" id="pageStockStatus">✅ Stock allocation is valid.</span>
@@ -1269,10 +1350,16 @@ body {
 
         </div>
 
+        <!-- ==========================================
+        PUSH BUTTON
+        ========================================== -->
         <div class="text-end mt-3">
             <button type="button" id="previewPushBtn" class="btn-push-ref">🚀 Push to Selected Platforms</button>
         </div>
 
+        <!-- ==========================================
+        MODAL
+        ========================================== -->
         <div class="modal fade modal-ref" id="pushPreviewModal" tabindex="-1">
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content">
@@ -1375,144 +1462,131 @@ document.addEventListener('DOMContentLoaded', function() {
         configureSection.scrollIntoView({ behavior: 'smooth' });
     });
 
-function populateVariantDropdown(variants) {
-    variantSelect.innerHTML = '<option value="">— Select variant —</option>';
-    let hasPoVariant = false;
-    variants.forEach(v => {
-        const poData = window.purchaseOrderData[v.id] || null;
-        if (poData) {
-            hasPoVariant = true;
+    function populateVariantDropdown(variants) {
+        variantSelect.innerHTML = '<option value="">— Select variant —</option>';
+
+        let hasPoVariant = false;
+        variants.forEach(v => {
+            const poData = window.purchaseOrderData[v.id] || null;
+            if (poData) {
+                hasPoVariant = true;
+                const option = document.createElement('option');
+                option.value = v.id;
+                option.dataset.variantType = v.variant_type || '';
+                option.dataset.variantValue = v.variant_value || '';
+                option.dataset.variantColor = v.color || '#808080';
+                option.dataset.variantSku = v.sku_suffix || '';
+                option.dataset.variantImage = v.image_url || '';
+                option.dataset.poQty = poData.quantity || 0;
+                option.dataset.poPrice = poData.purchase_price || 0;
+                option.dataset.alreadyPushed = window.pushedQuantities?.[v.id] || 0;
+                option.dataset.availableStock = (poData.quantity || 0) - (window.pushedQuantities?.[v.id] || 0);
+                option.text = v.variant_type + ' - ' + v.variant_value + ' (' + v.sku_suffix + ')';
+                variantSelect.appendChild(option);
+            }
+        });
+
+        if (!hasPoVariant) {
             const option = document.createElement('option');
-            option.value = v.id;
-            option.dataset.variantType = v.variant_type || '';
-            option.dataset.variantValue = v.variant_value || '';
-            option.dataset.variantColor = v.color || '#808080';
-            option.dataset.variantSku = v.sku_suffix || '';
-            option.dataset.variantImage = v.image_url || '';
-            option.dataset.poQty = poData.quantity || 0;
-            option.dataset.poPrice = poData.purchase_price || 0;
-            option.dataset.alreadyPushed = window.pushedQuantities?.[v.id] || 0;
-            option.dataset.availableStock = poData.available_stock || (poData.quantity - (window.pushedQuantities?.[v.id] || 0));
-            option.text = v.variant_type + ' - ' + v.variant_value + ' (' + v.sku_suffix + ')';
+            option.value = '';
+            option.text = '❌ No PO variants available';
+            option.disabled = true;
             variantSelect.appendChild(option);
         }
-    });
-    if (!hasPoVariant) {
-        const option = document.createElement('option');
-        option.value = '';
-        option.text = '❌ No PO variants available';
-        option.disabled = true;
-        variantSelect.appendChild(option);
+
+        if (variantSelect.options.length === 2) {
+            variantSelect.selectedIndex = 1;
+            variantSelect.dispatchEvent(new Event('change'));
+        }
     }
-    if (variantSelect.options.length === 2) {
-        variantSelect.selectedIndex = 1;
-        variantSelect.dispatchEvent(new Event('change'));
-    }
-}
 
     if (productSelect && productSelect.value) {
         const event = new Event('change');
         productSelect.dispatchEvent(event);
     }
 
-variantSelect.addEventListener('change', function() {
-    const option = this.options[this.selectedIndex];
-    if (!this.value || !option.value) {
-        pricingSection.style.display = 'none';
-        return;
-    }
-
-    activeVariantId = parseInt(this.value);
-    
-    let poQty = parseInt(option.dataset.poQty) || 0;
-    let alreadyPushed = parseInt(option.dataset.alreadyPushed) || 0;
-    let availableStock = poQty - alreadyPushed;
-    let poPrice = parseFloat(option.dataset.poPrice) || 0;
-
-    currentVariantData = {
-        id: activeVariantId,
-        type: option.dataset.variantType || '',
-        value: option.dataset.variantValue || '',
-        color: option.dataset.variantColor || '#808080',
-        sku: option.dataset.variantSku || '',
-        image: option.dataset.variantImage || '',
-        poQty: poQty,
-        poPrice: poPrice,
-        alreadyPushed: alreadyPushed,
-        availableStock: availableStock
-    };
-
-    document.getElementById('pageVariantValue').innerText = currentVariantData.value || '-';
-    document.getElementById('pageVariantColor').style.background = currentVariantData.color;
-
-    document.getElementById('pagePoQty').innerText = currentVariantData.poQty;
-    document.getElementById('pagePoPrice').innerText = currentVariantData.poPrice;
-    document.getElementById('pagePoValue').innerText = (currentVariantData.poQty * currentVariantData.poPrice).toFixed(2);
-
-    document.getElementById('pageMasterStockNum').innerText = currentVariantData.poQty;
-    document.getElementById('pageAllocated').innerText = currentVariantData.alreadyPushed;
-    document.getElementById('pageRemaining').innerText = currentVariantData.availableStock;
-
-    document.querySelectorAll('.max, #page_max_').forEach(el => {
-        el.innerText = currentVariantData.availableStock;
-    });
-
-    document.querySelectorAll('#page_po_available_').forEach(el => {
-        el.value = currentVariantData.availableStock;
-    });
-    document.querySelectorAll('#page_po_price_').forEach(el => {
-        el.value = currentVariantData.poPrice;
-    });
-
-    document.querySelectorAll('.page-qty-input').forEach(input => {
-        input.value = 0;
-        input.max = currentVariantData.availableStock;
-    });
-
-    document.querySelectorAll('.platform-checkbox:checked').forEach(cb => {
-        const platformId = cb.dataset.platformId;
-        const card = document.getElementById('pagePricingCard_' + platformId);
-        const row = document.getElementById('pageRow_' + platformId);
-        
-        if (card && currentVariantData) {
-            card.style.display = 'block';
-            document.getElementById('page_max_' + platformId).innerText = currentVariantData.availableStock;
-            document.getElementById('page_po_available_' + platformId).value = currentVariantData.availableStock;
-            document.getElementById('page_po_price_' + platformId).value = currentVariantData.poPrice;
-            document.getElementById('page_qty_' + platformId).max = currentVariantData.availableStock;
+    variantSelect.addEventListener('change', function() {
+        const option = this.options[this.selectedIndex];
+        if (!this.value || !option.value) {
+            pricingSection.style.display = 'none';
+            return;
         }
-        if (row) row.style.display = 'table-row';
-    });
 
-    const data = variantPlatformData[activeVariantId];
-    if (data && Object.keys(data).length > 0) {
-        Object.entries(data).forEach(([platformId, values]) => {
-            const checkbox = document.querySelector(`.platform-checkbox[data-platform-id="${platformId}"]`);
-            if (checkbox) {
-                checkbox.checked = true;
-                const label = document.getElementById('platformLabel_' + platformId);
-                if (label) label.classList.add('active');
-                const card = document.getElementById('pagePricingCard_' + platformId);
-                if (card) {
-                    card.style.display = 'block';
-                    const row = document.getElementById('pageRow_' + platformId);
-                    if (row) row.style.display = 'table-row';
-                    document.getElementById('page_max_' + platformId).innerText = currentVariantData.availableStock;
-                    document.getElementById('page_po_available_' + platformId).value = currentVariantData.availableStock;
-                    document.getElementById('page_po_price_' + platformId).value = currentVariantData.poPrice;
-                    document.getElementById('page_qty_' + platformId).value = values.qty || 0;
-                    document.getElementById('page_price_' + platformId).value = values.price || '';
-                    document.getElementById('page_discount_value_' + platformId).value = values.discount_value || 0;
-                    document.getElementById('page_discount_type_' + platformId).value = values.discount_type || 'amount';
-                    calculatePageFinalTotal(platformId);
-                }
-            }
+        activeVariantId = parseInt(this.value);
+        alreadyPushed = parseInt(option.dataset.alreadyPushed) || 0;
+
+        currentVariantData = {
+            id: activeVariantId,
+            type: option.dataset.variantType || '',
+            value: option.dataset.variantValue || '',
+            color: option.dataset.variantColor || '#808080',
+            sku: option.dataset.variantSku || '',
+            image: option.dataset.variantImage || '',
+            poQty: parseInt(option.dataset.poQty) || 0,
+            poPrice: parseFloat(option.dataset.poPrice) || 0,
+            alreadyPushed: alreadyPushed,
+            availableStock: parseInt(option.dataset.availableStock) || 0
+        };
+
+        document.getElementById('pageVariantValue').innerText = currentVariantData.value || '-';
+        document.getElementById('pageVariantColor').style.background = currentVariantData.color;
+
+        document.getElementById('pagePoQty').innerText = currentVariantData.poQty;
+        document.getElementById('pagePoPrice').innerText = currentVariantData.poPrice;
+        document.getElementById('pagePoValue').innerText = (currentVariantData.poQty * currentVariantData.poPrice).toFixed(2);
+
+        document.getElementById('pageMasterStockNum').innerText = currentVariantData.availableStock;
+        document.getElementById('pageAllocated').innerText = alreadyPushed;
+        document.getElementById('pageRemaining').innerText = currentVariantData.availableStock;
+
+        document.querySelectorAll('.max, #page_max_').forEach(el => {
+            el.innerText = currentVariantData.availableStock;
         });
-    }
 
-    pricingSection.style.display = 'block';
-    updatePageSummary();
-});
+        document.querySelectorAll('#page_po_available_').forEach(el => {
+            el.value = currentVariantData.availableStock;
+        });
+        document.querySelectorAll('#page_po_price_').forEach(el => {
+            el.value = currentVariantData.poPrice;
+        });
+
+        document.querySelectorAll('.page-qty-input').forEach(input => {
+            input.value = 0;
+            input.max = currentVariantData.availableStock;
+        });
+
+        const data = variantPlatformData[activeVariantId];
+        if (data && Object.keys(data).length > 0) {
+            Object.entries(data).forEach(([platformId, values]) => {
+                const checkbox = document.querySelector(`.platform-checkbox[data-platform-id="${platformId}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                    const label = document.getElementById('platformLabel_' + platformId);
+                    if (label) label.classList.add('active');
+
+                    const card = document.getElementById('pagePricingCard_' + platformId);
+                    if (card) {
+                        card.style.display = 'block';
+                        const row = document.getElementById('pageRow_' + platformId);
+                        if (row) row.style.display = 'table-row';
+
+                        document.getElementById('page_max_' + platformId).innerText = currentVariantData.availableStock;
+                        document.getElementById('page_po_available_' + platformId).value = currentVariantData.availableStock;
+                        document.getElementById('page_po_price_' + platformId).value = currentVariantData.poPrice;
+
+                        document.getElementById('page_qty_' + platformId).value = values.qty || 0;
+                        document.getElementById('page_price_' + platformId).value = values.price || '';
+                        document.getElementById('page_discount_value_' + platformId).value = values.discount_value || 0;
+                        document.getElementById('page_discount_type_' + platformId).value = values.discount_type || 'amount';
+                        calculatePageFinalTotal(platformId);
+                    }
+                }
+            });
+        }
+
+        pricingSection.style.display = 'block';
+        updatePageSummary();
+    });
 
     document.querySelectorAll('.platform-checkbox').forEach(cb => {
         cb.addEventListener('change', function() {
@@ -1535,8 +1609,6 @@ variantSelect.addEventListener('change', function() {
                         document.getElementById('page_qty_' + platformId).max = currentVariantData.availableStock;
                         document.getElementById('page_qty_' + platformId).value = 0;
                         document.getElementById('page_max_' + platformId).innerText = currentVariantData.availableStock;
-                    } else {
-                        document.getElementById('page_max_' + platformId).innerText = '0';
                     }
                 }
                 if (row) row.style.display = 'table-row';
@@ -1550,129 +1622,125 @@ variantSelect.addEventListener('change', function() {
                 pricingSection.style.display = anyChecked ? 'block' : 'none';
             }
 
-            if (anyChecked && currentVariantData) {
+            if (anyChecked) {
                 setTimeout(updatePageSummary, 100);
             }
         });
     });
 
     function calculatePageFinalTotal(platformId) {
-    let price = parseFloat(document.getElementById('page_price_' + platformId)?.value) || 0;
-    let qty = parseFloat(document.getElementById('page_qty_' + platformId)?.value) || 0;
-    let total = price * qty;
+        let price = parseFloat(document.getElementById('page_price_' + platformId)?.value) || 0;
+        let qty = parseFloat(document.getElementById('page_qty_' + platformId)?.value) || 0;
+        let total = price * qty;
 
-    let discountValue = parseFloat(document.getElementById('page_discount_value_' + platformId)?.value) || 0;
-    let discountType = document.getElementById('page_discount_type_' + platformId)?.value;
+        let discountValue = parseFloat(document.getElementById('page_discount_value_' + platformId)?.value) || 0;
+        let discountType = document.getElementById('page_discount_type_' + platformId)?.value;
 
-    let discountAmount = 0;
-    if (discountType === 'percent') {
-        discountAmount = total * (discountValue / 100);
-    } else {
-        discountAmount = discountValue;
-    }
-
-    if (discountAmount > total) discountAmount = total;
-
-    let finalTotal = total - discountAmount;
-    let finalPricePerUnit = qty > 0 ? finalTotal / qty : 0;
-
-    document.getElementById('page_final_price_' + platformId).value = '₹ ' + finalPricePerUnit.toFixed(2);
-    document.getElementById('page_total_selling_' + platformId).value = '₹ ' + finalTotal.toFixed(2);
-
-    const discountTextEl = document.getElementById('page_discount_text_' + platformId);
-    if (discountTextEl && discountValue > 0 && qty > 0 && price > 0) {
-        let offPerUnit = price - finalPricePerUnit;
-        discountTextEl.innerText = '₹' + offPerUnit.toFixed(2) + ' off per unit';
-    } else if (discountTextEl) {
-        discountTextEl.innerText = '';
-    }
-
-    updatePageSummary();
-}
-
-function updatePageSummary() {
-    let currentAllocated = 0;
-    let totalRevenue = 0;
-    let totalItems = 0;
-    
-    let poQty = currentVariantData?.poQty || 0;
-    let alreadyPushed = currentVariantData?.alreadyPushed || 0;
-    let availableStock = poQty - alreadyPushed;
-    let poPrice = currentVariantData?.poPrice || 0;
-
-    document.querySelectorAll('.page-qty-input').forEach(input => {
-        let qty = parseInt(input.value) || 0;
-        currentAllocated += qty;
-        const platformId = input.id.split('_').pop();
-        const totalEl = document.getElementById('page_total_selling_' + platformId);
-        if (totalEl) {
-            let rev = parseFloat(totalEl.value.replace(/[₹,£$]/g, '')) || 0;
-            totalRevenue += rev;
-            totalItems += qty;
+        let discountAmount = 0;
+        if (discountType === 'percent') {
+            discountAmount = total * (discountValue / 100);
+        } else {
+            discountAmount = discountValue;
         }
-    });
 
-    let totalAllocated = alreadyPushed + currentAllocated;
-    let remaining = availableStock - currentAllocated;
-    if (remaining < 0) remaining = 0;
+        if (discountAmount > total) discountAmount = total;
 
-    let totalPurchaseValue = poQty * poPrice;
-    let expectedProfit = totalRevenue - totalPurchaseValue;
-    let avgSellingPrice = totalItems > 0 ? totalRevenue / totalItems : 0;
-    let expectedMargin = totalRevenue > 0 ? (expectedProfit / totalRevenue) * 100 : 0;
+        let finalTotal = total - discountAmount;
+        let finalPricePerUnit = qty > 0 ? finalTotal / qty : 0;
 
-    document.getElementById('pageMasterStockNum').innerText = poQty;
-    document.getElementById('pageAllocated').innerText = totalAllocated;
-    document.getElementById('pageRemaining').innerText = remaining;
+        document.getElementById('page_final_price_' + platformId).value = '₹ ' + finalPricePerUnit.toFixed(2);
+        document.getElementById('page_total_selling_' + platformId).value = '₹ ' + finalTotal.toFixed(2);
 
-    document.getElementById('pageSummaryMaster').innerText = poQty + ' Units';
-    document.getElementById('pageSummaryAllocated').innerText = totalAllocated + ' Units';
-    document.getElementById('pageSummaryRemaining').innerText = remaining + ' Units';
-    document.getElementById('pageSummaryMasterSmall').innerText = poQty;
-    document.getElementById('pageSummaryAllocatedSmall').innerText = totalAllocated;
-    document.getElementById('pageSummaryRemainingSmall').innerText = remaining;
+        const discountTextEl = document.getElementById('page_discount_text_' + platformId);
+        if (discountTextEl && discountValue > 0 && qty > 0 && price > 0) {
+            let offPerUnit = price - finalPricePerUnit;
+            discountTextEl.innerText = '₹' + offPerUnit.toFixed(2) + ' off per unit';
+        } else if (discountTextEl) {
+            discountTextEl.innerText = '';
+        }
 
-    const percent = availableStock > 0 ? (currentAllocated / availableStock * 100) : 0;
-    document.getElementById('pageSummaryProgress').style.width = Math.min(percent, 100) + '%';
-    document.getElementById('pageMasterProgress').style.width = Math.min(percent, 100) + '%';
-
-    document.getElementById('pageSummaryPurchase').innerHTML = '₹' + totalPurchaseValue.toFixed(2);
-    document.getElementById('pageSummaryRevenue').innerHTML = '₹' + totalRevenue.toFixed(2);
-    document.getElementById('pageSummaryProfit').innerHTML = '₹' + expectedProfit.toFixed(2);
-    document.getElementById('pageSummaryAvgPrice').innerHTML = '₹' + avgSellingPrice.toFixed(2) + ' / Unit';
-    document.getElementById('pageSummaryMargin').innerHTML = expectedMargin.toFixed(1) + '%';
-
-    document.getElementById('pageFooterMaster').innerText = poQty;
-    document.getElementById('pageFooterAllocated').innerText = totalAllocated;
-    document.getElementById('pageFooterRemaining').innerText = remaining;
-
-    const statusEl = document.getElementById('pageSummaryStatus');
-    const statusEl2 = document.getElementById('pageStockStatus');
-    if (currentAllocated <= availableStock) {
-        statusEl.innerHTML = '✅ Stock allocation is valid.';
-        statusEl.className = 'status-valid';
-        statusEl2.innerHTML = '✅ Stock allocation is valid.';
-        statusEl2.className = 'footer-status-text success';
-    } else {
-        statusEl.innerHTML = '⚠️ Stock allocation exceeds available stock!';
-        statusEl.className = 'status-valid error';
-        statusEl2.innerHTML = '⚠️ Stock allocation exceeds available stock!';
-        statusEl2.className = 'footer-status-text error';
+        updatePageSummary();
     }
-}
+
+    function updatePageSummary() {
+        let currentAllocated = 0;
+        let totalRevenue = 0;
+        let totalItems = 0;
+        let availableStock = currentVariantData?.availableStock || 0;
+        let poPrice = currentVariantData?.poPrice || 0;
+        let poQty = currentVariantData?.poQty || 0;
+        let alreadyPushed = currentVariantData?.alreadyPushed || 0;
+
+        document.querySelectorAll('.page-qty-input').forEach(input => {
+            let qty = parseInt(input.value) || 0;
+            currentAllocated += qty;
+
+            const platformId = input.id.split('_').pop();
+            const totalEl = document.getElementById('page_total_selling_' + platformId);
+            if (totalEl) {
+                let rev = parseFloat(totalEl.value.replace(/[₹,£$]/g, '')) || 0;
+                totalRevenue += rev;
+                totalItems += qty;
+            }
+        });
+
+        let totalPurchaseValue = poQty * poPrice;
+        let totalAllocated = alreadyPushed + currentAllocated;
+        let remaining = availableStock - currentAllocated;
+        if (remaining < 0) remaining = 0;
+
+        let expectedProfit = totalRevenue - totalPurchaseValue;
+        let avgSellingPrice = totalItems > 0 ? totalRevenue / totalItems : 0;
+        let expectedMargin = totalRevenue > 0 ? (expectedProfit / totalRevenue) * 100 : 0;
+
+        document.getElementById('pageAllocated').innerText = totalAllocated;
+        document.getElementById('pageRemaining').innerText = remaining;
+
+        document.getElementById('pageSummaryMaster').innerText = availableStock + ' Units';
+        document.getElementById('pageSummaryAllocated').innerText = totalAllocated + ' Units';
+        document.getElementById('pageSummaryRemaining').innerText = remaining + ' Units';
+        document.getElementById('pageSummaryMasterSmall').innerText = availableStock;
+        document.getElementById('pageSummaryAllocatedSmall').innerText = totalAllocated;
+        document.getElementById('pageSummaryRemainingSmall').innerText = remaining;
+
+        const percent = availableStock > 0 ? (currentAllocated / availableStock * 100) : 0;
+        document.getElementById('pageSummaryProgress').style.width = Math.min(percent, 100) + '%';
+
+        document.getElementById('pageSummaryPurchase').innerHTML = '₹' + totalPurchaseValue.toFixed(2);
+        document.getElementById('pageSummaryRevenue').innerHTML = '₹' + totalRevenue.toFixed(2);
+        document.getElementById('pageSummaryProfit').innerHTML = '₹' + expectedProfit.toFixed(2);
+        document.getElementById('pageSummaryAvgPrice').innerHTML = '₹' + avgSellingPrice.toFixed(2) + ' / Unit';
+        document.getElementById('pageSummaryMargin').innerHTML = expectedMargin.toFixed(1) + '%';
+
+        document.getElementById('pageFooterMaster').innerText = availableStock;
+        document.getElementById('pageFooterAllocated').innerText = totalAllocated;
+        document.getElementById('pageFooterRemaining').innerText = remaining;
+
+        const statusEl = document.getElementById('pageSummaryStatus');
+        const statusEl2 = document.getElementById('pageStockStatus');
+        if (currentAllocated <= availableStock) {
+            statusEl.innerHTML = '✅ Stock allocation is valid.';
+            statusEl.className = 'status-valid';
+            statusEl2.innerHTML = '✅ Stock allocation is valid.';
+            statusEl2.className = 'footer-status-text success';
+        } else {
+            statusEl.innerHTML = '⚠️ Stock allocation exceeds available stock!';
+            statusEl.className = 'status-valid error';
+            statusEl2.innerHTML = '⚠️ Stock allocation exceeds available stock!';
+            statusEl2.className = 'footer-status-text error';
+        }
+    }
 
     document.addEventListener('input', function(e) {
         if (e.target.id && e.target.id.startsWith('page_qty_')) {
             const platformId = e.target.id.split('_').pop();
-            let poQty = currentVariantData?.poQty || 0;
-            let alreadyPushed = currentVariantData?.alreadyPushed || 0;
-            let availableStock = poQty - alreadyPushed;
+            const available = currentVariantData?.availableStock || 0;
             const qty = parseInt(e.target.value) || 0;
 
-            if (qty > availableStock) {
+            if (qty > available) {
                 e.target.style.borderColor = '#E74C3C';
-                e.target.value = availableStock;
-                showToast('⚠️ Quantity exceeds available stock: ' + availableStock, 'error');
+                e.target.value = available;
+                showToast('⚠️ Quantity exceeds available stock: ' + available, 'error');
                 updatePageSummary();
             } else {
                 e.target.style.borderColor = '';
@@ -1720,12 +1788,9 @@ function updatePageSummary() {
             };
         });
 
-        let poQty = currentVariantData?.poQty || 0;
-        let alreadyPushed = currentVariantData?.alreadyPushed || 0;
-        let availableStock = poQty - alreadyPushed;
-
-        if (totalQty > availableStock) {
-            showToast('❌ Quantity exceeds available stock (' + availableStock + ')', 'error');
+        const available = currentVariantData?.availableStock || 0;
+        if (totalQty > available) {
+            showToast('❌ Quantity exceeds available stock (' + available + ')', 'error');
             return;
         }
 

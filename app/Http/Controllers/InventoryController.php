@@ -10,7 +10,6 @@ use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use App\Models\StockMovement;
 use App\Models\PlatformProduct;
-use App\Models\Platform;
 
 class InventoryController extends Controller
 {
@@ -39,7 +38,7 @@ class InventoryController extends Controller
         $brand = $request->get('brand', '');
         $category = $request->get('category', '');
         $supplier = $request->get('supplier', '');
-        $channel = $request->get('channel', '');
+        $channel = $request->get('channel', ''); // ✅ SIRF YEH ADD KIYA
         $stockStatus = $request->get('stock_status', '');
         $perPage = (int) $request->get('per_page', 15);
 
@@ -88,19 +87,13 @@ class InventoryController extends Controller
 
             $poQty = PurchaseOrderItem::where('product_variant_id', $variant->id)->sum('quantity');
 
-            // ✅ WEBSITE - PlatformPricing se fetch
-            $websitePushed = PlatformPricing::where('product_variant_id', $variant->id)
-                ->whereHas('platformProduct', function($q) use ($websitePlatformId) {
-                    $q->where('platform_id', $websitePlatformId);
-                })
-                ->sum('quantity');
+            $websitePushed = PlatformProduct::where('product_id', $variant->product_id)
+                ->where('platform_id', 3)
+                ->sum('platform_stock');
 
-            // ✅ OFFLINE - PlatformPricing se fetch
-            $offlinePushed = PlatformPricing::where('product_variant_id', $variant->id)
-                ->whereHas('platformProduct', function($q) use ($offlinePlatformId) {
-                    $q->where('platform_id', $offlinePlatformId);
-                })
-                ->sum('quantity');
+            $offlinePushed = PlatformProduct::where('product_id', $variant->product_id)
+                ->where('platform_id', 4)
+                ->sum('platform_stock');
 
             $websiteSold = OrderItem::where('variant_id', $variant->id)->sum('quantity');
             $offlineSold = InvoiceItem::where('product_variant_id', $variant->id)->sum('quantity');
@@ -108,7 +101,20 @@ class InventoryController extends Controller
             $websiteAvailable = max(0, $websitePushed - $websiteSold);
             $offlineAvailable = max(0, $offlinePushed - $offlineSold);
 
-            $finalStock = $websiteAvailable + $offlineAvailable;
+            // ✅ CHANNEL FILTER LOGIC - SIRF YEH ADD KIYA
+            if ($channel == 'website') {
+                $offlineAvailable = 0;
+                $offlinePushed = 0;
+                $offlineSold = 0;
+                $finalStock = $websiteAvailable;
+            } elseif ($channel == 'offline') {
+                $websiteAvailable = 0;
+                $websitePushed = 0;
+                $websiteSold = 0;
+                $finalStock = $offlineAvailable;
+            } else {
+                $finalStock = $websiteAvailable + $offlineAvailable;
+            }
 
             $totalStock += $poQty;
             $totalWebsite += $websitePushed;
@@ -131,50 +137,39 @@ class InventoryController extends Controller
             }
 
             $inventoryData[] = [
-                'variant_id' => $variant->id,
-                'sku' => $variant->sku_suffix ?? 'N/A',
-                'product_name' => $variant->product ? $variant->product->name : 'N/A',
-                'brand' => $variant->product ? $variant->product->brand : '',
-                'category' => $variant->product && $variant->product->category ? $variant->product->category->name : '',
-                'supplier' => $variant->product && $variant->product->supplier ? $variant->product->supplier->name : '',
-                'variant_name' => optional($variant->variant)->name . ': ' . optional($variant->value)->value,
-                'total_stock' => $poQty,
-                'total_pushed' => $websitePushed + $offlinePushed,
-                
-                'website_pushed' => $websitePushed,
-                'website_available' => $websiteAvailable,
-                'website_sold' => $websiteSold,
-                
-                'offline_pushed' => $offlinePushed,
-                'offline_available' => $offlineAvailable,
-                'offline_sold' => $offlineSold,
-                
-                'amazon_pushed' => 0,
-                'amazon_available' => 0,
-                'amazon_sold' => 0,
-                
-                'flipkart_pushed' => 0,
-                'flipkart_available' => 0,
-                'flipkart_sold' => 0,
-                
-                'total_sold' => $websiteSold + $offlineSold,
-                'final_stock' => $finalStock,
-                'status' => $finalStock > 10 ? 'In Stock' : ($finalStock > 0 ? 'Low Stock' : 'Out of Stock'),
-                'image_url' => $variant->image_url,
-            ];
+    'variant_id' => $variant->id,
+    'sku' => $variant->sku_suffix ?? 'N/A',
+    'product_name' => $variant->product ? $variant->product->name : 'N/A',
+    'brand' => $variant->product ? $variant->product->brand : '',
+    'category' => $variant->product && $variant->product->category ? $variant->product->category->name : '',
+    'supplier' => $variant->product && $variant->product->supplier ? $variant->product->supplier->name : '',
+    'variant_name' => optional($variant->variant)->name . ': ' . optional($variant->value)->value,
+    'total_stock' => $poQty,
+    'total_pushed' => $channel == 'website' ? $websitePushed : ($channel == 'offline' ? $offlinePushed : $websitePushed + $offlinePushed),
+    
+    // ✅ SABHI PLATFORMS KE LIYE KEYS (CHAHE DATA HO YA NA HO)
+    'website_pushed' => $websitePushed,
+    'website_available' => $websiteAvailable,
+    'website_sold' => $websiteSold,
+    
+    'offline_pushed' => $offlinePushed,
+    'offline_available' => $offlineAvailable,
+    'offline_sold' => $offlineSold,
+    
+    'amazon_pushed' => 0,
+    'amazon_available' => 0,
+    'amazon_sold' => 0,
+    
+    'flipkart_pushed' => 0,
+    'flipkart_available' => 0,
+    'flipkart_sold' => 0,
+    
+    'total_sold' => $websiteSold + $offlineSold,
+    'final_stock' => $finalStock,
+    'status' => $finalStock > 10 ? 'In Stock' : ($finalStock > 0 ? 'Low Stock' : 'Out of Stock'),
+    'image_url' => $variant->image_url,
+];
         }
-
-        // ✅ CHANNEL FILTER - SIRF DISPLAY KE LIYE
-        if ($channel == 'website') {
-            $inventoryData = array_filter($inventoryData, function($item) {
-                return $item['website_available'] > 0 || $item['website_sold'] > 0;
-            });
-        } elseif ($channel == 'offline') {
-            $inventoryData = array_filter($inventoryData, function($item) {
-                return $item['offline_available'] > 0 || $item['offline_sold'] > 0;
-            });
-        }
-
         $currentPage = (int) $request->get('page', 1);
         $offset = ($currentPage - 1) * $perPage;
         $paginatedData = array_slice($inventoryData, $offset, $perPage);
@@ -195,16 +190,16 @@ class InventoryController extends Controller
         $categories = \App\Models\Category::select('id', 'name')->get();
         $suppliers = \App\Models\Supplier::select('id', 'name')->where('status', 'active')->get();
 
-        $platforms = Platform::where('is_enabled', true)
-            ->where('status', 'active')
-            ->distinct('name')
-            ->get();
+       $platforms = \App\Models\Platform::where('is_enabled', true)
+    ->where('status', 'active')
+    ->distinct('name')  // ✅ YEH ADD KARO
+    ->get();
 
         return view('inventory.dashboard', compact(
             'paginatedData', 'inventoryData', 'summary', 'totalItems', 
             'perPage', 'currentPage', 'filter', 'search', 'brand', 
             'category', 'supplier', 'stockStatus', 'brands', 'categories', 
-            'suppliers', 'channel', 'platforms'
+            'suppliers', 'channel', 'platforms'  
         ));
     }
 

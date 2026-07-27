@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="{{ asset('assets/css/admin/catalog.css') }}">
     <script src="{{ asset('assets/js/admin/categories.js') }}"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ asset('assets/admin/css/push-product-premium.css') }}">
    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>

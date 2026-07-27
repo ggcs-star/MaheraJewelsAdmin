@@ -47,6 +47,7 @@
         <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
             <div class="p-5">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- Name -->
                     <div>
                         <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
                             Name <span class="text-red-500">*</span>
@@ -57,6 +58,14 @@
                         @enderror
                     </div>
 
+                    <!-- ✅ INVOICE NAME -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Invoice Name</label>
+                        <input type="text" name="invoice_name" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm" value="{{ old('invoice_name', $organization->invoice_name) }}" placeholder="Business Name for Invoice">
+                        <p class="text-xs text-gray-400 mt-1">Leave blank to use main name</p>
+                    </div>
+
+                    <!-- Email -->
                     <div>
                         <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Email</label>
                         <input type="email" name="email" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm @error('email') border-red-500 @enderror" value="{{ old('email', $organization->email) }}">
@@ -65,32 +74,34 @@
                         @enderror
                     </div>
 
+                    <!-- ✅ INVOICE EMAIL -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Invoice Email</label>
+                        <input type="email" name="invoice_email" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm" value="{{ old('invoice_email', $organization->invoice_email) }}" placeholder="Email for Invoice">
+                        <p class="text-xs text-gray-400 mt-1">Leave blank to use main email</p>
+                    </div>
+
+                    <!-- Mobile -->
                     <div>
                         <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Mobile</label>
                         <input type="text" name="mobile" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm" value="{{ old('mobile', $organization->mobile) }}">
                     </div>
 
+                    <!-- Website -->
                     <div>
                         <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Website</label>
                         <input type="url" name="website" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm" value="{{ old('website', $organization->website) }}">
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                            Business Hours
-                        </label>
 
-                        <input
-                            type="text"
-                            name="business_hours"
-                            value="{{ old('business_hours', $organization->business_hours) }}"
-                            placeholder="Mon-Sat : 10 AM - 7 PM"
-                            class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452]"
-                        >
-                    </div>
+                    <!-- Business Hours -->
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                            Status <span class="text-red-500">*</span>
-                        </label>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Business Hours</label>
+                        <input type="text" name="business_hours" value="{{ old('business_hours', $organization->business_hours) }}" placeholder="Mon-Sat : 10 AM - 7 PM" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452]">
+                    </div>
+
+                    <!-- Status -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Status <span class="text-red-500">*</span></label>
                         <select name="is_active" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm bg-white @error('is_active') border-red-500 @enderror" required>
                             <option value="1" {{ old('is_active', $organization->is_active) == 1 ? 'selected' : '' }}>Active</option>
                             <option value="0" {{ old('is_active', $organization->is_active) == 0 ? 'selected' : '' }}>Inactive</option>
@@ -100,31 +111,37 @@
                         @enderror
                     </div>
 
+                    <!-- Address -->
                     <div class="md:col-span-2">
                         <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Address</label>
                         <textarea name="address" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm" rows="2">{{ old('address', $organization->address) }}</textarea>
                     </div>
 
+                    <!-- City -->
                     <div>
                         <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">City</label>
                         <input type="text" name="city" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm" value="{{ old('city', $organization->city) }}">
                     </div>
 
+                    <!-- State -->
                     <div>
                         <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">State</label>
                         <input type="text" name="state" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm" value="{{ old('state', $organization->state) }}">
                     </div>
 
+                    <!-- Country -->
                     <div>
                         <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Country</label>
                         <input type="text" name="country" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm" value="{{ old('country', $organization->country) }}">
                     </div>
 
+                    <!-- Pincode -->
                     <div>
                         <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Pincode</label>
                         <input type="text" name="pincode" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm" value="{{ old('pincode', $organization->pincode) }}">
                     </div>
 
+                    <!-- Logo -->
                     <div>
                         <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Logo</label>
                         <input type="file" name="logo" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm file:mr-2 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#8B2452]/10 file:text-[#8B2452] hover:file:bg-[#8B2452]/20 @error('logo') border-red-500 @enderror">
@@ -134,6 +151,18 @@
                         @if ($organization->logo_path)
                             <div class="mt-3">
                                 <img src="{{ \App\Helpers\S3Helper::url($organization->logo_path) }}" class="w-20 h-20 rounded-lg border border-gray-200 object-cover shadow-sm" alt="Organization Logo">
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- ✅ INVOICE LOGO -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Invoice Logo</label>
+                        <input type="file" name="invoice_logo" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm file:mr-2 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#8B2452]/10 file:text-[#8B2452] hover:file:bg-[#8B2452]/20">
+                        <p class="text-xs text-gray-400 mt-1">Leave blank to keep current logo</p>
+                        @if ($organization->invoice_logo)
+                            <div class="mt-3">
+                                <img src="{{ \App\Helpers\S3Helper::url($organization->invoice_logo) }}" class="w-20 h-20 rounded-lg border border-gray-200 object-cover shadow-sm" alt="Invoice Logo">
                             </div>
                         @endif
                     </div>

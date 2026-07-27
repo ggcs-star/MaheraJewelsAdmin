@@ -4,119 +4,106 @@
     $poQty = $poData['quantity'] ?? 0;
     $poPrice = $poData['purchase_price'] ?? 0;
     $availableStock = $poData['available_stock'] ?? $poQty;
-    $defaultQty = $availableStock;
+    $defaultQty = $availableStock > 0 ? $availableStock : 0;
 @endphp
 
-<div class="platform-pricing-card" id="platformPricingCard_{{ $platform->id }}" style="display: block;">
+<div class="platform-pricing-card" id="platformPricingCard_{{ $platform->id }}" style="display:none;">
 
-    <div class="row g-3">
+    <div class="row g-1 align-items-center">
 
-        <input type="hidden" id="variantId" value="{{ $variantId ?? '' }}">
-
-        {{-- ✅ PO Quantity - Sabke liye --}}
-        <div class="col-md-3">
-            <label class="form-label fw-semibold text-muted">📦 PO Quantity</label>
-            <input type="text"
-                   id="po_quantity_{{ $platform->id }}"
-                   class="form-control bg-light"
-                   value="{{ $poQty }}"
-                   readonly
-                   style="background-color: #f8f9fa; cursor: not-allowed; font-weight: bold; color: #1a7a3a;">
-            <div class="form-text text-muted">From Purchase Order</div>
+        {{-- Platform Name --}}
+        <div class="col-md-2">
+            <div class="d-flex align-items-center gap-1">
+                @php $name = strtolower($platform->name); @endphp
+                @if(str_contains($name, 'amazon'))
+                    <span class="fw-bold" style="color:#232F3E;">Amazon</span>
+                @elseif(str_contains($name, 'flipkart'))
+                    <span class="fw-bold" style="color:#2874F0;">Flipkart</span>
+                @elseif(str_contains($name, 'website'))
+                    <span>🌐 <span class="fw-semibold">Own Website</span></span>
+                @elseif(str_contains($name, 'offline'))
+                    <span>🏪 <span class="fw-semibold">Offline</span></span>
+                @elseif(str_contains($name, 'meesho'))
+                    <span>🛍️ <span class="fw-semibold">Meesho</span></span>
+                @else
+                    <span class="fw-semibold">{{ ucfirst($platform->name) }}</span>
+                @endif
+            </div>
         </div>
 
-        {{-- ✅ PO Price - Sabke liye --}}
-        <div class="col-md-3">
-            <label class="form-label fw-semibold text-muted">📦 PO Price (₹)</label>
-            <input type="text"
-                   id="po_price_{{ $platform->id }}"
-                   class="form-control bg-light"
-                   value="{{ $poPrice }}"
-                   readonly
-                   style="background-color: #f8f9fa; cursor: not-allowed; font-weight: bold; color: #8B2452;">
-            <div class="form-text text-muted">From Purchase Order</div>
-        </div>
-
-        {{-- ✅ Selling Price - Sabke liye --}}
-        <div class="col-md-3">
-            <label class="form-label fw-semibold">💰 Selling Price (₹) <span class="text-danger">*</span></label>
-            <input type="number"
-                step="0.01"
-                id="price_{{ $platform->id }}"
-                class="form-control platform-calc-input platform-price-input"
-                placeholder="Enter selling price"
-                min="0"
-                value="">
-            <div class="form-text">Set selling price manually</div>
-        </div>
-
-        {{-- ✅ Quantity - Sabke liye --}}
-        <div class="col-md-3">
-            <label class="form-label fw-semibold">📊 Quantity</label>
+        {{-- Allocate Stock --}}
+        <div class="col-md-1">
             <input type="number"
                    id="quantity_{{ $platform->id }}"
-                   class="form-control platform-calc-input platform-qty-input"
+                   class="form-control form-control-sm platform-qty-input"
                    placeholder="0"
                    min="0"
                    value="{{ $defaultQty }}"
-                   style="font-weight: bold; color: #1a7a3a;">
-            <div class="small mt-1 text-muted stock-display">
-                Available: <strong class="available-stock">{{ $availableStock }}</strong>
-                &nbsp;|&nbsp;
-                Remaining: <strong class="remaining-stock">{{ $availableStock - $defaultQty }}</strong>
-            </div>
-            <div id="stockError_{{ $platform->id }}" class="text-danger small" style="display:none;">
-                ⚠️ Quantity exceeds available stock!
-            </div>
+                   style="font-weight:bold; color:#1a7a3a; width:60px;">
         </div>
 
-    </div>
+        {{-- Selling Price --}}
+        <div class="col-md-1">
+            <input type="number"
+                   step="0.01"
+                   id="price_{{ $platform->id }}"
+                   class="form-control form-control-sm platform-price-input"
+                   placeholder="0.00"
+                   min="0"
+                   value=""
+                   style="width:80px;">
+        </div>
 
-    {{-- ✅ Discount & Total - Sabke liye --}}
-    <div class="row g-3 mt-2">
-
-        <div class="col-md-3">
-            <label class="form-label fw-semibold">🏷️ Discount</label>
-            <div class="input-group">
+        {{-- Discount --}}
+        <div class="col-md-1">
+            <div class="input-group input-group-sm" style="width:90px;">
                 <input type="number"
                        step="0.01"
                        id="discount_value_{{ $platform->id }}"
-                       class="form-control platform-calc-input"
+                       class="form-control"
                        placeholder="0"
                        min="0"
-                       value="0">
+                       value="0"
+                       style="width:50px;">
                 <select id="discount_type_{{ $platform->id }}"
-                        class="form-select"
-                        style="max-width:80px;">
+                        class="form-select" style="width:40px; font-size:10px; padding:0 2px;">
                     <option value="amount">₹</option>
                     <option value="percent">%</option>
                 </select>
             </div>
-            <div class="form-text">Choose ₹ or %</div>
+            <small class="text-muted d-block" id="discount_text_{{ $platform->id }}" style="font-size:9px;"></small>
         </div>
 
-        <div class="col-md-3">
-            <label class="form-label fw-semibold">💵 Total (₹)</label>
+        {{-- Final Price --}}
+        <div class="col-md-1">
             <input type="text"
                    id="final_total_{{ $platform->id }}"
-                   class="form-control bg-light fw-bold text-success"
-                   value="0.00"
-                   readonly>
-            <div class="form-text">Auto calculated</div>
+                   class="form-control form-control-sm bg-light fw-bold text-success"
+                   value="₹ 0.00"
+                   readonly
+                   style="background:#f8f9fa !important; width:80px; text-align:right;">
+        </div>
+
+        {{-- Total Selling --}}
+        <div class="col-md-2">
+            <input type="text"
+                   id="total_selling_{{ $platform->id }}"
+                   class="form-control form-control-sm bg-light fw-bold text-primary"
+                   value="₹ 0.00"
+                   readonly
+                   style="background:#f8f9fa !important; width:110px; text-align:right;">
+        </div>
+
+        {{-- Status --}}
+        <div class="col-md-1">
+            <span class="badge bg-success" id="platform_status_{{ $platform->id }}">Active</span>
         </div>
 
     </div>
 
-    {{-- ✅ PO Info Banner - Sabke liye --}}
-    @if($poData)
-        <div class="alert alert-info alert-sm py-2 px-3 mt-3 mb-0">
-            <small>
-                <strong>📦 Purchase Order:</strong>
-                PO: {{ $poData['po_number'] ?? 'N/A' }} |
-                Qty: {{ $poData['quantity'] }} |
-                Price: ₹{{ number_format($poData['purchase_price'], 2) }}
-            </small>
-        </div>
-    @endif
+    {{-- Hidden fields --}}
+    <input type="hidden" id="po_quantity_{{ $platform->id }}" value="{{ $poQty }}">
+    <input type="hidden" id="po_price_{{ $platform->id }}" value="{{ $poPrice }}">
+    <input type="hidden" id="po_available_{{ $platform->id }}" value="{{ $availableStock }}">
 
 </div>

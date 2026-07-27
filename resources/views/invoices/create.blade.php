@@ -410,7 +410,7 @@
 <select id="productOptionsTemplate" class="d-none">
     <option value="">Select Product</option>
     @foreach($products as $product)
-        <option value="{{ $product->id }}">{{ $product->name }}</option>
+        <option value="{{ $product->id }}">{{ $product->name }} ({{ $product->sku }})</option>
     @endforeach
 </select>
 
