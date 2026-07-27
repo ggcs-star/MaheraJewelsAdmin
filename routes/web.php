@@ -34,7 +34,29 @@ use App\Http\Controllers\InstagramController;
 use App\Http\Controllers\PurchaseOrderController;  
 use App\Http\Controllers\InventoryController;    
 use Google\Client;
+use App\Services\Amazon\AmazonInventoryService;
 
+Route::get('/test-amazon-inventory', function () {
+
+    $service = new AmazonInventoryService();
+
+    return $service->testInventory('MJ-7009-WHT');
+
+});
+Route::get('/amazon-test', function () {
+
+    $request = new \SellingPartnerApi\Seller\FBAInventoryV1\Requests\GetInventorySummaries(
+        'Marketplace',
+        env('SP_API_MARKETPLACE_ID'),
+        [env('SP_API_MARKETPLACE_ID')],
+        true
+    );
+
+    dd(
+        $request->resolveEndpoint(),
+        $request->defaultQuery()
+    );
+});
 Route::get('/admin/instagram', function () {
     return view('admin.instagram.index');
 })->middleware('auth')->name('admin.instagram');

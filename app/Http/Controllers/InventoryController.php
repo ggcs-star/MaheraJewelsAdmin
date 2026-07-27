@@ -13,6 +13,24 @@ use App\Models\PlatformProduct;
 
 class InventoryController extends Controller
 {
+    private function getOfflinePlatformId()
+    {
+        $platform = Platform::where('display_name', 'Offline')->first();
+        if (!$platform) {
+            throw new \Exception('Offline platform not found. Please check platforms table.');
+        }
+        return $platform->id;
+    }
+
+    private function getWebsitePlatformId()
+    {
+        $platform = Platform::where('display_name', 'Our Website')->first();
+        if (!$platform) {
+            throw new \Exception('Website platform not found. Please check platforms table.');
+        }
+        return $platform->id;
+    }
+
     public function dashboard(Request $request)
     {
         $filter = $request->get('filter', 'all');
@@ -23,12 +41,15 @@ class InventoryController extends Controller
         $channel = $request->get('channel', ''); // ✅ SIRF YEH ADD KIYA
         $stockStatus = $request->get('stock_status', '');
         $perPage = (int) $request->get('per_page', 15);
-        
+
+        $offlinePlatformId = $this->getOfflinePlatformId();
+        $websitePlatformId = $this->getWebsitePlatformId();
+
         $variants = ProductVariant::with(['product', 'product.category', 'product.supplier', 'platformPricings.platformProduct'])
             ->whereHas('product')
-            ->whereHas('platformPricings', function($q) {
-                $q->whereHas('platformProduct', function($sub) {
-                    $sub->whereIn('platform_id', [3, 4]);
+            ->whereHas('platformPricings', function($q) use ($offlinePlatformId, $websitePlatformId) {
+                $q->whereHas('platformProduct', function($sub) use ($offlinePlatformId, $websitePlatformId) {
+                    $sub->whereIn('platform_id', [$websitePlatformId, $offlinePlatformId]);
                 });
             })
             ->when($search, function($q) use ($search) {

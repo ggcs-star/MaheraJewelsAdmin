@@ -54,4 +54,17 @@ return [
     'vapid_key' => env('FIREBASE_VAPID_KEY'),
 
 ],
+'amazon' => [
+
+    'client_id' => env('SP_API_CLIENT_ID'),
+
+    'client_secret' => env('SP_API_CLIENT_SECRET'),
+
+    'refresh_token' => env('SP_API_REFRESH_TOKEN'),
+
+    'marketplace_id' => env('SP_API_MARKETPLACE_ID'),
+
+    'seller_id' => env('SP_API_SELLER_ID'),
+
+],
 ];

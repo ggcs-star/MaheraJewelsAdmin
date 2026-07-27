@@ -17,6 +17,8 @@ class Kernel extends ConsoleKernel
 
     $schedule->command('app:auto-confirm-orders')
              ->everyMinute();
+                 $schedule->command('app:sync-amazon-orders')->everyFiveMinutes();
+
              
 }
     
