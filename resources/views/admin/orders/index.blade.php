@@ -254,94 +254,110 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($orders as $order)
-                            @php
-                                $platform = isset($order->amazon_order_id) ? 'amazon' : ($order->platform ?? 'website');
-                                $platformLabel = $platform == 'website' ? 'Our Website' : ($platform == 'amazon' ? 'Amazon' : ($platform == 'flipkart' ? 'Flipkart' : 'Offline'));
-                                $platformColor = $platform == 'website' ? '#1a56db' : ($platform == 'amazon' ? '#f59e0b' : ($platform == 'flipkart' ? '#ec489a' : '#0f7b4b'));
-                                $platformIcon = $platform == 'website' ? 'domain.png' : ($platform == 'amazon' ? 'amazon.png' : ($platform == 'flipkart' ? 'flipkartlogo.jpg' : 'shop.png'));
-                                
-                                $statusClass = 'status-' . ($order->status ?? 'pending');
-                                
-                                $paymentStatus = $order->payment_status ?? 'pending';
-                                $paymentLabel = $paymentStatus == 'paid' ? 'Paid' : 'Pending';
-                                $paymentColor = $paymentStatus == 'paid' ? '#0f7b4b' : '#d97706';
-                                
-                                $itemsCount = $order->items->count() ?? 0;
-                            @endphp
-                            <tr style="border-bottom: 1px solid #f0f6fa; transition: background 0.15s ease;">
-                                <td style="padding: 12px 14px;">
-                                    <div style="font-weight: 700; color: #0a1e2f; font-size: 0.85rem;">{{ $platform == 'amazon'
-    ? $order->amazon_order_id
-    : $order->order_number }}</div>
-                                    <div style="font-size: 0.6rem; color: #7c9eb2;">
-                                        #{{ $order->id ?? 'N/A' }} 
-                                        @if($order->tracking_number)
-                                            · {{ $order->tracking_number }}
-                                        @endif
-                                    </div>
-                                </td>
-                                <td style="padding: 12px 14px;">
-                                    <div style="display: flex; align-items: center; gap: 6px;">
-                                        @if($platform == 'website')
-                                            <img src="https://img.icons8.com/color/20/000000/domain.png" style="width:18px;height:18px;vertical-align:middle;">
-                                        @elseif($platform == 'amazon')
-                                            <img src="https://img.icons8.com/color/20/000000/amazon.png" style="width:18px;height:18px;vertical-align:middle;">
-                                        @elseif($platform == 'flipkart')
-                                            <img src="{{ asset('storage/logo/flipkartlogo.jpg') }}" style="width:18px;height:18px;vertical-align:middle;border-radius:4px;" onerror="this.style.display='none'">
-                                        @else
-                                            <span style="font-size:16px;">🛒</span>
-                                        @endif
-                                        <span style="font-size: 0.7rem; font-weight: 600; color: {{ $platformColor }};">{{ $platformLabel }}</span>
-                                    </div>
-                                    <div style="font-size: 0.55rem; color: #7c9eb2;">{{ $platform == 'website' ? 'Online Store' : ($platform == 'amazon' ? 'Amazon.in' : ($platform == 'flipkart' ? 'Flipkart' : 'Walk-in Store')) }}</div>
-                                </td>
-                                <td style="padding: 12px 14px;">
-                                    <div style="font-weight: 500; color: #0a1e2f; font-size: 0.8rem;">{{ optional($order->user)->name ?? 'Guest' }}</div>
-                                    <div style="font-size: 0.6rem; color: #7c9eb2;">{{ optional($order->shippingAddress)->phone ?? 'N/A' }}</div>
-                                </td>
-                                <td style="padding: 12px 14px;">
-                                    <div style="font-size: 0.7rem; color: #0a1e2f;">{{ optional($order->created_at)->format('d M Y') }}</div>
-                                    <div style="font-size: 0.6rem; color: #7c9eb2;">{{ optional($order->created_at)->format('h:i A') }}</div>
-                                </td>
-                                <td style="padding: 12px 14px;">
-                                    <span class="status-badge {{ $statusClass }}">{{ ucfirst($order->status ?? 'N/A') }}</span>
-                                </td>
-                                <td style="padding: 12px 14px; text-align: center;">
-                                    <div style="font-weight: 600; color: #0a1e2f; font-size: 0.85rem;">{{ $itemsCount }}</div>
-                                    <div style="font-size: 0.55rem; color: #7c9eb2;">{{ $itemsCount == 1 ? 'Item' : 'Items' }}</div>
-                                </td>
-                                <td style="padding: 12px 14px;">
-                                    <div style="font-weight: 700; color: #0a1e2f; font-size: 0.9rem;">₹{{ number_format($order->total ?? 0, 2) }}</div>
-                                </td>
-                                <td style="padding: 12px 14px;">
-                                    <div style="font-weight: 600; color: {{ $paymentColor }}; font-size: 0.75rem;">{{ $paymentLabel }}</div>
-                                    <div style="font-size: 0.55rem; color: #7c9eb2;">{{ $order->payment_method ?? 'N/A' }}</div>
-                                </td>
-                                <td style="padding: 12px 14px; text-align: center;">
-                                    <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
-                                        <a href="{{ route('admin.orders.show', $order->id) }}" style="background: transparent; border: none; color: #7c9eb2; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='#8B2452'" onmouseout="this.style.color='#7c9eb2'" title="View">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="{{ route('admin.orders.invoice', $order->id) }}" target="_blank" style="background: transparent; border: none; color: #7c9eb2; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='#7c9eb2'" title="Invoice">
-                                            <i class="fas fa-file-invoice"></i>
-                                        </a>
-                                        <a href="{{ route('admin.orders.show', $order->id) }}" style="background: transparent; border: none; color: #7c9eb2; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='#0f7b4b'" onmouseout="this.style.color='#7c9eb2'" title="Manage">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="9" class="text-center py-5">
-                                    <i class="fas fa-box-open" style="font-size: 2.5rem; color: #d4e2f0;"></i>
-                                    <p class="text-muted mt-2" style="font-size: 0.9rem;">No orders found</p>
-                                    <p style="font-size: 0.75rem; color: #7c9eb2;">Try adjusting your search or filter</p>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
+    @forelse($orders as $order)
+        @php
+            $isAmazon = isset($order->amazon_order_id) || ($order->is_amazon ?? false);
+            
+            $platform = $isAmazon ? 'amazon' : ($order->platform ?? 'website');
+            $platformLabel = $platform == 'website' ? 'Our Website' : ($platform == 'amazon' ? 'Amazon' : ($platform == 'flipkart' ? 'Flipkart' : 'Offline'));
+            $platformColor = $platform == 'website' ? '#1a56db' : ($platform == 'amazon' ? '#f59e0b' : ($platform == 'flipkart' ? '#ec489a' : '#0f7b4b'));
+            
+            $orderNumber = $isAmazon ? $order->amazon_order_id : $order->order_number;
+            $status = $isAmazon ? $order->order_status : $order->status;
+            $statusClass = 'status-' . strtolower($status ?? 'pending');
+            $customerName = $isAmazon ? ($order->shipping_name ?? 'Amazon Customer') : (optional($order->user)->name ?? 'Guest');
+            $customerPhone = $isAmazon ? 'N/A' : (optional($order->shippingAddress)->phone ?? 'N/A');
+            $orderTotal = $isAmazon
+    ? ($order->order_total > 0
+        ? $order->order_total
+        : $order->items->sum(function ($item) {
+            return $item->item_price * max(1, $item->quantity_ordered);
+        }))
+    : $order->total;
+            $itemsCount = $order->items->count() ?? 0;
+            $paymentStatus = $isAmazon ? 'paid' : ($order->payment_status ?? 'pending');
+            $paymentLabel = $paymentStatus == 'paid' ? 'Paid' : 'Pending';
+            $paymentColor = $paymentStatus == 'paid' ? '#0f7b4b' : '#d97706';
+            $paymentMethod = $isAmazon ? 'Amazon Pay' : ($order->payment_method ?? 'N/A');
+            $orderDate = $isAmazon ? $order->purchase_date : $order->created_at;
+        @endphp
+        <tr style="border-bottom: 1px solid #f0f6fa; transition: background 0.15s ease;">
+            <td style="padding: 12px 14px;">
+                <div style="font-weight: 700; color: #0a1e2f; font-size: 0.85rem;">{{ $orderNumber }}</div>
+                <div style="font-size: 0.6rem; color: #7c9eb2;">
+                    #{{ $order->id ?? 'N/A' }}
+                </div>
+            </td>
+            <td style="padding: 12px 14px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    @if($platform == 'website')
+                        <img src="https://img.icons8.com/color/20/000000/domain.png" style="width:18px;height:18px;vertical-align:middle;">
+                    @elseif($platform == 'amazon')
+                        <img src="https://img.icons8.com/color/20/000000/amazon.png" style="width:18px;height:18px;vertical-align:middle;">
+                    @elseif($platform == 'flipkart')
+                        <img src="{{ asset('storage/logo/flipkartlogo.jpg') }}" style="width:18px;height:18px;vertical-align:middle;border-radius:4px;" onerror="this.style.display='none'">
+                    @else
+                        <span style="font-size:16px;">🛒</span>
+                    @endif
+                    <span style="font-size: 0.7rem; font-weight: 600; color: {{ $platformColor }};">{{ $platformLabel }}</span>
+                </div>
+                <div style="font-size: 0.55rem; color: #7c9eb2;">
+                    {{ $platform == 'website' ? 'Online Store' : ($platform == 'amazon' ? 'Amazon.in' : ($platform == 'flipkart' ? 'Flipkart' : 'Walk-in Store')) }}
+                </div>
+            </td>
+            <td style="padding: 12px 14px;">
+                <div style="font-weight: 500; color: #0a1e2f; font-size: 0.8rem;">{{ $customerName }}</div>
+                <div style="font-size: 0.6rem; color: #7c9eb2;">{{ $customerPhone }}</div>
+            </td>
+            <td style="padding: 12px 14px;">
+                <div style="font-size: 0.7rem; color: #0a1e2f;">{{ optional($orderDate)->format('d M Y') }}</div>
+                <div style="font-size: 0.6rem; color: #7c9eb2;">{{ optional($orderDate)->format('h:i A') }}</div>
+            </td>
+            <td style="padding: 12px 14px;">
+                <span class="status-badge {{ $statusClass }}">{{ ucfirst($status ?? 'N/A') }}</span>
+            </td>
+            <td style="padding: 12px 14px; text-align: center;">
+                <div style="font-weight: 600; color: #0a1e2f; font-size: 0.85rem;">{{ $itemsCount }}</div>
+                <div style="font-size: 0.55rem; color: #7c9eb2;">{{ $itemsCount == 1 ? 'Item' : 'Items' }}</div>
+            </td>
+            <td style="padding: 12px 14px;">
+                <div style="font-weight: 700; color: #0a1e2f; font-size: 0.9rem;">₹{{ number_format($orderTotal ?? 0, 2) }}</div>
+            </td>
+            <td style="padding: 12px 14px;">
+                <div style="font-weight: 600; color: {{ $paymentColor }}; font-size: 0.75rem;">{{ $paymentLabel }}</div>
+                <div style="font-size: 0.55rem; color: #7c9eb2;">{{ $paymentMethod }}</div>
+            </td>
+            <td style="padding: 12px 14px; text-align: center;">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    @if($isAmazon)
+                        <a href="{{ route('admin.orders.show', $order->id) }}" style="background: transparent; border: none; color: #f59e0b; font-size: 0.9rem;" title="View Amazon Order">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <span style="font-size: 0.55rem; color: #7c9eb2; font-style: italic;">Read-only</span>
+                    @else
+                        <a href="{{ route('admin.orders.show', $order->id) }}" style="background: transparent; border: none; color: #7c9eb2; font-size: 0.9rem;" onmouseover="this.style.color='#8B2452'" onmouseout="this.style.color='#7c9eb2'" title="View">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="{{ route('admin.orders.invoice', $order->id) }}" target="_blank" style="background: transparent; border: none; color: #7c9eb2; font-size: 0.9rem;" onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='#7c9eb2'" title="Invoice">
+                            <i class="fas fa-file-invoice"></i>
+                        </a>
+                        <a href="{{ route('admin.orders.show', $order->id) }}" style="background: transparent; border: none; color: #7c9eb2; font-size: 0.9rem;" onmouseover="this.style.color='#0f7b4b'" onmouseout="this.style.color='#7c9eb2'" title="Manage">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    @endif
+                </div>
+            </td>
+        </tr>
+    @empty
+        <tr>
+            <td colspan="9" class="text-center py-5">
+                <i class="fas fa-box-open" style="font-size: 2.5rem; color: #d4e2f0;"></i>
+                <p class="text-muted mt-2" style="font-size: 0.9rem;">No orders found</p>
+                <p style="font-size: 0.75rem; color: #7c9eb2;">Try adjusting your search or filter</p>
+            </td>
+        </tr>
+    @endforelse
+</tbody>
                 </table>
             </div>
         </div>

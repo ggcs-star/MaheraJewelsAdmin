@@ -9,15 +9,17 @@ use Illuminate\Http\Request;
 use App\Models\ProductVariant;
 use App\Models\StockMovement;
 use App\Helpers\S3Helper;
-use App\Models\AmazonOrder;
+use App\Models\AmazonOrder;  // ✅ YEH LINE ADD KARO
+
 class OrderController extends Controller
 {
 
 public function index(Request $request)
 {
-    $source = $request->get('source', 'website');
+    $source = $request->get('source', '');
+    $platform = $request->get('platform');  // ✅ YEH LINE ADD KARO - IMPORTANT!
 
-    if ($source === 'amazon') {
+    if ($source === 'amazon' || $platform === 'amazon') {
 
         $query = AmazonOrder::with('items');
 
@@ -39,6 +41,73 @@ public function index(Request $request)
             'shipped' => AmazonOrder::where('order_status', 'Shipped')->count(),
             'delivered' => AmazonOrder::where('order_status', 'Delivered')->count(),
             'cancelled' => AmazonOrder::whereIn('order_status', ['Canceled', 'Cancelled'])->count(),
+        ];
+
+    } else if (empty($platform) || $platform === 'all' || $platform === '') {
+
+        $amazonQuery = AmazonOrder::with('items');
+        if ($request->filled('search')) {
+            $amazonQuery->where('amazon_order_id', 'like', '%' . $request->search . '%');
+        }
+        if ($request->filled('status')) {
+            $amazonQuery->where('order_status', $request->status);
+        }
+        $amazonOrders = $amazonQuery->orderByDesc('purchase_date')->get();
+   
+
+        $websiteQuery = Order::with('user');
+        if ($request->filled('search')) {
+            $websiteQuery->where('order_number', 'like', '%' . $request->search . '%');
+        }
+        if ($request->filled('status')) {
+            $websiteQuery->where('status', $request->status);
+        }
+        $websiteOrders = $websiteQuery->latest()->get();
+
+ $amazonOrders = $amazonOrders->map(function ($order) {
+    $order->setAttribute('is_amazon', true);
+    return $order;
+})->values();
+
+$websiteOrders = $websiteOrders->map(function ($order) {
+    $order->setAttribute('is_amazon', false);
+    return $order;
+})->values();
+
+$allOrders = collect(array_merge(
+    $amazonOrders->all(),
+    $websiteOrders->all()
+));
+     
+
+        $allOrders = $allOrders->sortByDesc(function($order) {
+            return $order->purchase_date ?? $order->created_at;
+        });
+        
+
+        $perPage = 10;
+        $currentPage = request()->get('page', 1);
+        $items = $allOrders->values()->all();
+        $totalItems = count($items);
+        $offset = ($currentPage - 1) * $perPage;
+        $paginatedItems = array_slice($items, $offset, $perPage);
+
+        $orders = new \Illuminate\Pagination\LengthAwarePaginator(
+            $paginatedItems,
+            $totalItems,
+            $perPage,
+            $currentPage,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+
+        $stats = [
+            'total' => Order::count() + AmazonOrder::count(),
+            'pending' => Order::where('status', 'pending')->count() + AmazonOrder::where('order_status', 'Pending')->count(),
+            'confirmed' => Order::where('status', 'confirmed')->count(),
+            'processing' => Order::where('status', 'processing')->count(),
+            'shipped' => Order::where('status', 'shipped')->count() + AmazonOrder::where('order_status', 'Shipped')->count(),
+            'delivered' => Order::where('status', 'delivered')->count() + AmazonOrder::where('order_status', 'Delivered')->count(),
+            'cancelled' => Order::where('status', 'cancelled')->count() + AmazonOrder::whereIn('order_status', ['Canceled', 'Cancelled'])->count(),
         ];
 
     } else {
@@ -70,7 +139,6 @@ public function index(Request $request)
         ];
     }
 
-    // Platform Stats (Website Orders)
     $platformStats = [
         'website' => [
             'orders' => Order::where('platform', 'website')->count(),
@@ -86,6 +154,7 @@ public function index(Request $request)
         ],
         'total_revenue' => Order::sum('total') + AmazonOrder::sum('order_total'),
     ];
+   
 
     return view('admin.orders.index', compact(
         'orders',
@@ -95,41 +164,54 @@ public function index(Request $request)
     ));
 }
 
+    // ✅ SHOW - Amazon order ke liye
+    public function show($id)
+    {
+        // ✅ PEHLE CHECK KARO - AMAZON ORDER HAI?
+        $amazonOrder = AmazonOrder::with('items')->find($id);
+        if ($amazonOrder) {
+            return view('admin.orders.show-amazon', compact('amazonOrder'));
+        }
 
-   public function show($id)
-{
-    $order = Order::with([
-        'items.product',
-        'items.variant',
-        'user',
-        'shippingAddress',
-        'billingAddress',
-        'payment'
-    ])->findOrFail($id);
+        // ✅ WEBSITE/OFFLINE ORDER
+        $order = Order::with([
+            'items.product',
+            'items.variant',
+            'user',
+            'shippingAddress',
+            'billingAddress',
+            'payment'
+        ])->findOrFail($id);
 
-    
-    $order->items->transform(function ($item) {
-    if ($item->image && !str_starts_with($item->image, 'http')) {
-        $item->image = S3Helper::url($item->image);
-    } elseif ($item->variant && $item->variant->image_url && !str_starts_with($item->variant->image_url, 'http')) {
-        $item->image = S3Helper::url($item->variant->image_url);
-    } elseif ($item->product && $item->product->image_url && !str_starts_with($item->product->image_url, 'http')) {
-        $item->image = S3Helper::url($item->product->image_url);
+        $order->items->transform(function ($item) {
+            if ($item->image && !str_starts_with($item->image, 'http')) {
+                $item->image = S3Helper::url($item->image);
+            } elseif ($item->variant && $item->variant->image_url && !str_starts_with($item->variant->image_url, 'http')) {
+                $item->image = S3Helper::url($item->variant->image_url);
+            } elseif ($item->product && $item->product->image_url && !str_starts_with($item->product->image_url, 'http')) {
+                $item->image = S3Helper::url($item->product->image_url);
+            }
+            return $item;
+        });
+
+        return view('admin.orders.show', compact('order'));
     }
-    return $item;
-});
 
-    return view('admin.orders.show', compact('order'));
-}
-
+    // ✅ UPDATE STATUS - SIRF WEBSITE/Offline orders ke liye
     public function updateStatus(Request $request, $id)
     {
+        $order = Order::find($id);
+        
+        // ✅ AGAR AMAZON ORDER HAI TOH STATUS UPDATE NAHI KAR SAKTE
+        if (!$order) {
+            return back()->with('error', 'Amazon orders cannot be updated from here');
+        }
+
         $request->validate([
             'status' => 'required|in:pending,confirmed,processing,shipped,delivered,cancelled'
         ]);
 
-        $order = Order::with('items')->findOrFail($id);
-
+        // ... BAKI CODE PEHLE JESA HI ...
         $currentStatus = strtolower(trim($order->status));
         $newStatus = strtolower(trim($request->status));
 
@@ -144,10 +226,7 @@ public function index(Request $request)
             'shipped' => ['delivered'],
         ];
 
-        if (
-            isset($allowedTransitions[$currentStatus]) &&
-            !in_array($newStatus, $allowedTransitions[$currentStatus])
-        ) {
+        if (isset($allowedTransitions[$currentStatus]) && !in_array($newStatus, $allowedTransitions[$currentStatus])) {
             return back()->with('error', 'Invalid status transition');
         }
 
@@ -156,64 +235,56 @@ public function index(Request $request)
         if ($newStatus === 'confirmed') {
             $order->confirmed_at = now();
         }
-
         if ($newStatus === 'shipped') {
             $order->shipped_at = now();
         }
-
-       if ($newStatus === 'delivered') {
+        if ($newStatus === 'delivered') {
             $order->delivered_at = now();
-            
-            // ✅ COD order delivered = paid
             if ($order->payment_method_id == 1 || $order->payment_method == 'cod') {
                 $order->payment_status = 'paid';
             }
         }
 
         $order->save();
+
         if ($newStatus === 'confirmed') {
-
-        foreach ($order->items as $item) {
-
-            $variant = ProductVariant::find($item->variant_id);
-
-            if ($variant) {
-
-                $variant->decrement('quantity', $item->quantity);
-
-                StockMovement::create([
-                    'product_id' => $item->product_id,
-                    'variant_id' => $item->variant_id,
-                    'platform_id' => 1,
-                    'movement' => 'OUT',
-                    'quantity' => $item->quantity,
-                    'balance' => $variant->quantity,
-                    'reference_type' => 'order',
-                    'reference_id' => $order->id,
-                    'remarks' => 'Order confirmed',
-                ]);
+            foreach ($order->items as $item) {
+                $variant = ProductVariant::find($item->variant_id);
+                if ($variant) {
+                    $variant->decrement('quantity', $item->quantity);
+                    StockMovement::create([
+                        'product_id' => $item->product_id,
+                        'variant_id' => $item->variant_id,
+                        'platform_id' => 1,
+                        'movement' => 'OUT',
+                        'quantity' => $item->quantity,
+                        'balance' => $variant->quantity,
+                        'reference_type' => 'order',
+                        'reference_id' => $order->id,
+                        'remarks' => 'Order confirmed',
+                    ]);
+                }
             }
         }
-    }
 
         return back()->with('success', 'Order status updated to ' . ucfirst($newStatus));
     }
 
-  public function invoice($id)
-{
-    $order = Order::with([
-        'items.product',
-        'items.variant',
-        'user',
-        'shippingAddress',
-        'payment'
-    ])->findOrFail($id);
+    // ✅ INVOICE - SIRF WEBSITE/Offline orders ke liye
+    public function invoice($id)
+    {
+        $order = Order::with([
+            'items.product',
+            'items.variant',
+            'user',
+            'shippingAddress',
+            'payment'
+        ])->findOrFail($id);
 
-    $company = Organization::first();
+        $company = Organization::first();
 
-    // ✅ Return invoice view (no admin layout)
-    return view('admin.orders.invoice', compact('order', 'company'));
-}
+        return view('admin.orders.invoice', compact('order', 'company'));
+    }
 
     public function cancel($id)
     {
@@ -229,17 +300,14 @@ public function index(Request $request)
         return back()->with('success', 'Order cancelled successfully');
     }
 
+    public function confirm($id)
+    {
+        $order = Order::findOrFail($id);
 
- public function confirm($id)
-{
-    $order = Order::findOrFail($id);
+        if ($order->status === 'pending') {
+            $order->update(['status' => 'confirmed']);
+        }
 
-    if ($order->status === 'pending') {
-        $order->update([
-            'status' => 'confirmed'
-        ]);
+        return redirect()->route('admin.orders.show', $order->id);
     }
-
-    return redirect()->route('admin.orders.show', $order->id);
-}
 }

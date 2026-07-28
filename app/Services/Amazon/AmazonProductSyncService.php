@@ -112,22 +112,23 @@ class AmazonProductSyncService
         );
 
         $platformProduct = PlatformProduct::updateOrCreate(
-            [
-                'platform_id' => 7,
-                'product_id'  => $variant->product_id,
-            ],
-            [
-                'platform_sku'   => $sku,
-                'platform_stock' => $amazonStock,
-                'platform_price' => $variant->selling_price,
-                'status'         => 'active',
-                'sync_status'    => 'synced',
-                'last_synced_at' => now(),
-                'is_enabled'     => true,
-                'error_message'  => null,
-            ]
-        );
-
+    [
+        'platform_id'        => 7,
+        'product_variant_id' => $variant->id,
+    ],
+    [
+        'product_id'         => $variant->product_id,
+        'product_variant_id' => $variant->id,
+        'platform_sku'       => $sku,
+        'platform_stock'     => $amazonStock,
+        'platform_price'     => $variant->selling_price,
+        'status'             => 'active',
+        'sync_status'        => 'synced',
+        'last_synced_at'     => now(),
+        'is_enabled'         => true,
+        'error_message'      => null,
+    ]
+);
         PlatformPricing::updateOrCreate(
             [
                 'platform_product_id' => $platformProduct->id,

@@ -17,6 +17,7 @@ use SellingPartnerApi\Seller\OrdersV0\Requests\GetOrder;
 use App\Models\AmazonOrderItem;
 use SellingPartnerApi\Seller\OrdersV0\Requests\GetOrderItems;
 use Throwable;
+use App\Models\ProductVariant;
 
 class AmazonOrderService
 {
@@ -345,29 +346,40 @@ $amazonOrderId = $order->AmazonOrderId ?? null;
         'amazon_order_id' => $order->AmazonOrderId,
         'amazon_order_item_id' => $item->OrderItemId,
     ])->first();
+    $variant = ProductVariant::where('sku_suffix', $item->SellerSKU ?? '')->first();
 
     // Save Order Item
     AmazonOrderItem::updateOrCreate(
-        [
-            'amazon_order_id' => $order->AmazonOrderId,
-            'amazon_order_item_id' => $item->OrderItemId,
-        ],
-        [
-            'amazon_order_db_id' => $amazonOrder->id,
-            'seller_sku' => $item->SellerSKU ?? null,
-            'asin' => $item->ASIN ?? null,
-            'title' => $item->Title ?? null,
-            'quantity_ordered' => (int)($item->QuantityOrdered ?? 0),
-            'quantity_shipped' => (int)($item->QuantityShipped ?? 0),
-            'item_price' => isset($item->ItemPrice)
-                ? (float)$item->ItemPrice->Amount
-                : 0,
-            'currency' => isset($item->ItemPrice)
-                ? $item->ItemPrice->CurrencyCode
-                : 'INR',
-            'raw_response' => json_decode(json_encode($item), true),
-        ]
-    );
+    [
+        'amazon_order_id' => $order->AmazonOrderId,
+        'amazon_order_item_id' => $item->OrderItemId,
+    ],
+    [
+        'amazon_order_db_id'   => $amazonOrder->id,
+
+        'seller_sku'           => $item->SellerSKU ?? null,
+        'asin'                 => $item->ASIN ?? null,
+        'title'                => $item->Title ?? null,
+
+        'quantity_ordered'     => (int)($item->QuantityOrdered ?? 0),
+        'quantity_shipped'     => (int)($item->QuantityShipped ?? 0),
+
+        'item_price'           => isset($item->ItemPrice)
+            ? (float)$item->ItemPrice->Amount
+            : 0,
+
+        'currency'             => isset($item->ItemPrice)
+            ? $item->ItemPrice->CurrencyCode
+            : 'INR',
+
+        // 🔥 SKU Mapping
+        'product_id'           => $variant?->product_id,
+        'product_variant_id'   => $variant?->id,
+        'sku_matched'          => $variant ? true : false,
+
+        'raw_response'         => json_decode(json_encode($item), true),
+    ]
+);
 
     return $existing === null;
 }

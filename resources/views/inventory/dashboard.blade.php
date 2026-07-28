@@ -663,6 +663,7 @@
                                 $productKey = $item['product_id'] ?? $item['product_name'];
                                 if (!isset($groupedProducts[$productKey])) {
                                     $groupedProducts[$productKey] = [
+                                        'product_id' => $item['product_id'],
                                         'product_name' => $item['product_name'],
                                         'sku' => $item['sku'],
                                         'image_url' => $item['image_url'],
@@ -686,6 +687,7 @@
                                 $groupedProducts[$productKey]['total_pushed'] += $item['total_pushed'] ?? 0;
                                 $groupedProducts[$productKey]['website_pushed'] += $item['website_pushed'] ?? 0;
                                 $groupedProducts[$productKey]['website_available'] += $item['website_available'];
+                                
                                 $groupedProducts[$productKey]['offline_pushed'] += $item['offline_pushed'] ?? 0;
                                 $groupedProducts[$productKey]['offline_available'] += $item['offline_available'];
                                 $groupedProducts[$productKey]['amazon_pushed'] += $item['amazon_pushed'] ?? 0;
@@ -767,16 +769,29 @@
                                     @endif
                                 @endforeach
                                 
-                                <td class="text-center fw-bold" style="color: #0f7b4b;">{{ $product['final_stock'] }}</td>
-                                <td class="text-center">
+                                    <td class="text-center fw-bold" style="color: #0f7b4b;">
+                                        @if(request('channel') == 'website')
+                                            {{ $product['website_available'] }}
+                                        @elseif(request('channel') == 'offline')
+                                            {{ $product['offline_available'] }}
+                                        @elseif(request('channel') == 'amazon')
+                                            {{ $product['amazon_available'] }}
+                                        @else
+                                            {{ $product['final_stock'] }}
+                                        @endif
+                                    </td>                               
+                                    <td class="text-center">
                                     <span class="{{ $syncBadgeClass }}">
                                         <i class="fas {{ $syncStatus == 'Synced' ? 'fa-check-circle' : 'fa-clock' }} me-1"></i> {{ $syncStatus }}
                                     </span>
                                 </td>
+                                
                                 <td class="text-center">
-                                    <button class="btn-manage">
+                                    <a href="{{ route('admin.inventory.details', $product['product_id']) }}"
+                                    class="btn btn-sm" 
+                                    style="background: #8B2452; color: white; border-radius: 30px; font-size: 0.65rem; padding: 5px 18px; font-weight: 600; border: none; transition: all 0.2s ease; text-decoration: none;">
                                         <i class="fas fa-edit me-1"></i> Manage
-                                    </button>
+                                    </a>
                                 </td>
                             </tr>
 
@@ -865,7 +880,17 @@
                                                             @endif
                                                         @endforeach
                                                         
-                                                        <td style="font-weight:600; color: #0f7b4b;">{{ $variant['final_stock'] }}</td>
+                                                        <td style="font-weight:600; color: #0f7b4b;">
+    @if(request('channel') == 'website')
+        {{ $variant['website_available'] }}
+    @elseif(request('channel') == 'offline')
+        {{ $variant['offline_available'] }}
+    @elseif(request('channel') == 'amazon')
+        {{ $variant['amazon_available'] }}
+    @else
+        {{ $variant['final_stock'] }}
+    @endif
+</td>
                                                         <td>
                                                             <span class="{{ $vStatusBadge }}" style="font-size: 0.55rem; padding: 2px 12px;">
                                                                 {{ $vStatusClass }}
