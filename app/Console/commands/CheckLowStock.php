@@ -10,7 +10,9 @@ use App\Models\OrderItem;
 use App\Models\InvoiceItem;
 use App\Mail\LowStockAlert;
 use Illuminate\Support\Facades\Mail;
-
+use App\Models\PlatformProduct;
+use App\Models\AmazonOrderItem;
+use App\Models\Platform;
 class CheckLowStock extends Command
 {
     protected $signature = 'stock:check-low';
@@ -24,15 +26,24 @@ class CheckLowStock extends Command
             return 1;
         }
 
-        // ✅ Sirf 1 threshold - Sab platforms ke liye
         $threshold = $setting->threshold ?? 10;
+        $amazonPlatformId = Platform::where('display_name', 'Amazon')->value('id');
+        if (!$amazonPlatformId) {
+            $this->error('Amazon platform not found.');
+            return 1;
+        }
 
-        // ✅ Same logic as Inventory Dashboard
         $variants = ProductVariant::with(['product', 'value'])
             ->whereHas('product')
-            ->whereHas('platformPricings', function($q) {
-                $q->whereHas('platformProduct', function($sub) {
-                    $sub->whereIn('platform_id', [3, 4]);
+            ->where(function ($query) use ($amazonPlatformId) {
+                $query->whereHas('platformPricings', function ($q) {
+                    $q->whereHas('platformProduct', function ($sub) {
+                        $sub->whereIn('platform_id', [3, 4]);
+                    });
+                });
+
+                $query->orWhereHas('platformProducts', function ($q) use ($amazonPlatformId) {
+                    $q->where('platform_id', $amazonPlatformId);
                 });
             })
             ->get();
@@ -53,13 +64,27 @@ class CheckLowStock extends Command
                     $q->where('platform_id', 4);
                 })->sum('quantity');
 
-            // ✅ Total Sold = Website Orders + Offline Invoices
+            
             $websiteSold = OrderItem::where('variant_id', $variant->id)->sum('quantity');
             $offlineSold = InvoiceItem::where('product_variant_id', $variant->id)->sum('quantity');
 
-            // ✅ Available Stock = Total Pushed - Total Sold
-            $totalPushed = $websitePushed + $offlinePushed;
-            $totalSold = $websiteSold + $offlineSold;
+            $amazonPushed = PlatformProduct::where('platform_id', $amazonPlatformId)
+                ->where('product_variant_id', $variant->id)
+                ->value('platform_stock') ?? 0;
+
+            $amazonSold = AmazonOrderItem::where('product_variant_id', $variant->id)
+                ->whereHas('order', function ($q) {
+                    $q->whereIn('order_status', [
+                        'Unshipped',
+                        'PartiallyShipped',
+                        'Shipped',
+                        'InvoiceUnconfirmed',
+                    ]);
+                })
+                ->sum('quantity_ordered');
+            
+            $totalPushed = $websitePushed + $offlinePushed + $amazonPushed;
+            $totalSold = $websiteSold + $offlineSold + $amazonSold;
             $availableStock = max(0, $totalPushed - $totalSold);
 
             // ✅ Check if low stock (available <= threshold)

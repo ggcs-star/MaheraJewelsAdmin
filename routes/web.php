@@ -145,13 +145,14 @@ Route::middleware(['auth', 'verified.email', 'log.login.activity', 'role:admin']
         Route::get('/inventory/data', [InventoryController::class, 'getData'])
             ->name('inventory.data');
 
-        Route::get('/inventory/{variant}/details', [InventoryController::class, 'details'])
-            ->name('inventory.details');
+        // Route::get('/inventory/{variant}/details', [InventoryController::class, 'details'])
+        //     ->name('inventory.details');
     Route::get('/inventory/search-suggestions', [InventoryController::class, 'searchSuggestions'])->name('inventory.search');
 
-        Route::get('/inventory/{variantId}/details', [InventoryController::class, 'details'])
-            ->name('inventory.details');
-
+        // Route::get('/inventory/{variantId}/details', [InventoryController::class, 'details'])
+        //     ->name('inventory.details');
+Route::get('/inventory/details/{product}', [InventoryController::class, 'details'])
+    ->name('inventory.details');
         Route::resource('reels', ReelController::class);
         Route::post('/reels/{reel}/comment', [ReelController::class, 'addComment'])
             ->name('reels.comment');
