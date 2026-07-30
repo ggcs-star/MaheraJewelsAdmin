@@ -325,7 +325,8 @@ Route::get('/inventory/details/{product}', [InventoryController::class, 'details
         Route::get('/products/push', [ProductController::class, 'push'])->name('products.push');
         Route::post('/products/push', [ProductController::class, 'pushStore'])->name('products.push.store');
         Route::delete('products/bulk-delete', [ProductController::class, 'bulkDelete'])->name('products.bulk-delete');
-
+Route::get('/products/search', [ProductController::class, 'searchProducts'])
+    ->name('products.search');
         Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
         Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
         Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');

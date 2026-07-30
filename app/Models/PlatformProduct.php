@@ -55,4 +55,8 @@ class PlatformProduct extends Model
     {
         return $this->hasMany(Reel::class,'platform_product_id');
     }
+    public function pricings()
+{
+    return $this->hasMany(PlatformPricing::class);
+}
 }

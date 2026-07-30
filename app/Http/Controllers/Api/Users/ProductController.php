@@ -107,7 +107,7 @@ class ProductController extends Controller
     }
 }
 
-   public function show(string $slug): JsonResponse
+public function show(string $slug): JsonResponse
 {
     try {
         $platform = Platform::getOwnWebsite();
@@ -118,7 +118,7 @@ class ProductController extends Controller
                 $q->where('platform_id', $platform->id)->userVisible()
             )
             ->with([
-                'category:id,name',
+                'category:id,name','platformListings',
                 'variants' => function($q) {
                     $q->select('id','product_id','variant_id','variant_value_id','quantity','selling_price','image_url','sku_suffix','status','color');
                 },

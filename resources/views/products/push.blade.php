@@ -873,6 +873,69 @@ body {
     from { opacity: 0; transform: translateY(30px); }
     to { opacity: 1; transform: translateY(0); }
 }
+/* Select2 Design */
+.select2-container {
+    width: 100% !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+.select2-container .select2-selection--single {
+    height: 44px !important;
+    border: 2px solid #E5E7EB !important;
+    border-radius: 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    background: #fff !important;
+    padding: 0 10px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: #111827 !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #111827 !important;
+    line-height: 40px !important;
+    padding-left: 2px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__placeholder {
+    color: #9CA3AF !important;
+    font-weight: 500 !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 42px !important;
+    right: 10px !important;
+}
+
+.select2-dropdown {
+    border: 2px solid #E5E7EB !important;
+    border-radius: 10px !important;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif !important;
+}
+
+.select2-search__field {
+    height: 38px !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    padding: 8px 12px !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+.select2-results__option {
+    font-size: 13px !important;
+    padding: 10px 14px !important;
+    font-weight: 500 !important;
+}
+
+.select2-container--default .select2-results__option--highlighted {
+    background: #A3006B !important;
+    color: #fff !important;
+}
 </style>
 
 <div class="push-wrapper">
@@ -1312,11 +1375,17 @@ body {
 
 </div>
 @endsection
-
 @section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  $('#productSelect').select2({
+        placeholder: 'Search Product...',
+        width: '100%'
+    });
 
+    $('#productSelect').on('select2:select', function () {
+        this.dispatchEvent(new Event('change'));
+    });
     const productSelect = document.getElementById('productSelect');
     const productSelectSection = document.getElementById('productSelectSection');
     const variantSelect = document.getElementById('variantSelect');
@@ -1814,4 +1883,7 @@ function updatePageSummary() {
 
 });
 </script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 @endsection

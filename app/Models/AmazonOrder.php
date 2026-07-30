@@ -42,6 +42,7 @@ class AmazonOrder extends Model
         'is_global_express_enabled',
         'is_ispu',
         'has_regulated_items',
+        'customer_name',
         'shipping_city',
         'shipping_state',
         'shipping_postal_code',
