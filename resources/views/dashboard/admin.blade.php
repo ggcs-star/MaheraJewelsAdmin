@@ -479,29 +479,44 @@
                           </tr>
                      </thead>
                      <tbody>
-                         @forelse($recentOrders->take(5) as $order)
-                         <tr class="order-table-row cursor-pointer" onclick="window.location='{{ route('admin.orders.show', $order->id) }}'">
-                             <td class="px-5 py-3 text-sm font-medium text-gray-800">{{ $order->order_number }}</td>
-                             <td class="px-5 py-3 text-sm font-semibold text-gray-800">₹{{ number_format($order->total, 2) }}</td>
-                             <td class="px-5 py-3 text-sm text-gray-500">{{ $order->created_at->format('d M Y') }}</td>
-                             <td class="px-5 py-3">
-                                 <span class="status-badge 
-                                     @if($order->status == 'pending') bg-yellow-100 text-yellow-700
-                                     @elseif($order->status == 'confirmed') bg-blue-100 text-blue-700
-                                     @elseif($order->status == 'processing') bg-purple-100 text-purple-700
-                                     @elseif($order->status == 'shipped') bg-pink-100 text-pink-700
-                                     @elseif($order->status == 'delivered') bg-green-100 text-green-700
-                                     @else bg-red-100 text-red-700 @endif">
-                                     {{ ucfirst($order->status) }}
-                                 </span>
-                              </td>
-                          </tr>
-                         @empty
-                         <tr>
-                             <td colspan="4" class="px-5 py-8 text-center text-gray-400">No orders found</td>
-                         </tr>
-                         @endforelse
-                     </tbody>
+    @forelse($recentOrders->take(5) as $order)
+    <tr class="order-table-row cursor-pointer" onclick="window.location='{{ route('admin.orders.show', $order->id) }}'">
+        <td class="px-5 py-3 text-sm font-medium text-gray-800">
+            @if($order->is_amazon ?? false)
+                <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded">Amazon</span>
+            @endif
+            {{ $order->order_number }}
+        </td>
+        <td class="px-5 py-3 text-sm font-semibold text-gray-800">
+            ₹{{ number_format($order->total ?? $order->order_total ?? 0, 2) }}
+        </td>
+        <td class="px-5 py-3 text-sm text-gray-500">
+            {{ isset($order->created_at) ? $order->created_at->format('d M Y') : (isset($order->purchase_date) ? date('d M Y', strtotime($order->purchase_date)) : 'N/A') }}
+        </td>
+        <td class="px-5 py-3">
+            @php
+                $status = $order->status ?? $order->order_status ?? 'pending';
+                $statusClass = match($status) {
+                    'pending' => 'bg-yellow-100 text-yellow-700',
+                    'confirmed' => 'bg-blue-100 text-blue-700',
+                    'processing' => 'bg-purple-100 text-purple-700',
+                    'shipped' => 'bg-pink-100 text-pink-700',
+                    'delivered' => 'bg-green-100 text-green-700',
+                    'Canceled', 'Cancelled' => 'bg-red-100 text-red-700',
+                    default => 'bg-gray-100 text-gray-700'
+                };
+            @endphp
+            <span class="status-badge {{ $statusClass }}">
+                {{ ucfirst($status) }}
+            </span>
+        </td>
+    </tr>
+    @empty
+    <tr>
+        <td colspan="4" class="px-5 py-8 text-center text-gray-400">No orders found</td>
+    </tr>
+    @endforelse
+</tbody>
                   </table>
              </div>
          </div>

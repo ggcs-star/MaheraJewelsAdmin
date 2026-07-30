@@ -658,9 +658,10 @@
                     </thead>
                     <tbody>
                         @php
+                        $allData = $inventoryData;
                             $groupedProducts = [];
-                            foreach ($paginatedData as $item) {
-                                $productKey = $item['product_id'] ?? $item['product_name'];
+                            foreach ($allData as $item) {
+                                $productKey = $item['product_id'];
                                 if (!isset($groupedProducts[$productKey])) {
                                     $groupedProducts[$productKey] = [
                                         'product_id' => $item['product_id'],
@@ -674,6 +675,8 @@
                                         'offline_pushed' => 0,
                                         'offline_available' => 0,
                                         'amazon_pushed' => 0,
+                                        'amazon_available' => 0,   
+                                        'amazon_sold' => 0,    
                                         'flipkart_pushed' => 0,
                                         'final_stock' => 0,
                                         'website_sold' => 0,
@@ -691,12 +694,15 @@
                                 $groupedProducts[$productKey]['offline_pushed'] += $item['offline_pushed'] ?? 0;
                                 $groupedProducts[$productKey]['offline_available'] += $item['offline_available'];
                                 $groupedProducts[$productKey]['amazon_pushed'] += $item['amazon_pushed'] ?? 0;
+                                $groupedProducts[$productKey]['amazon_available'] += $item['amazon_available'] ?? 0;
+                                $groupedProducts[$productKey]['amazon_sold'] += $item['amazon_sold'] ?? 0;
                                 $groupedProducts[$productKey]['flipkart_pushed'] += $item['flipkart_pushed'] ?? 0;
                                 $groupedProducts[$productKey]['final_stock'] += $item['final_stock'];
                                 $groupedProducts[$productKey]['website_sold'] += $item['website_sold'];
                                 $groupedProducts[$productKey]['offline_sold'] += $item['offline_sold'];
                                 $groupedProducts[$productKey]['amazon_sold'] += $item['amazon_sold'] ?? 0;
                                 $groupedProducts[$productKey]['flipkart_sold'] += $item['flipkart_sold'] ?? 0;
+                                
                                 $groupedProducts[$productKey]['variants'][] = [
                                     'variant_name' => $item['variant_name'],
                                     'sku' => $item['sku'],
@@ -708,6 +714,8 @@
                                     'offline_available' => $item['offline_available'],
                                     'amazon_pushed' => $item['amazon_pushed'] ?? 0,
                                     'flipkart_pushed' => $item['flipkart_pushed'] ?? 0,
+                                    'amazon_available' => $item['amazon_available'] ?? 0,
+                                    'amazon_sold' => $item['amazon_sold'] ?? 0,
                                     'final_stock' => $item['final_stock'],
                                     'website_sold' => $item['website_sold'],
                                     'offline_sold' => $item['offline_sold'],
@@ -715,9 +723,14 @@
                                     'flipkart_sold' => $item['flipkart_sold'] ?? 0,
                                 ];
                             }
+                             $perPage = 15;
+                                $currentPage = request()->get('page', 1);
+                                $offset = ($currentPage - 1) * $perPage;
+                                $paginatedProducts = array_slice($groupedProducts, $offset, $perPage);
+                                $totalItems = count($groupedProducts);
                         @endphp
 
-                        @forelse($groupedProducts as $product)
+                        @forelse($paginatedProducts as $product)
                             @php
                                 $variantsCount = count($product['variants']);
                                 $syncStatus = 'Synced';
@@ -775,7 +788,7 @@
                                         @elseif(request('channel') == 'offline')
                                             {{ $product['offline_available'] }}
                                         @elseif(request('channel') == 'amazon')
-                                            {{ $product['amazon_available'] }}
+                                            {{ $product['amazon_available'] ?? 0 }}
                                         @else
                                             {{ $product['final_stock'] }}
                                         @endif
@@ -832,6 +845,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
+                                                
                                                 @foreach($product['variants'] as $variant)
                                                     @php
                                                         $vStatusClass = 'Healthy';
@@ -886,7 +900,7 @@
     @elseif(request('channel') == 'offline')
         {{ $variant['offline_available'] }}
     @elseif(request('channel') == 'amazon')
-        {{ $variant['amazon_available'] }}
+        {{ $variant['amazon_available'] ?? 0 }}
     @else
         {{ $variant['final_stock'] }}
     @endif

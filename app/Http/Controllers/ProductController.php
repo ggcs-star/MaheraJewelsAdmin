@@ -875,6 +875,29 @@ public function pushStore(Request $request)
                     ->first();
                 
                 $poQuantity = $poItem ? $poItem->quantity : 0;
+                // $totalPushed calculate karne se pehle
+                \Log::info('=== PUSH DEBUG ===');
+                \Log::info('Variant ID: ' . $variantId);
+                \Log::info('PO Quantity: ' . $poQuantity);
+
+// ✅ Sirf Website + Offline ka pushed count karo (Amazon ko exclude)
+                $websitePlatformId = $this->getWebsitePlatformId();
+                $offlinePlatformId = $this->getOfflinePlatformId();
+
+                $totalPushed = PlatformPricing::where('product_variant_id', $variantId)
+                    ->whereHas('platformProduct', function($q) use ($websitePlatformId, $offlinePlatformId) {
+                        $q->whereIn('platform_id', [$websitePlatformId, $offlinePlatformId]);
+                    })
+                    ->sum('quantity');
+                    \Log::info('Total Pushed from PlatformPricing: ' . $totalPushed);
+
+                // Check all tables
+                $allTables = [
+                    'platform_pricing' => PlatformPricing::where('product_variant_id', $variantId)->sum('quantity'),
+                    'platform_products' => PlatformProduct::where('product_variant_id', $variantId)->sum('platform_stock'),
+                ];
+
+                \Log::info('All Tables Sum: ', $allTables);
 
                 $totalRequested = collect($platforms)
                     ->filter(fn($p) => isset($p['qty']) && $p['qty'] > 0)
@@ -924,14 +947,22 @@ public function pushStore(Request $request)
                         'product_variant_id'  => $variantId,
                     ])->first();
 
-                    if ($existingPricing) {
-                        $existingPricing->quantity += $p['qty'];
-                        $existingPricing->price = $p['price'];
-                        $existingPricing->discount_type = $discountType;
-                        $existingPricing->discount_value = $p['discount_value'];
-                        $existingPricing->final_price = $p['final_total'] / max($existingPricing->quantity, 1);
-                        $existingPricing->save();
-                    } else {
+                   if ($existingPricing) {
+    $totalQty = $existingPricing->quantity + $p['qty'];
+    
+    $existingPricing->quantity = $totalQty;
+    $existingPricing->price = $p['price'];
+    $existingPricing->discount_type = $discountType;
+    $existingPricing->discount_value = $p['discount_value'];
+    $existingPricing->final_price = $p['final_total'] / max($p['qty'], 1);
+    $existingPricing->save();
+    
+    // ✅ DEBUG - Check if saved
+    \Log::info('Updated Pricing ID: ' . $existingPricing->id);
+    \Log::info('New Quantity: ' . $existingPricing->quantity);
+    \Log::info('New Final Price: ' . $existingPricing->final_price);
+}
+                     else {
                         PlatformPricing::create([
                             'platform_product_id' => $platformProduct->id,
                             'product_variant_id'  => $variantId,
@@ -949,7 +980,12 @@ public function pushStore(Request $request)
                     $platformProduct->save();
                 }
 
-                $totalPushed = PlatformPricing::where('product_variant_id', $variantId)->sum('quantity');
+                // ✅ Sirf Website + Offline ka pushed count karo (Amazon ko exclude)
+            $totalPushed = PlatformPricing::where('product_variant_id', $variantId)
+                ->whereHas('platformProduct', function($q) use ($websitePlatformId, $offlinePlatformId) {
+                    $q->whereIn('platform_id', [$websitePlatformId, $offlinePlatformId]);
+                })
+                ->sum('quantity');
                 
                 if ($totalPushed > $poQuantity) {
                     throw new \Exception(

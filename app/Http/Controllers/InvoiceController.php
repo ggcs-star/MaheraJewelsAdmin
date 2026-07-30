@@ -207,11 +207,27 @@ public function store(Request $request)
                     $q->where('status', '!=', 'cancelled');
                 })
                 ->first();
-            
+
             $poQuantity = $poItem ? $poItem->quantity : 0;
-            $pushedQty = PlatformPricing::where('product_variant_id', $variant->id)->sum('quantity');
+
+            // ✅ Sirf Offline platform ka pushed count karo
+            $offlinePlatformId = $this->getOfflinePlatformId();
+            $pushedQty = PlatformPricing::where('product_variant_id', $variant->id)
+                ->whereHas('platformProduct', function($q) use ($offlinePlatformId) {
+                    $q->where('platform_id', $offlinePlatformId);
+                })
+                ->sum('quantity');
+
             $availableQty = $poQuantity - $pushedQty;
             
+            $offlinePlatformId = $this->getOfflinePlatformId();
+            $pushedQty = PlatformPricing::where('product_variant_id', $variant->id)
+                ->whereHas('platformProduct', function($q) use ($offlinePlatformId) {
+                    $q->where('platform_id', $offlinePlatformId);
+                })
+                ->sum('quantity');
+
+            $availableQty = $poQuantity - $pushedQty;
             if ($item['qty'] > $availableQty) {
                 throw new \Exception("Not enough stock. Available: {$availableQty}, Requested: {$item['qty']}");
             }
@@ -454,7 +470,13 @@ public function store(Request $request)
                     ->first();
                 
                 $poQuantity = $poItem ? $poItem->quantity : 0;
-                $pushedQty = PlatformPricing::where('product_variant_id', $variant->id)->sum('quantity');
+
+                $pushedQty = PlatformPricing::where('product_variant_id', $variant->id)
+                    ->whereHas('platformProduct', function($q) use ($offlinePlatformId) {
+                        $q->where('platform_id', $offlinePlatformId);
+                    })
+                    ->sum('quantity');
+
                 $availableQty = $poQuantity - $pushedQty;
                 
                 if ($item['qty'] > $availableQty) {
