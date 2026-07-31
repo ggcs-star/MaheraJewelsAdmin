@@ -32,24 +32,34 @@ class AmazonInventoryService
             ]
         );
 
-        dd($response->json());
-    }
 
-    /**
-     * Sync all Amazon inventory
-     */
-    public function syncInventory(): bool
+}
+    public function getInventory()
     {
-        $platformProducts = PlatformProduct::with([
-            'product',
-            'pricing.variant.product',
-        ])
-            ->where('platform_id', 7)
-            ->get();
+        $seller = $this->client->seller()->seller();
 
-        foreach ($platformProducts as $platformProduct) {
+        /*
+         *
+         * Amazon Inventory API call yaha hoga
+         *
+         */
 
-            foreach ($platformProduct->pricing as $pricing) {
+        return $seller;
+    }
+public function syncInventory()
+{
+    $platformProducts = PlatformProduct::with([
+        'product',
+        'pricing.variant.product'
+    ])
+    ->where('platform_id', 7) // Amazon Platform ID
+    ->get();
+
+
+
+    foreach ($platformProducts as $platformProduct) {
+
+        foreach ($platformProduct->pricing as $pricing) {
 
                 if (!$pricing->variant || !$pricing->variant->product) {
                     continue;
