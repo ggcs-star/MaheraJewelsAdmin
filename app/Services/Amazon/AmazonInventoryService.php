@@ -29,7 +29,6 @@ class AmazonInventoryService
     ]
 );
 
-dd($response->json());
 
 }
     public function getInventory()
@@ -48,20 +47,16 @@ public function syncInventory()
 {
     $platformProducts = PlatformProduct::with([
         'product',
-        'pricings.variant.product'
+        'pricing.variant.product'
     ])
     ->where('platform_id', 7) // Amazon Platform ID
     ->get();
 
-    // Debug 1: Check how many Amazon products found
-    dd([
-        'total_products' => $platformProducts->count(),
-        'products' => $platformProducts->toArray(),
-    ]);
+
 
     foreach ($platformProducts as $platformProduct) {
 
-        foreach ($platformProduct->pricings as $pricing) {
+        foreach ($platformProduct->pricing as $pricing) {
 
             if (!$pricing->variant || !$pricing->variant->product) {
                 continue;

@@ -152,13 +152,15 @@ $this->syncLog = AmazonSyncLog::create([
             return $this->syncLog;
         } catch (Throwable $e) {
 
-    dd([
-        'amazon_order_id' => $amazonOrderId,
+    Log::channel('amazon')->error('Amazon sync failed', [
         'message' => $e->getMessage(),
         'file' => $e->getFile(),
         'line' => $e->getLine(),
     ]);
 
+    $this->logSync('failed', $e->getMessage(), $startTime);
+
+    throw $e;
 }
     }
 
@@ -281,6 +283,20 @@ $amazonOrderId = $order->AmazonOrderId ?? null;
 
         try {
             $items = $this->fetchOrderItems($amazonOrderId);
+            $address = null;
+
+            try {
+                $addressResponse = $this->client->orders()->getOrderAddress($amazonOrderId);
+
+            
+
+               
+            } catch (\Throwable $e) {
+                Log::channel('amazon')->warning('Unable to fetch order address', [
+                    'amazon_order_id' => $amazonOrderId,
+                    'message' => $e->getMessage(),
+                ]);
+            }
 
             if ($items->isEmpty()) {
                 Log::channel('amazon')->warning('Order has no items', [
@@ -324,21 +340,61 @@ $amazonOrderId = $order->AmazonOrderId ?? null;
      */
  public function saveOrder(object $order, object $item): bool
 {
+    
     // Save Order
     $amazonOrder = AmazonOrder::updateOrCreate(
         [
             'amazon_order_id' => $order->AmazonOrderId,
         ],
-        [
-            'marketplace_id' => $order->MarketplaceId ?? null,
-            'order_status' => $order->OrderStatus ?? null,
-            'purchase_date' => $order->PurchaseDate ?? null,
-            'last_update_date' => $order->LastUpdateDate ?? null,
-            'fulfillment_channel' => $order->FulfillmentChannel ?? null,
-            'currency' => isset($item->ItemPrice)
-                ? $item->ItemPrice->CurrencyCode
-                : 'INR',
-        ]
+       [
+    'marketplace_id'                     => $order->MarketplaceId ?? null,
+    'sales_channel'                      => $order->SalesChannel ?? 'Amazon',
+    'order_status'                       => $order->OrderStatus ?? null,
+    'order_type'                         => $order->OrderType ?? null,
+
+    'purchase_date'                      => $order->PurchaseDate ?? null,
+    'last_update_date'                   => $order->LastUpdateDate ?? null,
+
+    'earliest_ship_date'                 => $order->EarliestShipDate ?? null,
+    'latest_ship_date'                   => $order->LatestShipDate ?? null,
+
+    'earliest_delivery_date'             => $order->EarliestDeliveryDate ?? null,
+    'latest_delivery_date'               => $order->LatestDeliveryDate ?? null,
+
+    'fulfillment_channel'                => $order->FulfillmentChannel ?? null,
+
+    'shipment_service_level_category'    => $order->ShipmentServiceLevelCategory ?? null,
+    'ship_service_level'                 => $order->ShipServiceLevel ?? null,
+    'easy_ship_shipment_status'          => $order->EasyShipShipmentStatus ?? null,
+
+    'payment_method'                     => $order->PaymentMethod ?? null,
+
+    'order_total'                        => isset($order->OrderTotal)
+        ? (float)$order->OrderTotal->Amount
+        : 0,
+
+    'currency'                           => isset($order->OrderTotal)
+        ? $order->OrderTotal->CurrencyCode
+        : (isset($item->ItemPrice)
+            ? $item->ItemPrice->CurrencyCode
+            : 'INR'),
+
+    'number_of_items_shipped'            => $order->NumberOfItemsShipped ?? 0,
+    'number_of_items_unshipped'          => $order->NumberOfItemsUnshipped ?? 0,
+
+    'is_prime'                           => $order->IsPrime ?? false,
+    'is_premium_order'                   => $order->IsPremiumOrder ?? false,
+    'is_business_order'                  => $order->IsBusinessOrder ?? false,
+    'customer_name'                      => $order->ShippingAddress->Name ?? null,
+    'shipping_city'                      => $order->ShippingAddress->City ?? null,
+    'shipping_state'                     => $order->ShippingAddress->StateOrRegion ?? null,
+    'shipping_postal_code'               => $order->ShippingAddress->PostalCode ?? null,
+    'shipping_country'                   => $order->ShippingAddress->CountryCode ?? null,
+
+    'synced_at'                          => now(),
+
+    'raw_response'                       => json_decode(json_encode($order), true),
+]
     );
 
     // Check if Item already exists
