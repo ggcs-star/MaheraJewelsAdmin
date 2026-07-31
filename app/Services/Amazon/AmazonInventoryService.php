@@ -32,34 +32,24 @@ class AmazonInventoryService
             ]
         );
 
-
-}
-    public function getInventory()
-    {
-        $seller = $this->client->seller()->seller();
-
-        /*
-         *
-         * Amazon Inventory API call yaha hoga
-         *
-         */
-
-        return $seller;
+        dd($response->json());
     }
-public function syncInventory()
-{
-    $platformProducts = PlatformProduct::with([
-        'product',
-        'pricing.variant.product'
-    ])
-    ->where('platform_id', 7) // Amazon Platform ID
-    ->get();
 
+    /**
+     * Sync all Amazon inventory
+     */
+    public function syncInventory(): bool
+    {
+        $platformProducts = PlatformProduct::with([
+            'product',
+            'pricing.variant.product',
+        ])
+        ->where('platform_id', 7)
+        ->get();
 
+        foreach ($platformProducts as $platformProduct) {
 
-    foreach ($platformProducts as $platformProduct) {
-
-        foreach ($platformProduct->pricing as $pricing) {
+            foreach ($platformProduct->pricing as $pricing) {
 
                 if (!$pricing->variant || !$pricing->variant->product) {
                     continue;
@@ -94,63 +84,63 @@ public function syncInventory()
                 sku: $sku,
                 marketplaceIds: [config('services.amazon.marketplace_id')],
                 issueLocale: null,
-                includedData: [
-                    'summaries',
-                    'fulfillmentAvailability',
-                ]
+                includedData: ['fulfillmentAvailability']
             );
 
             $data = $response->json();
 
-            $quantity = data_get(
+            $amazonQty = (int) data_get(
                 $data,
                 'fulfillmentAvailability.0.quantity',
                 0
             );
 
+            // Update Platform Pricing
             $pricing->update([
-                'quantity' => $quantity,
+                'quantity' => $amazonQty,
             ]);
 
+            // Update Platform Product
             $platformProduct->update([
-                'platform_stock' => $quantity,
+                'platform_stock' => $amazonQty,
                 'sync_status' => 'synced',
                 'last_synced_at' => now(),
                 'error_message' => null,
             ]);
 
+            // Inventory History
             AmazonInventorySync::create([
-                'product_id' => $platformProduct->product_id,
-                'product_variant_id' => $platformProduct->product_variant_id,
-                'seller_sku' => $sku,
-                'asin' => data_get($data, 'summaries.0.asin'),
-                'amazon_quantity' => $quantity,
-                'erp_quantity_before' => $oldQty,
-                'erp_quantity_after' => $quantity,
-                'quantity_difference' => $quantity - $oldQty,
-                'sync_type' => 'inventory_pull',
-                'sync_status' => 'success',
-                'message' => 'Inventory synced successfully',
-                'synced_at' => now(),
-                'raw_response' => $data,
+                'product_id'            => $platformProduct->product_id,
+                'product_variant_id'    => $platformProduct->product_variant_id,
+                'seller_sku'            => $sku,
+                'asin'                  => data_get($data, 'summaries.0.asin'),
+                'amazon_quantity'       => $amazonQty,
+                'erp_quantity_before'   => $oldQty,
+                'erp_quantity_after'    => $amazonQty,
+                'quantity_difference'   => $amazonQty - $oldQty,
+                'sync_type'             => 'inventory_pull',
+                'sync_status'           => 'success',
+                'message'               => 'Inventory synced successfully',
+                'synced_at'             => now(),
+                'raw_response'          => $data,
             ]);
 
         } catch (\Throwable $e) {
 
             $platformProduct->update([
-                'sync_status' => 'failed',
+                'sync_status'    => 'failed',
                 'last_synced_at' => now(),
-                'error_message' => $e->getMessage(),
+                'error_message'  => $e->getMessage(),
             ]);
 
             AmazonInventorySync::create([
-                'product_id' => $platformProduct->product_id,
+                'product_id'         => $platformProduct->product_id,
                 'product_variant_id' => $platformProduct->product_variant_id,
-                'seller_sku' => $sku,
-                'sync_type' => 'inventory_pull',
-                'sync_status' => 'failed',
-                'message' => $e->getMessage(),
-                'synced_at'=> now(),
+                'seller_sku'         => $sku,
+                'sync_type'          => 'inventory_pull',
+                'sync_status'        => 'failed',
+                'message'            => $e->getMessage(),
+                'synced_at'          => now(),
             ]);
         }
     }
@@ -166,8 +156,7 @@ public function syncInventory()
             marketplaceIds: [config('services.amazon.marketplace_id')],
             issueLocale: null,
             includedData: [
-                'summaries',
-                'fulfillmentAvailability'
+                'fulfillmentAvailability',
             ]
         );
     }
