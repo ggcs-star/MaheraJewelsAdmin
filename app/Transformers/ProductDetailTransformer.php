@@ -11,7 +11,12 @@ class ProductDetailTransformer
 {
     public static function transform(Product $product): array
     {
-        $listing = $product->platformListings->first();
+        $websitePlatform = \App\Models\Platform::getOwnWebsite();
+
+// $listing = $product->platformListings
+//     ->where('platform_id', $websitePlatform->id)
+//     ->first();
+    
 
         return [
             'id' => $product->id,
@@ -44,12 +49,18 @@ class ProductDetailTransformer
             'stock' => $listing?->platform_stock ?? 0,
             'in_stock' => ($listing?->platform_stock ?? 0) > 0,
 
-            'variants' => $product->variants->map(function ($variant) use ($listing) {
+            'variants' => $product->variants->map(function ($variant) use ($product, $websitePlatform) {
+
+                $listing = $product->platformListings
+                    ->where('platform_id', $websitePlatform->id)
+                    ->where('product_variant_id', $variant->id)
+                    ->first();
 
                 $pricing = ProductPricingService::getVariantPricing(
                     $variant,
                     $listing
                 );
+                
 
                 return [
                     'id' => $variant->id,

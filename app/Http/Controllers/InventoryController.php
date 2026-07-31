@@ -104,23 +104,21 @@ public function dashboard(Request $request)
                 ->sum('quantity');
 
             // ✅ OFFLINE - PlatformPricing se fetch
-            $offlinePushed = PlatformPricing::where('product_variant_id', $variant->id)
-                ->whereHas('platformProduct', function($q) use ($offlinePlatformId) {
-                    $q->where('platform_id', $offlinePlatformId);
-                })
-                ->sum('quantity');
-                
-$amazonProduct = PlatformProduct::where('platform_id', $amazonPlatformId)
-    ->where('product_variant_id', $variant->id)
-    ->first();
+           $offlinePushed = PlatformProduct::where('product_variant_id', $variant->id)
+                ->where('platform_id', $offlinePlatformId)
+                ->sum('platform_stock');
+                            
+            $amazonProduct = PlatformProduct::where('platform_id', $amazonPlatformId)
+                ->where('product_variant_id', $variant->id)
+                ->first();
 
-$amazonPushed = $amazonProduct ? (int) $amazonProduct->platform_stock : 0;
+            $amazonPushed = $amazonProduct ? (int) $amazonProduct->platform_stock : 0;
 
-$websiteSold = OrderItem::where('variant_id', $variant->id)->sum('quantity');
-$offlineSold = InvoiceItem::where('product_variant_id', $variant->id)->sum('quantity');
+            $websiteSold = OrderItem::where('variant_id', $variant->id)->sum('quantity');
+            $offlineSold = InvoiceItem::where('product_variant_id', $variant->id)->sum('quantity');
 
-$amazonSold = AmazonOrderItem::where('product_variant_id', $variant->id)
-    ->sum('quantity_ordered');
+            $amazonSold = AmazonOrderItem::where('product_variant_id', $variant->id)
+                ->sum('quantity_ordered');
             $websiteAvailable = max(0, $websitePushed - $websiteSold);
             $offlineAvailable = max(0, $offlinePushed - $offlineSold);
             $amazonAvailable = max(0, $amazonPushed - $amazonSold);
@@ -205,6 +203,21 @@ $amazonSold = AmazonOrderItem::where('product_variant_id', $variant->id)
                 return $item['amazon_pushed'] > 0 || $item['amazon_sold'] > 0;
             });
         }
+        $stockSetting = \App\Models\StockSetting::first();
+$lowStockThreshold = $stockSetting ? (int) $stockSetting->threshold : 15;
+
+$lowStockCount = 0;
+$outOfStockCount = 0;
+
+foreach ($inventoryData as $item) {
+    $stock = $item['final_stock'] ?? 0;
+    if ($stock > 0 && $stock <= $lowStockThreshold) {
+        $lowStockCount++;
+    } elseif ($stock == 0) {
+        $outOfStockCount++;
+    }
+}
+
 
         $currentPage = (int) $request->get('page', 1);
         $offset = ($currentPage - 1) * $perPage;
@@ -240,12 +253,23 @@ $amazonSold = AmazonOrderItem::where('product_variant_id', $variant->id)
             ->where('status', 'active')
             ->distinct('name')
             ->get();
+            // InventoryController.php - dashboard function me
+// $inventoryData banane ke baad yeh daalo
+
+foreach ($inventoryData as $item) {
+    if (strpos($item['product_name'], 'Mint Blossom') !== false) {
+        \Log::info('Mint Blossom: ' . $item['product_id'] . ' - ' . $item['variant_name']);
+    }
+    if (strpos($item['product_name'], 'Heritage Black') !== false) {
+        \Log::info('Heritage Black: ' . $item['product_id'] . ' - ' . $item['variant_name']);
+    }
+}
 
         return view('inventory.dashboard', compact(
             'paginatedData', 'inventoryData', 'summary', 'totalItems', 
             'perPage', 'currentPage', 'filter', 'search', 'brand', 
             'category', 'supplier', 'stockStatus', 'brands', 'categories', 
-            'suppliers', 'channel', 'platforms'
+            'suppliers', 'channel', 'platforms',  'lowStockCount', 'outOfStockCount'
         ));
     }
 
