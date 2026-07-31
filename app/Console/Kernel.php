@@ -19,7 +19,9 @@ class Kernel extends ConsoleKernel
              ->everyMinute();
                  $schedule->command('app:sync-amazon-orders')->everyFiveMinutes();
 
-             
+        $schedule->command('app:sync-amazon-orders')->daily();
+        $schedule->command('app:sync-amazon-products')->daily();
+        $schedule->command('app:sync-amazon-inventory')->daily();
 }
     
     protected function commands(): void
