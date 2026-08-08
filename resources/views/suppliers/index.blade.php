@@ -73,9 +73,11 @@
             </form>
         </div>
 
-        <form method="POST" action="{{ route('admin.suppliers.bulk-delete') }}" id="supplierBulkDeleteForm">
-            @csrf
-            
+   <form method="POST"
+      action="{{ route('admin.suppliers.bulk-delete') }}"
+      id="supplierBulkDeleteForm">
+    @csrf
+</form>
             <div class="px-4 py-2 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <input type="checkbox" id="selectAllSuppliers" class="w-4 h-4 rounded border-gray-300 text-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20">
@@ -188,7 +190,6 @@
                     {{ $suppliers->withQueryString()->links() }}
                 </div>
             @endif
-        </form>
     </div>
 </div>
 

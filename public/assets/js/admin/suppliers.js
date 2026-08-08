@@ -50,11 +50,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const supplierSidebar = document.getElementById('supplierFilterSidebar');
 
     openSupplierBtn?.addEventListener('click', () => {
-        supplierSidebar.classList.add('active');
+        supplierSidebar.classList.add('open');
     });
 
     closeSupplierBtn?.addEventListener('click', () => {
-        supplierSidebar.classList.remove('active');
+        supplierSidebar.classList.remove('open');
     });
 
     document.getElementById('applySupplierAdvancedFilter')
