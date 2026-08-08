@@ -10,12 +10,18 @@ use App\Models\AmazonOrder;
 use App\Models\PlatformProduct;
 use App\Models\ProductVariant;
 use Illuminate\Http\Request;
+use App\Models\Platform;
+use App\Models\PlatformPricing;
+use App\Models\PurchaseOrderItem;
+use App\Models\InvoiceItem;
+use App\Models\OrderItem;
+use App\Models\AmazonOrderItem;
 
 class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        $totalProducts = PlatformProduct::distinct('product_id')->count('product_id');
+        $totalProducts = Product::count();
         $totalCategories = Category::count();
 
         $totalWebsiteOrders = Order::count();
@@ -23,23 +29,19 @@ class DashboardController extends Controller
         $totalOrders = $totalWebsiteOrders + $totalAmazonOrders;
 
         $currentMonthWebsiteSales = Order::where('status', 'delivered')
-            ->whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year)
-            ->sum('total');
-
-        $currentMonthAmazonSales = AmazonOrder::where('order_status', 'Delivered')
+        ->whereMonth('created_at', now()->month)
+        ->whereYear('created_at', now()->year)
+        ->sum('total');
+        $currentMonthAmazonSales = AmazonOrder::where('order_status', 'Shipped')
             ->whereMonth('purchase_date', now()->month)
             ->whereYear('purchase_date', now()->year)
             ->sum('order_total');
-
         $currentMonthSales = $currentMonthWebsiteSales + $currentMonthAmazonSales;
-
-        $lastMonthWebsiteSales = Order::where('status', 'delivered')
+                $lastMonthWebsiteSales = Order::where('status', 'delivered')
             ->whereMonth('created_at', now()->subMonth()->month)
             ->whereYear('created_at', now()->year)
             ->sum('total');
-
-        $lastMonthAmazonSales = AmazonOrder::where('order_status', 'Delivered')
+        $lastMonthAmazonSales = AmazonOrder::where('order_status', 'Shipped')
             ->whereMonth('purchase_date', now()->subMonth()->month)
             ->whereYear('purchase_date', now()->year)
             ->sum('order_total');
@@ -48,12 +50,86 @@ class DashboardController extends Controller
 
         $salesGrowth = $lastMonthSales > 0 ? round((($currentMonthSales - $lastMonthSales) / $lastMonthSales) * 100, 1) : 0;
 
-        $lowStockProducts = Product::whereHas('variants')
-            ->with(['variants'])
-            ->take(10)
-            ->get();
+        $offlinePlatformId = Platform::where('display_name', 'Offline')->value('id');
+        $websitePlatformId = Platform::where('display_name', 'Our Website')->value('id');
+        $amazonPlatformId  = Platform::where('display_name', 'Amazon')->value('id');
+        $productsInStock = 0;
 
-        $lowStockCount = Product::whereHas('variants')->count();
+$variants = ProductVariant::all();
+
+foreach ($variants as $variant) {
+
+    $websitePush = PlatformPricing::where('product_variant_id', $variant->id)
+        ->whereHas('platformProduct', function ($q) use ($websitePlatformId) {
+            $q->where('platform_id', $websitePlatformId);
+        })
+        ->sum('quantity');
+
+    $offlinePush = PlatformProduct::where('platform_id', $offlinePlatformId)
+        ->where('product_variant_id', $variant->id)
+        ->sum('platform_stock');
+
+    $amazonPush = PlatformProduct::where('platform_id', $amazonPlatformId)
+        ->where('product_variant_id', $variant->id)
+        ->sum('platform_stock');
+
+    $websiteSold = OrderItem::where('variant_id', $variant->id)
+        ->sum('quantity');
+
+    $offlineSold = InvoiceItem::where('product_variant_id', $variant->id)
+        ->sum('quantity');
+
+    $amazonSold = AmazonOrderItem::where('product_variant_id', $variant->id)
+        ->sum('quantity_ordered');
+
+    $available =
+        ($websitePush + $offlinePush + $amazonPush)
+        - ($websiteSold + $offlineSold + $amazonSold);
+
+    $productsInStock += max(0, $available);
+}
+
+        $lowStockProducts = Product::with('variants')->get()->map(function ($product) use (
+            $websitePlatformId,
+            $offlinePlatformId,
+            $amazonPlatformId
+        ) {
+
+            $available = 0;
+
+            foreach ($product->variants as $variant) {
+
+                $websitePush = PlatformPricing::where('product_variant_id', $variant->id)
+                    ->whereHas('platformProduct', function ($q) use ($websitePlatformId) {
+                        $q->where('platform_id', $websitePlatformId);
+                    })
+                    ->sum('quantity');
+
+                $offlinePush = PlatformProduct::where('product_variant_id', $variant->id)
+                    ->where('platform_id', $offlinePlatformId)
+                    ->sum('platform_stock');
+
+                $amazonPush = PlatformProduct::where('product_variant_id', $variant->id)
+                    ->where('platform_id', $amazonPlatformId)
+                    ->sum('platform_stock');
+
+                $websiteSold = OrderItem::where('variant_id', $variant->id)->sum('quantity');
+                $offlineSold = InvoiceItem::where('product_variant_id', $variant->id)->sum('quantity');
+                $amazonSold = AmazonOrderItem::where('product_variant_id', $variant->id)->sum('quantity_ordered');
+
+                $available += max(
+                    0,
+                    ($websitePush + $offlinePush + $amazonPush)
+                    - ($websiteSold + $offlineSold + $amazonSold)
+                );
+            }
+
+            $product->available_stock = $available;
+
+            return $product;
+        });
+
+$lowStockCount = $lowStockProducts->count();
 
         $recentWebsiteOrders = Order::with('user')
             ->latest()
@@ -146,7 +222,8 @@ class DashboardController extends Controller
             'monthlySalesData',
             'range',
             'salesData',
-            'labels'
+            'labels',
+            'productsInStock',
         ));
     }
 

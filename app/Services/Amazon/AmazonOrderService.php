@@ -288,9 +288,7 @@ $amazonOrderId = $order->AmazonOrderId ?? null;
             try {
                 $addressResponse = $this->client->orders()->getOrderAddress($amazonOrderId);
 
-            
-
-               
+                
             } catch (\Throwable $e) {
                 Log::channel('amazon')->warning('Unable to fetch order address', [
                     'amazon_order_id' => $amazonOrderId,
@@ -340,7 +338,6 @@ $amazonOrderId = $order->AmazonOrderId ?? null;
      */
  public function saveOrder(object $order, object $item): bool
 {
-    
     // Save Order
     $amazonOrder = AmazonOrder::updateOrCreate(
         [
