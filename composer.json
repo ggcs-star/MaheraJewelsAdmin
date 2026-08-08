@@ -11,6 +11,7 @@
         "google/auth": "^1.52",
         "guzzlehttp/guzzle": "^7.12",
         "jenssegers/agent": "^2.6",
+        "jlevers/selling-partner-api": "6.0.5",
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
@@ -78,4 +79,3 @@
     "minimum-stability": "stable",
     "prefer-stable": true
 }
-

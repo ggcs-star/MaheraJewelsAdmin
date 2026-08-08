@@ -11,19 +11,19 @@ use App\Models\Product;
 use Illuminate\Support\Str;
 
 use Illuminate\Support\Facades\DB;
-      use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Validator;
 
 class CouponController extends Controller
 {
     public function index(Request $request)
     {
         $coupons = Coupon::with([
-    'bank',
-    'platforms',
-    'category',
-    'subCategory',
-    'product'
-])
+            'bank',
+            'platforms',
+            'category',
+            'subCategory',
+            'product'
+        ])
             ->when($request->search, function ($q) use ($request) {
                 $q->where(function ($qq) use ($request) {
                     $qq->where('name', 'like', '%' . $request->search . '%')
@@ -64,96 +64,96 @@ class CouponController extends Controller
 
         return view('coupons.index', compact('coupons'));
     }
-public function create()
-{
-    $banks = Bank::where('status', 1)
+    public function create()
+    {
+        $banks = Bank::where('status', 1)
+            ->orderBy('name')
+            ->get();
+
+        $platforms = Platform::where('is_enabled', true)
+            ->orderBy('name')
+            ->get();
+
+    $categories = Category::whereNull('parent_id')
+        ->where('status', 'active')
         ->orderBy('name')
         ->get();
 
-    $platforms = Platform::where('is_enabled', true)
-        ->orderBy('name')
-        ->get();
+        
 
-  $categories = Category::whereNull('parent_id')
-    ->where('status', 'active')
-    ->orderBy('name')
-    ->get();
+        // Initially empty, AJAX se load honge
+        $subCategories = collect();
 
-    
+        $products = collect();
 
-    // Initially empty, AJAX se load honge
-    $subCategories = collect();
-
-    $products = collect();
-
-    return view('coupons.push', compact(
-        'banks',
-        'platforms',
-        'categories',
-        'subCategories',
-        'products'
-    ));
-}
+        return view('coupons.push', compact(
+            'banks',
+            'platforms',
+            'categories',
+            'subCategories',
+            'products'
+        ));
+    }
 
     public function store(Request $request)
     {
 
-$validator = Validator::make($request->all(), [
+    $validator = Validator::make($request->all(), [
 
-    'coupon_name'        => 'required|string|max:255',
-    'coupon_description' => 'nullable|string',
-'generate_type' => 'required|in:single,bulk',
+        'coupon_name'        => 'required|string|max:255',
+        'coupon_description' => 'nullable|string',
+        'generate_type' => 'required|in:single,bulk',
 
-'code' => $request->generate_type == 'single'
-    ? 'required|string|max:50|unique:coupons,code'
-    : 'nullable',
+    'code' => $request->generate_type == 'single'
+        ? 'required|string|max:50|unique:coupons,code'
+        : 'nullable',
 
-'campaign_name' => 'nullable|required_if:generate_type,bulk|string|max:255',
+    'campaign_name' => 'nullable|required_if:generate_type,bulk|string|max:255',
 
-'prefix' => 'nullable|required_if:generate_type,bulk|string|max:20',
+    'prefix' => 'nullable|required_if:generate_type,bulk|string|max:20',
 
-'quantity' => 'nullable|required_if:generate_type,bulk|integer|min:1|max:10000',
-    'coupon_type'        => 'required|in:NORMAL,BANK',
-    'discount_type'      => 'required|in:FLAT,PERCENT',
-    'value'              => 'required|numeric|min:0',
-    'min_order_amount'   => 'required|numeric|min:0',
-    'usage_limit'        => 'required|integer|min:1',
-    'starts_at'          => 'required|date',
-    'expires_at'         => 'required|date|after_or_equal:starts_at',
-    'max_discount'       => 'nullable|numeric|min:0',
-    'is_active'          => 'required|boolean',
-'bank_id' => 'nullable|required_if:coupon_type,BANK|exists:banks,id',
-'card_type' => 'nullable|required_if:coupon_type,BANK|in:credit,debit,both',
-    'platform_ids'       => 'required|array|min:1',
-    'platform_ids.*'     => 'exists:platforms,id',
-    'category_id'        => 'nullable|exists:categories,id',
-    'subcategory_id'     => 'nullable|exists:categories,id',
-    'product_id'         => 'nullable|exists:products,id',
-    'one_time_per_user'  => 'required|boolean',
+    'quantity' => 'nullable|required_if:generate_type,bulk|integer|min:1|max:10000',
+        'coupon_type'        => 'required|in:NORMAL,BANK',
+        'discount_type'      => 'required|in:FLAT,PERCENT',
+        'value'              => 'required|numeric|min:0',
+        'min_order_amount'   => 'required|numeric|min:0',
+        'usage_limit'        => 'required|integer|min:1',
+        'starts_at'          => 'required|date',
+        'expires_at'         => 'required|date|after_or_equal:starts_at',
+        'max_discount'       => 'nullable|numeric|min:0',
+        'is_active'          => 'required|boolean',
+        'bank_id' => 'nullable|required_if:coupon_type,BANK|exists:banks,id',
+        'card_type' => 'nullable|required_if:coupon_type,BANK|in:credit,debit,both',
+        'platform_ids'       => 'required|array|min:1',
+        'platform_ids.*'     => 'exists:platforms,id',
+        'category_id'        => 'nullable|exists:categories,id',
+        'subcategory_id'     => 'nullable|exists:categories,id',
+        'product_id'         => 'nullable|exists:products,id',
+        'one_time_per_user'  => 'required|boolean',
 
-]);
+    ]);
 
-if ($validator->fails()) {
-    dd($validator->errors()->toArray());
-}
+    if ($validator->fails()) {
+        dd($validator->errors()->toArray());
+    }
 
-$data = $validator->validated();
-// if ($request->generate_type == 'bulk') {
+    $data = $validator->validated();
+    // if ($request->generate_type == 'bulk') {
 
-//     GenerateBulkCouponJob::dispatch(
-//         $data,
-//         $request->platform_ids
-//     );
+    //     GenerateBulkCouponJob::dispatch(
+    //         $data,
+    //         $request->platform_ids
+    //     );
 
-//     return redirect()
-//         ->route('admin.coupons.index')
-//         ->with('success', 'Bulk Coupon Generation Started.');
-// }
-if ($request->generate_type == 'bulk') {
+    //     return redirect()
+    //         ->route('admin.coupons.index')
+    //         ->with('success', 'Bulk Coupon Generation Started.');
+    // }
+    if ($request->generate_type == 'bulk') {
 
-    DB::transaction(function () use ($data, $request) {
+        DB::transaction(function () use ($data, $request) {
 
-        for ($i = 1; $i <= $data['quantity']; $i++) {
+            for ($i = 1; $i <= $data['quantity']; $i++) {
 
             do {
                 $code = strtoupper($data['prefix']) . strtoupper(Str::random(8));
@@ -192,7 +192,7 @@ if ($request->generate_type == 'bulk') {
     return redirect()
         ->route('admin.coupons.index')
         ->with('success', 'Bulk Coupons Generated Successfully.');
-}
+    }
         DB::transaction(function () use ($data, $request) {
             $coupon = Coupon::create([
                 'name'             => $data['coupon_name'],
@@ -211,9 +211,9 @@ if ($request->generate_type == 'bulk') {
                 'bank_id'          => $data['coupon_type'] === 'BANK' ? $data['bank_id'] : null,
                 'card_type'        => $data['coupon_type'] === 'BANK' ? $data['card_type'] : null,
                 'category_id'       => $data['category_id'] ?? null,
-'subcategory_id'    => $data['subcategory_id'] ?? null,
-'product_id'        => $data['product_id'] ?? null,
-'one_time_per_user' => $data['one_time_per_user'],
+                'subcategory_id'    => $data['subcategory_id'] ?? null,
+                'product_id'        => $data['product_id'] ?? null,
+                'one_time_per_user' => $data['one_time_per_user'],
             ]);
 
             if ($request->filled('platform_ids')) {
@@ -229,12 +229,12 @@ if ($request->generate_type == 'bulk') {
     public function show(Coupon $coupon)
     {
         $coupon->load([
-    'bank',
-    'platforms',
-    'category',
-    'subCategory',
-    'product'
-]);
+            'bank',
+            'platforms',
+            'category',
+            'subCategory',
+            'product'
+        ]);
         return view('coupons.show', compact('coupon'));
     }
 
@@ -245,10 +245,10 @@ public function edit(Coupon $coupon)
     $platforms = Platform::where('is_enabled', true)
         ->orderBy('name')
         ->get();
-$categories = Category::whereNull('parent_id')
-    ->where('status', 'active')
-    ->orderBy('name')
-    ->get();
+    $categories = Category::whereNull('parent_id')
+        ->where('status', 'active')
+        ->orderBy('name')
+        ->get();
 
    $subCategories = Category::where('parent_id', $coupon->category_id)
     ->orderBy('name')
@@ -289,12 +289,12 @@ public function update(Request $request, Coupon $coupon)
         'expires_at'         => 'required|date|after_or_equal:starts_at',
         'max_discount'       => 'nullable|numeric|min:0',
         'is_active'          => 'required|boolean',
-   'bank_id' => 'nullable|required_if:coupon_type,BANK|exists:banks,id',
-'card_type' => 'nullable|required_if:coupon_type,BANK|in:credit,debit,both',
+        'bank_id' => 'nullable|required_if:coupon_type,BANK|exists:banks,id',
+        'card_type' => 'nullable|required_if:coupon_type,BANK|in:credit,debit,both',
         'platform_ids'       => 'required|array|min:1',
         'platform_ids.*'     => 'exists:platforms,id',
         'category_id'        => 'nullable|exists:categories,id',
-'subcategory_id' => 'nullable|exists:categories,id',
+        'subcategory_id' => 'nullable|exists:categories,id',
         'product_id'         => 'nullable|exists:products,id',
         'one_time_per_user'  => 'required|boolean',
     ]);
@@ -314,13 +314,13 @@ public function update(Request $request, Coupon $coupon)
             'expires_at'         => $data['expires_at'],
     'coupon_type' => $data['coupon_type'],
 
-'bank_id' => $data['coupon_type'] === 'BANK'
-    ? ($data['bank_id'] ?? null)
-    : null,
+    'bank_id' => $data['coupon_type'] === 'BANK'
+        ? ($data['bank_id'] ?? null)
+        : null,
 
-'card_type' => $data['coupon_type'] === 'BANK'
-    ? ($data['card_type'] ?? null)
-    : null,
+    'card_type' => $data['coupon_type'] === 'BANK'
+        ? ($data['card_type'] ?? null)
+        : null,
             'category_id'        => $data['category_id'] ?? null,
             'subcategory_id'     => $data['subcategory_id'] ?? null,
             'product_id'         => $data['product_id'] ?? null,
@@ -363,15 +363,15 @@ public function getProducts($subcategoryId)
         if (count($ids)) {
             $coupons = Coupon::whereIn('id', $ids)->get();
 
-foreach ($coupons as $coupon) {
-    $coupon->platforms()->detach();
-    $coupon->delete();
-}
-
+        foreach ($coupons as $coupon) {
+            $coupon->platforms()->detach();
+            $coupon->delete();
         }
 
-        return redirect()
-            ->route('admin.coupons.index')
-            ->with('success', 'Selected coupons deleted successfully');
+            }
+
+            return redirect()
+                ->route('admin.coupons.index')
+                ->with('success', 'Selected coupons deleted successfully');
+        }
     }
-}

@@ -326,11 +326,11 @@
             </div>
         </div>
 
-        <div class="stat-card stat-card-3 p-5" onclick="window.location.href='{{ route('admin.stock.index') }}'">
+        <div class="stat-card stat-card-3 p-5" onclick="window.location.href='{{ route('admin.inventory.dashboard') }}'">
             <div class="flex justify-between items-start">
                 <div>
                     <p class="text-gray-700 text-sm mb-1">Products in Stock</p>
-                    <p class="text-2xl font-bold stat-value">{{ number_format($lowStockCount) }}</p>
+                    <p class="text-2xl font-bold stat-value">{{ number_format($productsInStock) }}</p>
                     <p class="text-gray-400 text-xs mt-2">With variants</p>
                 </div>
                 <div class="stat-icon">
@@ -421,7 +421,7 @@
                     <span></span>
                     Products Stock
                 </div>
-                <a href="{{ route('admin.stock.index') }}" class="text-xs font-semibold" style="color: #8B2452;">View All →</a>
+                <a href="{{ route('admin.inventory.dashboard') }}" class="text-xs font-semibold" style="color: #8B2452;">View All →</a>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full">
@@ -436,7 +436,7 @@
                     <tbody>
                         @forelse($lowStockProducts->take(5) as $index => $product)
                             @php
-                                $totalStockQty = $product->variants->sum('quantity');
+                                $totalStockQty = $product->available_stock;
                             @endphp
                             <tr class="stock-table-row">
                                 <td class="px-5 py-3 text-sm text-gray-500">{{ $index + 1 }}</td>
@@ -533,7 +533,7 @@
                  <p class="text-xs text-gray-500 mt-1">Orders Delivered</p>
              </div>
              <div>
-                 <p class="text-xl font-bold text-gray-800">{{ number_format($lowStockCount) }}</p>
+                 <p class="text-xl font-bold text-gray-800">{{ number_format($productsInStock) }}</p>
                  <p class="text-xs text-gray-500 mt-1">Products in Stock</p>
              </div>
              <div>
