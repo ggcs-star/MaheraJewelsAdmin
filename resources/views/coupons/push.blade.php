@@ -52,7 +52,26 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="card-body p-4">
 <form method="POST" action="{{ route('admin.coupons.store') }}">
         @csrf
+@if ($errors->any())
+    <div class="mb-6 rounded-lg border border-red-200 bg-red-50 p-4">
+        <div class="flex items-center mb-2">
+            <svg class="w-5 h-5 text-red-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4m0 4h.01M10.29 3.86l-7.5 13A1 1 0 003.66 18h16.68a1 1 0 00.87-1.5l-7.5-13a1 1 0 00-1.74 0z"/>
+            </svg>
 
+            <h4 class="font-semibold text-red-700">
+                Please fix the following errors:
+            </h4>
+        </div>
+
+        <ul class="list-disc list-inside text-sm text-red-600 space-y-1">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
         <!-- ================= SECTION: GENERATE TYPE ================= -->
         <div class="mb-5">
             <div class="mb-4">
@@ -109,8 +128,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     <div class="col-md-4">
                         <label class="d-block cursor-pointer m-0">
-                            <input type="checkbox" name="platform_ids[]" value="{{ $platform->id }}" hidden>
-                            
+                        <input type="checkbox"
+                            name="platform_ids[]"
+                            value="{{ $platform->id }}"
+                            hidden
+                            {{ in_array($platform->id, old('platform_ids', [])) ? 'checked' : '' }}>                            
                             <div class="border rounded-3 p-4 h-100 transition-all platform-card" 
                                  data-selected="false">
                                 <div class="d-flex align-items-center mb-3">
@@ -540,11 +562,12 @@ rows="3">{{ old('coupon_description') }}</textarea>
                             <span class="input-group-text bg-light">
                                 <i class="fas fa-calendar text-muted"></i>
                             </span>
-                            <input type="date" 
-                                   name="expires_at" 
-                                    class="form-control @error('starts_at') is-invalid @enderror">
+                            <input type="date"
+                                name="expires_at"
+                                value="{{ old('expires_at') }}"
+                                class="form-control @error('expires_at') is-invalid @enderror">
 
-                            @error('starts_at')
+                            @error('expires_at')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>

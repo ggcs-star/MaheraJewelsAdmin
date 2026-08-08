@@ -10,7 +10,7 @@ class CustomerController extends Controller
     public function index(Request $request)
     {
         $customers = Customer::query()
-    ->where('organization_id', activeOrganization()->id)
+        ->where('organization_id', activeOrganization()->id)
             ->when($request->filled('search'), function ($q) use ($request) {
                 $search = trim($request->search);
                 $q->where(function ($qq) use ($search) {
@@ -23,6 +23,45 @@ class CustomerController extends Controller
                 $q->where('is_active', $request->status)
             )
             ->orderBy('name')
+            ->when(
+                $request->filled('adv_field') &&
+                $request->filled('adv_condition') &&
+                $request->filled('adv_value'),
+
+                function ($q) use ($request) {
+
+                    $field = $request->adv_field;
+                    $condition = $request->adv_condition;
+                    $value = trim($request->adv_value);
+
+                    if (!in_array($field, ['name', 'email', 'mobile', 'city'])) {
+                        return;
+                    }
+
+                    switch ($condition) {
+
+                        case '=':
+                            $q->where($field, '=', $value);
+                            break;
+
+                        case '!=':
+                            $q->where($field, '!=', $value);
+                            break;
+
+                        case 'starts_with':
+                            $q->where($field, 'like', $value . '%');
+                            break;
+
+                        case 'ends_with':
+                            $q->where($field, 'like', '%' . $value);
+                            break;
+
+                        default: // like
+                            $q->where($field, 'like', '%' . $value . '%');
+                            break;
+                    }
+                }
+            )
             ->paginate(10)
             ->appends($request->query());
 

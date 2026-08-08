@@ -134,7 +134,10 @@ class CouponController extends Controller
     ]);
 
     if ($validator->fails()) {
-        dd($validator->errors()->toArray());
+        return redirect()
+            ->back()
+            ->withErrors($validator)
+            ->withInput();
     }
 
     $data = $validator->validated();
