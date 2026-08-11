@@ -91,15 +91,17 @@ modalEl.classList.remove('hidden');
 modalEl.classList.add('show');
         };
     }
+document.querySelectorAll('.openSingleDeleteModal').forEach(btn => {
+    btn.onclick = () => {
+        activeSingleForm = btn.closest('.singleDeleteForm');
+        activeSingleForm.action = btn.dataset.action;
+        modalText.innerText = 'Are you sure you want to delete this coupon?';
 
-    document.querySelectorAll('.openSingleDeleteModal').forEach(btn => {
-        btn.onclick = () => {
-            activeSingleForm = btn.closest('.singleDeleteForm');
-            activeSingleForm.action = btn.dataset.action;
-            modalText.innerText = 'Are you sure you want to delete this coupon?';
-modalEl.classList.add('hidden');
-modalEl.classList.remove('show');        };
-    });
+        modalEl.classList.remove('hidden');
+        modalEl.classList.add('show');
+    };
+});
+    
 
     if (confirmBtn) {
         confirmBtn.onclick = () => {
@@ -244,6 +246,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const bulkForm = document.getElementById('bulkDeleteForm');
     const modalEl = document.getElementById('bulkDeleteModal');
     const modalText = document.getElementById('deleteModalText');
+    const closeButtons = modalEl.querySelectorAll('[data-bs-dismiss="modal"]');
+
+closeButtons.forEach(btn => {
+    modalEl.addEventListener('click', function (e) {
+    if (e.target === modalEl) {
+        modalEl.classList.remove('show');
+        modalEl.classList.add('hidden');
+    }
+});
+    btn.onclick = () => {
+        modalEl.classList.remove('show');
+        modalEl.classList.add('hidden');
+    };
+});
 
     let activeSingleForm = null;
 
@@ -263,14 +279,16 @@ modalEl.classList.remove('hidden');
 modalEl.classList.add('show');        };
     }
 
-    document.querySelectorAll('.openSingleDeleteModal').forEach(btn => {
-        btn.onclick = () => {
-            activeSingleForm = btn.closest('.singleDeleteForm');
-            activeSingleForm.action = btn.dataset.action;
-            modalText.innerText = 'Are you sure you want to delete this coupon?';
-            new bootstrap.Modal(modalEl).show();
-        };
-    });
+   document.querySelectorAll('.openSingleDeleteModal').forEach(btn => {
+    btn.onclick = () => {
+        activeSingleForm = btn.closest('.singleDeleteForm');
+        activeSingleForm.action = btn.dataset.action;
+        modalText.innerText = 'Are you sure you want to delete this coupon?';
+
+        modalEl.classList.remove('hidden');
+        modalEl.classList.add('show');
+    };
+});
 
     if (confirmBtn) {
         confirmBtn.onclick = () => {

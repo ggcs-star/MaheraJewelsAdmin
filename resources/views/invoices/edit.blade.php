@@ -274,8 +274,7 @@
             </label>
             <div style="display: flex; align-items: center; background: white; border: 1.8px solid #e9f0f5; border-radius: 20px; overflow: hidden;">
                 <span style="background: #f5faff; padding: 14px 16px; color: var(--primary-light); font-weight: 700; border-right: 1.8px solid #e9f0f5;">₹</span>
-                <input type="number" name="paid_amount" value="{{ $invoice->paid_amount }}" placeholder="0.00" style="flex: 1; border: none; padding: 14px 20px; font-size: 0.95rem; font-weight: 500; color: #0a1e2f; outline: none;">
-            </div>
+                <input type="number" name="paid_amount" value="{{ (int) $invoice->paid_amount }}" placeholder="0" min="0" step="1" oninput="this.value = this.value.replace(/\..*$/, '')" style="flex: 1; border: none; padding: 14px 20px; font-size: 0.95rem; font-weight: 500; color: #0a1e2f; outline: none;">            </div>
         </div>
     </div>
 

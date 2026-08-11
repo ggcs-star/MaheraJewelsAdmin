@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use App\Models\ProductVariant;
 use App\Models\StockMovement;
 use App\Helpers\S3Helper;
-use App\Models\AmazonOrder;  // ✅ YEH LINE ADD KARO
+use App\Models\AmazonOrder;  
 
 class OrderController extends Controller
 {
@@ -17,7 +17,7 @@ class OrderController extends Controller
 public function index(Request $request)
 {
     $source = $request->get('source', '');
-    $platform = $request->get('platform');  // ✅ YEH LINE ADD KARO - IMPORTANT!
+    $platform = $request->get('platform');  
 
     if ($source === 'amazon' || $platform === 'amazon') {
 
@@ -31,7 +31,7 @@ public function index(Request $request)
             $query->where('order_status', $request->status);
         }
 
-        $orders = $query->orderByDesc('purchase_date')->paginate(10);
+        $orders = $query->orderByDesc('purchase_date')->paginate(10)->withQueryString();
 
         $stats = [
             'total' => AmazonOrder::count(),
@@ -126,7 +126,7 @@ $allOrders = collect(array_merge(
             $query->where('platform', $request->platform);
         }
 
-        $orders = $query->latest()->paginate(10);
+        $orders = $query->latest()->paginate(10)->withQueryString();
 
         $stats = [
             'total' => Order::count(),
