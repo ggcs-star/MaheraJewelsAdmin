@@ -241,115 +241,115 @@ class CouponController extends Controller
         return view('coupons.show', compact('coupon'));
     }
 
-public function edit(Coupon $coupon)
-{
-    $banks = Bank::where('status', 1)->orderBy('name')->get();
+    public function edit(Coupon $coupon)
+    {
+        $banks = Bank::where('status', 1)->orderBy('name')->get();
 
-    $platforms = Platform::where('is_enabled', true)
+        $platforms = Platform::where('is_enabled', true)
+            ->orderBy('name')
+            ->get();
+        $categories = Category::whereNull('parent_id')
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+
+    $subCategories = Category::where('parent_id', $coupon->category_id)
         ->orderBy('name')
         ->get();
-    $categories = Category::whereNull('parent_id')
+    $products = Product::where('category_id', $coupon->subcategory_id)
         ->where('status', 'active')
         ->orderBy('name')
         ->get();
 
-   $subCategories = Category::where('parent_id', $coupon->category_id)
-    ->orderBy('name')
-    ->get();
-  $products = Product::where('category_id', $coupon->subcategory_id)
-    ->where('status', 'active')
-    ->orderBy('name')
-    ->get();
-
-    $coupon->load([
-        'bank',
-        'platforms',
-        'category',
-        'subCategory',
-        'product'
-    ]);
-
-    return view('coupons.edit', compact(
-        'coupon',
-        'banks',
-        'platforms',
-        'categories',
-        'subCategories',
-        'products'
-    ));
-}
-public function update(Request $request, Coupon $coupon)
-{
-    $data = $request->validate([
-        'coupon_name'        => 'required|string|max:255',
-        'coupon_description' => 'nullable|string',
-        'discount_type'      => 'required|in:FLAT,PERCENT',
-        'coupon_type' => 'required|in:NORMAL,BANK',
-        'value'              => 'required|numeric|min:0',
-        'min_order_amount'   => 'required|numeric|min:0',
-        'usage_limit'        => 'required|integer|min:1',
-        'starts_at'          => 'required|date',
-        'expires_at'         => 'required|date|after_or_equal:starts_at',
-        'max_discount'       => 'nullable|numeric|min:0',
-        'is_active'          => 'required|boolean',
-        'bank_id' => 'nullable|required_if:coupon_type,BANK|exists:banks,id',
-        'card_type' => 'nullable|required_if:coupon_type,BANK|in:credit,debit,both',
-        'platform_ids'       => 'required|array|min:1',
-        'platform_ids.*'     => 'exists:platforms,id',
-        'category_id'        => 'nullable|exists:categories,id',
-        'subcategory_id' => 'nullable|exists:categories,id',
-        'product_id'         => 'nullable|exists:products,id',
-        'one_time_per_user'  => 'required|boolean',
-    ]);
-
-    DB::transaction(function () use ($coupon, $data) {
-
-        $coupon->update([
-            'name'               => $data['coupon_name'],
-            'description'        => $data['coupon_description'] ?? null,
-            'discount_type'      => $data['discount_type'],
-            'value'              => $data['value'],
-            'min_order_amount'   => $data['min_order_amount'],
-            'max_discount'       => $data['max_discount'] ?? null,
-            'usage_limit'        => $data['usage_limit'],
-            'is_active'          => $data['is_active'],
-            'starts_at'          => $data['starts_at'],
-            'expires_at'         => $data['expires_at'],
-    'coupon_type' => $data['coupon_type'],
-
-    'bank_id' => $data['coupon_type'] === 'BANK'
-        ? ($data['bank_id'] ?? null)
-        : null,
-
-    'card_type' => $data['coupon_type'] === 'BANK'
-        ? ($data['card_type'] ?? null)
-        : null,
-            'category_id'        => $data['category_id'] ?? null,
-            'subcategory_id'     => $data['subcategory_id'] ?? null,
-            'product_id'         => $data['product_id'] ?? null,
-            'one_time_per_user'  => $data['one_time_per_user'],
+        $coupon->load([
+            'bank',
+            'platforms',
+            'category',
+            'subCategory',
+            'product'
         ]);
 
-        $coupon->platforms()->sync($data['platform_ids']);
-    });
+        return view('coupons.edit', compact(
+            'coupon',
+            'banks',
+            'platforms',
+            'categories',
+            'subCategories',
+            'products'
+        ));
+    }
+    public function update(Request $request, Coupon $coupon)
+    {
+        $data = $request->validate([
+            'coupon_name'        => 'required|string|max:255',
+            'coupon_description' => 'nullable|string',
+            'discount_type'      => 'required|in:FLAT,PERCENT',
+            'coupon_type' => 'required|in:NORMAL,BANK',
+            'value'              => 'required|numeric|min:0',
+            'min_order_amount'   => 'required|numeric|min:0',
+            'usage_limit'        => 'required|integer|min:1',
+            'starts_at'          => 'required|date',
+            'expires_at'         => 'required|date|after_or_equal:starts_at',
+            'max_discount'       => 'nullable|numeric|min:0',
+            'is_active'          => 'required|boolean',
+            'bank_id' => 'nullable|required_if:coupon_type,BANK|exists:banks,id',
+            'card_type' => 'nullable|required_if:coupon_type,BANK|in:credit,debit,both',
+            'platform_ids'       => 'required|array|min:1',
+            'platform_ids.*'     => 'exists:platforms,id',
+            'category_id'        => 'nullable|exists:categories,id',
+            'subcategory_id' => 'nullable|exists:categories,id',
+            'product_id'         => 'nullable|exists:products,id',
+            'one_time_per_user'  => 'required|boolean',
+        ]);
 
-    return redirect()
-        ->route('admin.coupons.index')
-        ->with('success', 'Coupon updated successfully.');
-}
- public function getSubCategories($categoryId)
-{
-    return Category::where('parent_id', $categoryId)
-        ->orderBy('name')
-        ->get();
-}
-public function getProducts($subcategoryId)
-{
-    return Product::where('category_id', $subcategoryId)
-        ->where('status', 'active')
-        ->orderBy('name')
-        ->get();
-}
+        DB::transaction(function () use ($coupon, $data) {
+
+            $coupon->update([
+                'name'               => $data['coupon_name'],
+                'description'        => $data['coupon_description'] ?? null,
+                'discount_type'      => $data['discount_type'],
+                'value'              => $data['value'],
+                'min_order_amount'   => $data['min_order_amount'],
+                'max_discount'       => $data['max_discount'] ?? null,
+                'usage_limit'        => $data['usage_limit'],
+                'is_active'          => $data['is_active'],
+                'starts_at'          => $data['starts_at'],
+                'expires_at'         => $data['expires_at'],
+        'coupon_type' => $data['coupon_type'],
+
+        'bank_id' => $data['coupon_type'] === 'BANK'
+            ? ($data['bank_id'] ?? null)
+            : null,
+
+        'card_type' => $data['coupon_type'] === 'BANK'
+            ? ($data['card_type'] ?? null)
+            : null,
+                'category_id'        => $data['category_id'] ?? null,
+                'subcategory_id'     => $data['subcategory_id'] ?? null,
+                'product_id'         => $data['product_id'] ?? null,
+                'one_time_per_user'  => $data['one_time_per_user'],
+            ]);
+
+            $coupon->platforms()->sync($data['platform_ids']);
+        });
+
+        return redirect()
+            ->route('admin.coupons.index')
+            ->with('success', 'Coupon updated successfully.');
+    }
+    public function getSubCategories($categoryId)
+    {
+        return Category::where('parent_id', $categoryId)
+            ->orderBy('name')
+            ->get();
+    }
+    public function getProducts($subcategoryId)
+    {
+        return Product::where('category_id', $subcategoryId)
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+    }
 
     public function destroy(Coupon $coupon)
     {

@@ -70,7 +70,7 @@
             </p>
         </div>
         <div class="d-flex gap-2">
-            <a href="{{ route('admin.orders.index', ['source' => 'amazon']) }}" class="btn btn-sm btn-outline-secondary rounded-5 px-4 py-2" style="font-size:0.7rem;font-weight:600;border-color:#e2ecf5;">
+            <a href="{{ request()->has('back') ? urldecode(request('back')) : route('admin.orders.index') }}" class="btn btn-sm btn-outline-secondary rounded-5 px-4 py-2">
                 <i class="fas fa-arrow-left me-1"></i> Back
             </a>
             <span class="btn btn-sm rounded-5 px-4 py-2" style="background:#8B2452;color:white;font-size:0.7rem;font-weight:600;border:none;cursor:default;">

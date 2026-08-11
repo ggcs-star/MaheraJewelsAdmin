@@ -59,48 +59,48 @@ class BannerController extends Controller
     }
 
     public function update(Request $request, Banner $banner)
-{
-    $data = $this->validatedData($request, true);
+    {
+        $data = $this->validatedData($request, true);
 
-    if ($request->hasFile('image')) {
-        if ($banner->getRawOriginal('image')) {
-            S3Helper::delete($banner->getRawOriginal('image'));
+        if ($request->hasFile('image')) {
+            if ($banner->getRawOriginal('image')) {
+                S3Helper::delete($banner->getRawOriginal('image'));
+            }
+
+            $file = $request->file('image');
+
+            $folder = Str::slug($request->title ?: ($banner->title ?: 'banner'));
+
+            $data['image'] = S3Helper::storeAs(
+                $file,
+                "admin/banner/desktop/{$folder}",
+                $folder . '.' . $file->getClientOriginalExtension()
+            );
         }
 
-        $file = $request->file('image');
+        if ($request->hasFile('mobile_image')) {
 
-        $folder = Str::slug($request->title ?: ($banner->title ?: 'banner'));
+            if ($banner->getRawOriginal('mobile_image')) {
+                S3Helper::delete($banner->getRawOriginal('mobile_image'));
+            }
 
-        $data['image'] = S3Helper::storeAs(
-            $file,
-            "admin/banner/desktop/{$folder}",
-            $folder . '.' . $file->getClientOriginalExtension()
-        );
-    }
+            $file = $request->file('mobile_image');
 
-    if ($request->hasFile('mobile_image')) {
+            $folder = Str::slug($request->title ?: ($banner->title ?: 'banner'));
 
-        if ($banner->getRawOriginal('mobile_image')) {
-            S3Helper::delete($banner->getRawOriginal('mobile_image'));
+            $data['mobile_image'] = S3Helper::storeAs(
+                $file,
+                "admin/banner/mobile/{$folder}",
+                $folder . '-mobile.' . $file->getClientOriginalExtension()
+            );
         }
 
-        $file = $request->file('mobile_image');
+        $banner->update($data);
 
-        $folder = Str::slug($request->title ?: ($banner->title ?: 'banner'));
-
-        $data['mobile_image'] = S3Helper::storeAs(
-            $file,
-            "admin/banner/mobile/{$folder}",
-            $folder . '-mobile.' . $file->getClientOriginalExtension()
-        );
+        return redirect()
+            ->route('admin.banners.index')
+            ->with('success', 'Banner updated successfully.');
     }
-
-    $banner->update($data);
-
-    return redirect()
-        ->route('admin.banners.index')
-        ->with('success', 'Banner updated successfully.');
-}
 
     public function destroy(Banner $banner)
     {
