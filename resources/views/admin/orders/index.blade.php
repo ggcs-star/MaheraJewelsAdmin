@@ -335,7 +335,12 @@
                         </a>
                         <span style="font-size: 0.55rem; color: #7c9eb2; font-style: italic;">Read-only</span>
                     @else
-                        <a href="{{ route('admin.orders.show', $order->id) }}" style="background: transparent; border: none; color: #7c9eb2; font-size: 0.9rem;" onmouseover="this.style.color='#8B2452'" onmouseout="this.style.color='#7c9eb2'" title="View">
+                        <a href="{{ route('admin.orders.show', [
+                            'id' => $order->id,
+                            'back' => url()->full()
+                        ]) }}"
+                        style="background: transparent; border: none; color: #f59e0b; font-size: 0.9rem;"
+                        title="View Amazon Order">
                             <i class="fas fa-eye"></i>
                         </a>
                         <a href="{{ route('admin.orders.invoice', $order->id) }}" target="_blank" style="background: transparent; border: none; color: #7c9eb2; font-size: 0.9rem;" onmouseover="this.style.color='#dc2626'" onmouseout="this.style.color='#7c9eb2'" title="Invoice">

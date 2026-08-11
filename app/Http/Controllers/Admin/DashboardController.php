@@ -55,39 +55,39 @@ class DashboardController extends Controller
         $amazonPlatformId  = Platform::where('display_name', 'Amazon')->value('id');
         $productsInStock = 0;
 
-$variants = ProductVariant::all();
+        $variants = ProductVariant::all();
 
-foreach ($variants as $variant) {
+        foreach ($variants as $variant) {
 
-    $websitePush = PlatformPricing::where('product_variant_id', $variant->id)
-        ->whereHas('platformProduct', function ($q) use ($websitePlatformId) {
-            $q->where('platform_id', $websitePlatformId);
-        })
-        ->sum('quantity');
+            $websitePush = PlatformPricing::where('product_variant_id', $variant->id)
+                ->whereHas('platformProduct', function ($q) use ($websitePlatformId) {
+                    $q->where('platform_id', $websitePlatformId);
+                })
+                ->sum('quantity');
 
-    $offlinePush = PlatformProduct::where('platform_id', $offlinePlatformId)
-        ->where('product_variant_id', $variant->id)
-        ->sum('platform_stock');
+            $offlinePush = PlatformProduct::where('platform_id', $offlinePlatformId)
+                ->where('product_variant_id', $variant->id)
+                ->sum('platform_stock');
 
-    $amazonPush = PlatformProduct::where('platform_id', $amazonPlatformId)
-        ->where('product_variant_id', $variant->id)
-        ->sum('platform_stock');
+            $amazonPush = PlatformProduct::where('platform_id', $amazonPlatformId)
+                ->where('product_variant_id', $variant->id)
+                ->sum('platform_stock');
 
-    $websiteSold = OrderItem::where('variant_id', $variant->id)
-        ->sum('quantity');
+            $websiteSold = OrderItem::where('variant_id', $variant->id)
+                ->sum('quantity');
 
-    $offlineSold = InvoiceItem::where('product_variant_id', $variant->id)
-        ->sum('quantity');
+            $offlineSold = InvoiceItem::where('product_variant_id', $variant->id)
+                ->sum('quantity');
 
-    $amazonSold = AmazonOrderItem::where('product_variant_id', $variant->id)
-        ->sum('quantity_ordered');
+            $amazonSold = AmazonOrderItem::where('product_variant_id', $variant->id)
+                ->sum('quantity_ordered');
 
-    $available =
-        ($websitePush + $offlinePush + $amazonPush)
-        - ($websiteSold + $offlineSold + $amazonSold);
+            $available =
+                ($websitePush + $offlinePush + $amazonPush)
+                - ($websiteSold + $offlineSold + $amazonSold);
 
-    $productsInStock += max(0, $available);
-}
+            $productsInStock += max(0, $available);
+        }
 
         $lowStockProducts = Product::with('variants')->get()->map(function ($product) use (
             $websitePlatformId,
@@ -129,7 +129,7 @@ foreach ($variants as $variant) {
             return $product;
         });
 
-$lowStockCount = $lowStockProducts->count();
+        $lowStockCount = $lowStockProducts->count();
 
         $recentWebsiteOrders = Order::with('user')
             ->latest()

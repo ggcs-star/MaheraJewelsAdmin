@@ -22,6 +22,24 @@ public function index(Request $request)
     if ($source === 'amazon' || $platform === 'amazon') {
 
         $query = AmazonOrder::with('items');
+        if ($request->filled('date_range')) {
+
+            if ($request->date_range == 'today') {
+                $query->whereDate('purchase_date', today());
+            }
+
+            if ($request->date_range == 'week') {
+                $query->whereBetween('purchase_date', [
+                    now()->startOfWeek(),
+                    now()->endOfWeek(),
+                ]);
+            }
+
+            if ($request->date_range == 'month') {
+                $query->whereMonth('purchase_date', now()->month)
+                    ->whereYear('purchase_date', now()->year);
+            }
+        }
 
         if ($request->filled('search')) {
             $query->where('amazon_order_id', 'like', '%' . $request->search . '%');
@@ -46,6 +64,24 @@ public function index(Request $request)
     } else if (empty($platform) || $platform === 'all' || $platform === '') {
 
         $amazonQuery = AmazonOrder::with('items');
+        if ($request->filled('date_range')) {
+
+            if ($request->date_range == 'today') {
+                $amazonQuery->whereDate('purchase_date', today());
+            }
+
+            if ($request->date_range == 'week') {
+                $amazonQuery->whereBetween('purchase_date', [
+                    now()->startOfWeek(),
+                    now()->endOfWeek(),
+                ]);
+            }
+
+            if ($request->date_range == 'month') {
+                $amazonQuery->whereMonth('purchase_date', now()->month)
+                            ->whereYear('purchase_date', now()->year);
+            }
+        }
         if ($request->filled('search')) {
             $amazonQuery->where('amazon_order_id', 'like', '%' . $request->search . '%');
         }
@@ -56,6 +92,24 @@ public function index(Request $request)
    
 
         $websiteQuery = Order::with('user');
+        if ($request->filled('date_range')) {
+
+            if ($request->date_range == 'today') {
+                $websiteQuery->whereDate('created_at', today());
+            }
+
+            if ($request->date_range == 'week') {
+                $websiteQuery->whereBetween('created_at', [
+                    now()->startOfWeek(),
+                    now()->endOfWeek(),
+                ]);
+            }
+
+            if ($request->date_range == 'month') {
+                $websiteQuery->whereMonth('created_at', now()->month)
+                            ->whereYear('created_at', now()->year);
+            }
+        }
         if ($request->filled('search')) {
             $websiteQuery->where('order_number', 'like', '%' . $request->search . '%');
         }
@@ -64,21 +118,20 @@ public function index(Request $request)
         }
         $websiteOrders = $websiteQuery->latest()->get();
 
- $amazonOrders = $amazonOrders->map(function ($order) {
-    $order->setAttribute('is_amazon', true);
-    return $order;
-})->values();
+        $amazonOrders = $amazonOrders->map(function ($order) {
+            $order->setAttribute('is_amazon', true);
+            return $order;
+        })->values();
 
-$websiteOrders = $websiteOrders->map(function ($order) {
-    $order->setAttribute('is_amazon', false);
-    return $order;
-})->values();
+        $websiteOrders = $websiteOrders->map(function ($order) {
+            $order->setAttribute('is_amazon', false);
+            return $order;
+        })->values();
 
-$allOrders = collect(array_merge(
-    $amazonOrders->all(),
-    $websiteOrders->all()
-));
-     
+        $allOrders = collect(array_merge(
+            $amazonOrders->all(),
+            $websiteOrders->all()
+        ));     
 
         $allOrders = $allOrders->sortByDesc(function($order) {
             return $order->purchase_date ?? $order->created_at;
@@ -113,6 +166,24 @@ $allOrders = collect(array_merge(
     } else {
 
         $query = Order::with('user');
+        if ($request->filled('date_range')) {
+
+            if ($request->date_range == 'today') {
+                $query->whereDate('created_at', today());
+            }
+
+            if ($request->date_range == 'week') {
+                $query->whereBetween('created_at', [
+                    now()->startOfWeek(),
+                    now()->endOfWeek(),
+                ]);
+            }
+
+            if ($request->date_range == 'month') {
+                $query->whereMonth('created_at', now()->month)
+                    ->whereYear('created_at', now()->year);
+            }
+        }
 
         if ($request->filled('search')) {
             $query->where('order_number', 'like', '%' . $request->search . '%');
@@ -139,41 +210,39 @@ $allOrders = collect(array_merge(
         ];
     }
 
-    $platformStats = [
-        'website' => [
-            'orders' => Order::where('platform', 'website')->count(),
-            'total' => Order::where('platform', 'website')->sum('total'),
-        ],
-        'amazon' => [
-            'orders' => AmazonOrder::count(),
-            'total' => AmazonOrder::sum('order_total'),
-        ],
-        'flipkart' => [
-            'orders' => Order::where('platform', 'flipkart')->count(),
-            'total' => Order::where('platform', 'flipkart')->sum('total'),
-        ],
-        'total_revenue' => Order::sum('total') + AmazonOrder::sum('order_total'),
-    ];
-   
+        $platformStats = [
+            'website' => [
+                'orders' => Order::where('platform', 'website')->count(),
+                'total' => Order::where('platform', 'website')->sum('total'),
+            ],
+            'amazon' => [
+                'orders' => AmazonOrder::count(),
+                'total' => AmazonOrder::sum('order_total'),
+            ],
+            'flipkart' => [
+                'orders' => Order::where('platform', 'flipkart')->count(),
+                'total' => Order::where('platform', 'flipkart')->sum('total'),
+            ],
+            'total_revenue' => Order::sum('total') + AmazonOrder::sum('order_total'),
+        ];
+    
 
-    return view('admin.orders.index', compact(
-        'orders',
-        'stats',
-        'platformStats',
-        'source'
-    ));
-}
+        return view('admin.orders.index', compact(
+            'orders',
+            'stats',
+            'platformStats',
+            'source'
+        ));
+    }
 
-    // ✅ SHOW - Amazon order ke liye
+
     public function show($id)
     {
-        // ✅ PEHLE CHECK KARO - AMAZON ORDER HAI?
         $amazonOrder = AmazonOrder::with('items')->find($id);
         if ($amazonOrder) {
             return view('admin.orders.show-amazon', compact('amazonOrder'));
         }
 
-        // ✅ WEBSITE/OFFLINE ORDER
         $order = Order::with([
             'items.product',
             'items.variant',
@@ -197,12 +266,10 @@ $allOrders = collect(array_merge(
         return view('admin.orders.show', compact('order'));
     }
 
-    // ✅ UPDATE STATUS - SIRF WEBSITE/Offline orders ke liye
     public function updateStatus(Request $request, $id)
     {
         $order = Order::find($id);
         
-        // ✅ AGAR AMAZON ORDER HAI TOH STATUS UPDATE NAHI KAR SAKTE
         if (!$order) {
             return back()->with('error', 'Amazon orders cannot be updated from here');
         }
@@ -211,7 +278,6 @@ $allOrders = collect(array_merge(
             'status' => 'required|in:pending,confirmed,processing,shipped,delivered,cancelled'
         ]);
 
-        // ... BAKI CODE PEHLE JESA HI ...
         $currentStatus = strtolower(trim($order->status));
         $newStatus = strtolower(trim($request->status));
 
@@ -270,7 +336,6 @@ $allOrders = collect(array_merge(
         return back()->with('success', 'Order status updated to ' . ucfirst($newStatus));
     }
 
-    // ✅ INVOICE - SIRF WEBSITE/Offline orders ke liye
     public function invoice($id)
     {
         $order = Order::with([

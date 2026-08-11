@@ -32,8 +32,7 @@
             <div>
                 <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Purchase Date</label>
                 <input type="date" name="purchase_date"
-                    value="{{ old('purchase_date', isset($purchaseOrder) ? $purchaseOrder->purchase_date : date('Y-m-d')) }}"
-                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all duration-200">
+                    value="{{ old('purchase_date', isset($purchaseOrder) && $purchaseOrder->purchase_date ? $purchaseOrder->purchase_date->format('Y-m-d') : date('Y-m-d')) }}"                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all duration-200">
             </div>
             <div>
                 <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">Payment Method</label>
