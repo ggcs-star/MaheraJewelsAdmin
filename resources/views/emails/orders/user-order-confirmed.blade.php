@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Order Confirmed | Mahera Jewels</title>
+
     <style>
         /* reset + base */
         body {
@@ -99,7 +100,7 @@
             margin-bottom: 26px;
         }
 
-        /* order card – user friendly */
+        /* order card */
         .order-card {
             background: #fcfaf7;
             border-radius: 22px;
@@ -257,7 +258,6 @@
             }
         }
 
-        /* small extras */
         .order-id-small {
             font-size: 14px;
             color: #6b6257;
@@ -265,6 +265,7 @@
         }
     </style>
 </head>
+
 <body>
 
 <div class="email-wrapper">
@@ -281,72 +282,130 @@
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
             <polyline points="22 4 12 14.01 9 11.01" />
         </svg>
+
         <strong>Order confirmed</strong>
     </div>
 
     <!-- Greeting -->
-    <p class="greeting">Hello <strong>{{ $order->user->name ?? $order->name ?? 'Valued Customer' }}</strong>,</p>
+    <p class="greeting">
+        Hello
+        <strong>
+            {{ $order->user->name ?? $order->name ?? 'Valued Customer' }}
+        </strong>,
+    </p>
+
     <p class="intro-text">
         Thank you for your purchase. Your order has been confirmed successfully.
         We're delighted to have you with us.
     </p>
 
-    <!-- Order details card – user side UI -->
+    <!-- Order details card -->
     <div class="order-card">
+
         <div class="order-row">
             <span class="label">📦 Order number</span>
-            <span class="value">{{ $order->order_number ?? 'MHR-2026-001' }}</span>
+            <span class="value">
+                {{ $order->order_number ?? 'MHR-2026-001' }}
+            </span>
         </div>
+
         <div class="order-row">
             <span class="label">🆔 Order ID</span>
-            <span class="value order-id-small">#{{ $order->id ?? '1289' }}</span>
+            <span class="value order-id-small">
+                #{{ $order->id ?? '1289' }}
+            </span>
         </div>
+
         <div class="order-row">
             <span class="label">📅 Order date</span>
-            <span class="value">{{ isset($order->created_at) ? $order->created_at->format('d M Y h:i A') : '30 June 2026 02:30 PM' }}</span>
+            <span class="value">
+                {{ isset($order->created_at)
+                    ? $order->created_at->format('d M Y h:i A')
+                    : '30 June 2026 02:30 PM'
+                }}
+            </span>
         </div>
+
+        <!-- FIXED: Dynamic actual order amount -->
         <div class="order-row">
             <span class="label">💰 Total amount</span>
-            <span class="value highlight">₹{{ isset($order->total_amount) ? number_format($order->total_amount, 2) : '4,250.00' }}</span>
+            <span class="value highlight">
+                ₹{{ number_format((float) $order->total, 2) }}
+            </span>
         </div>
-        <div class="order-row" style="border-bottom: 0; padding-bottom: 4px; margin-top: 4px;">
+
+        <div
+            class="order-row"
+            style="border-bottom: 0; padding-bottom: 4px; margin-top: 4px;"
+        >
             <span class="label">📬 Status</span>
-            <span class="value"><span class="status-chip">✓ Confirmed</span></span>
+
+            <span class="value">
+                <span class="status-chip">
+                    ✓ Confirmed
+                </span>
+            </span>
         </div>
+
     </div>
 
-    <!-- friendly message -->
+    <!-- Friendly message -->
     <div class="message-box">
-        <p><span class="highlight-text"> What's next?</span></p>
-        <p>We have received your order and will notify ✨you once it has been shipped. </p>
-        <p style="font-size: 15px; margin-top: 8px;">You can track your order anytime using the button below.</p>
+        <p>
+            <span class="highlight-text">What's next?</span>
+        </p>
+
+        <p>
+            We have received your order and will notify ✨you once it has been shipped.
+        </p>
+
+        <p style="font-size: 15px; margin-top: 8px;">
+            You can track your order anytime using the button below.
+        </p>
     </div>
 
-    <!-- action button -->
+    <!-- Action button -->
     <div style="text-align: center;">
-        <a href="#" class="btn-track">📋 View my order</a>
+        <a href="#" class="btn-track">
+            📋 View my order
+        </a>
     </div>
 
-    <!-- additional info -->
-    <p style="font-size: 15px; color: #3d3d4a; text-align: center; margin: 18px 0 6px;">
+    <!-- Additional info -->
+    <p
+        style="
+            font-size: 15px;
+            color: #3d3d4a;
+            text-align: center;
+            margin: 18px 0 6px;
+        "
+    >
         Need help? Contact our support team — we're here for you.
     </p>
 
-    <!-- footer -->
+    <!-- Footer -->
     <div class="footer-note">
-        <p style="margin-bottom: 6px;"><strong>Mahera Jewels</strong> · crafted with care</p>
-        <p style="margin: 0;">Thank you for shopping with us.</p>
+
+        <p style="margin-bottom: 6px;">
+            <strong>Mahera Jewels</strong> · crafted with care
+        </p>
+
+        <p style="margin: 0;">
+            Thank you for shopping with us.
+        </p>
+
         <div class="small-links">
             <a href="#">Help</a>
             <a href="#">Track order</a>
             <a href="#">Contact</a>
         </div>
+
         <p style="margin-top: 16px; font-size: 12px; color: #a49587;">
             This is a system generated email. Please do not reply directly.
         </p>
+
     </div>
 
-    <!-- hidden note: it’s a template – all dynamic fields are ready -->
 </div>
 
 </body>

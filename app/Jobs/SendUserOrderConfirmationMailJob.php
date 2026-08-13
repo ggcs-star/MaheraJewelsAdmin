@@ -29,16 +29,24 @@ class SendUserOrderConfirmationMailJob implements ShouldQueue
     {
         try {
 
+            // Get the latest order data directly from database
+            $order = Order::with('user')->findOrFail($this->order->id);
+
             \Log::info('User Mail Job Started', [
                 'email' => $this->user->email,
-                'order' => $this->order->order_number,
+                'order_id' => $order->id,
+                'order_number' => $order->order_number,
+                'total' => $order->total,
+                'total_amount' => $order->total_amount,
             ]);
 
             Mail::to($this->user->email)
-                ->send(new UserOrderConfirmedMail($this->order));
+                ->send(new UserOrderConfirmedMail($order));
 
             \Log::info('User Mail Sent Successfully', [
                 'email' => $this->user->email,
+                'order_id' => $order->id,
+                'total_sent' => $order->total,
             ]);
 
         } catch (\Throwable $e) {
