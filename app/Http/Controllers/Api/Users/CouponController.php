@@ -12,44 +12,45 @@ use Throwable;
 
 class CouponController extends Controller
 {
-    // public function index(): JsonResponse
-    // {
-    //     $now = Carbon::now();
+    public function index(): JsonResponse
+    {
+        $now = Carbon::now();
 
-    //     $coupons = Coupon::with('bank:id,name')
-    //         ->where('is_active', true)
-    //         ->where(function ($q) use ($now) {
-    //             $q->whereNull('starts_at')
-    //               ->orWhere('starts_at', '<=', $now);
-    //         })
-    //         ->where(function ($q) use ($now) {
-    //             $q->whereNull('expires_at')
-    //               ->orWhere('expires_at', '>=', $now);
-    //         })
-    //         ->get()
-    //         ->map(function ($coupon) {
-    //             return [
-    //                 'id' => $coupon->id,
-    //                 'name' => $coupon->name,
-    //                 'code' => $coupon->code,
-    //                 'coupon_type' => $coupon->coupon_type,
-    //                 'bank' => $coupon->bank?->name,
-    //                 'card_type' => $coupon->card_type,
-    //                 'discount_type' => $coupon->discount_type,
-    //                 'value' => $coupon->value,
-    //                 'max_discount' => $coupon->max_discount, // ✅ Add this
-    //                 'min_order_amount' => $coupon->min_order_amount,
-    //             ];
-    //         });
+        $coupons = Coupon::with('bank:id,name')
+            ->where('is_active', true)
+            ->where(function ($q) use ($now) {
+                $q->whereNull('starts_at')
+                  ->orWhere('starts_at', '<=', $now);
+            })
+            ->where(function ($q) use ($now) {
+                $q->whereNull('expires_at')
+                  ->orWhere('expires_at', '>=', $now);
+            })
+            ->get()
+            ->map(function ($coupon) {
+                return [
+                    'id' => $coupon->id,
+                    'name' => $coupon->name,
+                    'code' => $coupon->code,
+                    'coupon_type' => $coupon->coupon_type,
+                    'bank' => $coupon->bank?->name,
+                    'card_type' => $coupon->card_type,
+                    'discount_type' => $coupon->discount_type,
+                    'value' => $coupon->value,
+                    'max_discount' => $coupon->max_discount, 
+                    'min_order_amount' => $coupon->min_order_amount,
+                ];
+            });
 
-    //     return response()->json([
-    //         'success' => true,
-    //         'data' => $coupons
-    //     ]);
-    // }
+        return response()->json([
+            'success' => true,
+            'data' => $coupons
+        ]);
+    }
     
     public function apply(Request $request): JsonResponse
     {
+        
       $request->validate([
     'coupon_code' => 'required|string',
     'cart_total'  => 'required|numeric',
@@ -140,10 +141,10 @@ if ($coupon->category_id) {
             // ✅ Frontend se aaya cart_total use karo
             $cartTotal = $request->cart_total;
 
-            if ($coupon->min_order_amount && $cartTotal < $coupon->min_order_amount) {
+            if ($coupon->min_order_amount !== null && $cartTotal < $coupon->min_order_amount) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Minimum order amount not met'
+                    'message' => 'Minimum order amount of ₹' . number_format($coupon->min_order_amount, 2) . ' required'
                 ], 422);
             }
             

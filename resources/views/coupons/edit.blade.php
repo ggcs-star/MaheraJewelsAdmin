@@ -406,7 +406,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="form-group">
                             <label class="form-label fw-semibold mb-2">
                                 <i class="fas fa-shopping-cart text-primary me-1"></i>
-                                Minimum Order Amount <span class="text-danger">*</span>
+                                Minimum Order Amount 
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light">₹</span>

@@ -26,7 +26,8 @@
     <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="p-4 border-b border-gray-100">
             <form method="GET" id="filterForm">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+                    <!-- Search -->
                     <div>
                         <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Search</label>
                         <div class="relative">
@@ -50,6 +51,20 @@
                         </div>
                     </div>
 
+                    <!-- Category Filter -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Category</label>
+                        <select name="category_id" id="filterCategoryMain" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-base bg-white auto-submit">
+                            <option value="">All Categories</option>
+                            @foreach($categories as $category)
+                                <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
+                                    {{ $category->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Coupon Type -->
                     <div>
                         <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Coupon Type</label>
                         <select name="coupon_type" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-base bg-white auto-submit">
@@ -59,6 +74,7 @@
                         </select>
                     </div>
 
+                    <!-- Status -->
                     <div>
                         <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Status</label>
                         <select name="status" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-base bg-white auto-submit">
@@ -68,6 +84,7 @@
                         </select>
                     </div>
 
+                    <!-- Advanced Filter Button -->
                     <div class="flex items-end">
                         <button type="button" id="openFilterSidebar" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-md" style="background: var(--primary-light); color: white;">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -106,6 +123,7 @@
                         <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Coupon Details</th>
                         <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-28">Code</th>
                         <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-24">Type</th>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-32">Category</th>
                         <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-28">Platforms</th>
                         <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-24">Status</th>
                         <th class="px-4 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider w-28">Actions</th>
@@ -158,6 +176,48 @@
                                 </span>
                             @endif
                         </td>
+                        <!-- Category Column - Shows Category/Subcategory/Product -->
+                        <td class="px-4 py-3">
+                            @if($coupon->product_id)
+                                <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">
+                                    <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                    </svg>
+                                    {{ $coupon->product->name ?? 'Product' }}
+                                </span>
+                            @elseif($coupon->subcategory_id)
+                                <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                                    <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                                    </svg>
+                                    {{ $coupon->subCategory->name ?? 'Subcategory' }}
+                                </span>
+                            @elseif($coupon->category_id)
+                                <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
+                                    <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                    </svg>
+                                    {{ $coupon->category->name ?? 'Category' }}
+                                </span>
+                            @else
+                                <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+                                    <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                    </svg>
+                                    All Categories
+                                </span>
+                            @endif
+                            <!-- Minimum Order Amount -->
+                            @if($coupon->min_order_amount)
+                                <div class="text-xs text-gray-400 mt-0.5">
+                                    Min: ₹{{ number_format($coupon->min_order_amount, 2) }}
+                                </div>
+                            @else
+                                <div class="text-xs text-green-500 mt-0.5">
+                                    No minimum
+                                </div>
+                            @endif
+                        </td>
                         <td class="px-4 py-3">
                             <div class="flex flex-wrap gap-1">
                                 @foreach($coupon->platforms as $platform)
@@ -203,7 +263,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="px-4 py-12 text-center">
+                        <td colspan="9" class="px-4 py-12 text-center">
                             <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5h14a2 2 0 012 2v3a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z" />
                             </svg>
@@ -230,6 +290,7 @@
     @endif
 </div>
 
+<!-- Bulk Delete Modal -->
 <div class="modal fade fixed inset-0 bg-black/50 z-50 hidden items-center justify-center" id="bulkDeleteModal" tabindex="-1">
     <div class="bg-white rounded-xl shadow-xl w-96 max-w-md mx-4">
         <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
@@ -254,6 +315,7 @@
     </div>
 </div>
 
+<!-- Advanced Filter Sidebar -->
 <div id="filterSidebar" class="filter-sidebar">
     <div class="filter-sidebar-header">
         <h6 class="font-bold text-gray-800 mb-0">Advanced Filters</h6>
@@ -264,6 +326,23 @@
         </button>
     </div>
     <div class="p-4">
+        <!-- Category Filter -->
+        <div class="mb-3">
+            <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">
+                <i class="fas fa-tag mr-1"></i> Category
+            </label>
+            <select name="category_id" id="filterCategory" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm bg-white">
+                <option value="">All Categories</option>
+                @foreach($categories as $category)
+                    <option value="{{ $category->id }}" {{ request('category_id') == $category->id ? 'selected' : '' }}>
+                        {{ $category->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <hr class="my-3 border-gray-200">
+
         <div class="mb-3">
             <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Filter Field</label>
             <select id="advField" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm bg-white">
@@ -319,4 +398,5 @@
     display: flex !important;
 }
 </style>
+
 @endsection

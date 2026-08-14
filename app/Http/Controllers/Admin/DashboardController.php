@@ -29,15 +29,16 @@ class DashboardController extends Controller
         $totalOrders = $totalWebsiteOrders + $totalAmazonOrders;
 
         $currentMonthWebsiteSales = Order::where('status', 'delivered')
-        ->whereMonth('created_at', now()->month)
-        ->whereYear('created_at', now()->year)
-        ->sum('total');
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->sum('total');
         $currentMonthAmazonSales = AmazonOrder::where('order_status', 'Shipped')
             ->whereMonth('purchase_date', now()->month)
             ->whereYear('purchase_date', now()->year)
             ->sum('order_total');
         $currentMonthSales = $currentMonthWebsiteSales + $currentMonthAmazonSales;
-                $lastMonthWebsiteSales = Order::where('status', 'delivered')
+        
+        $lastMonthWebsiteSales = Order::where('status', 'delivered')
             ->whereMonth('created_at', now()->subMonth()->month)
             ->whereYear('created_at', now()->year)
             ->sum('total');
@@ -58,7 +59,6 @@ class DashboardController extends Controller
         $variants = ProductVariant::all();
 
         foreach ($variants as $variant) {
-
             $websitePush = PlatformPricing::where('product_variant_id', $variant->id)
                 ->whereHas('platformProduct', function ($q) use ($websitePlatformId) {
                     $q->where('platform_id', $websitePlatformId);
@@ -82,11 +82,11 @@ class DashboardController extends Controller
             $amazonSold = AmazonOrderItem::where('product_variant_id', $variant->id)
                 ->sum('quantity_ordered');
 
-            $available =
-                ($websitePush + $offlinePush + $amazonPush)
-                - ($websiteSold + $offlineSold + $amazonSold);
+                        // Total Pushed minus Total Sold = Available Stock
+            $totalAvailable = ($websitePush + $offlinePush + $amazonPush) 
+                            - ($websiteSold + $offlineSold + $amazonSold);
 
-            $productsInStock += max(0, $available);
+            $productsInStock += max(0, $totalAvailable); 
         }
 
         $lowStockProducts = Product::with('variants')->get()->map(function ($product) use (
@@ -94,11 +94,9 @@ class DashboardController extends Controller
             $offlinePlatformId,
             $amazonPlatformId
         ) {
-
             $available = 0;
 
             foreach ($product->variants as $variant) {
-
                 $websitePush = PlatformPricing::where('product_variant_id', $variant->id)
                     ->whereHas('platformProduct', function ($q) use ($websitePlatformId) {
                         $q->where('platform_id', $websitePlatformId);
@@ -117,15 +115,11 @@ class DashboardController extends Controller
                 $offlineSold = InvoiceItem::where('product_variant_id', $variant->id)->sum('quantity');
                 $amazonSold = AmazonOrderItem::where('product_variant_id', $variant->id)->sum('quantity_ordered');
 
-                $available += max(
-                    0,
-                    ($websitePush + $offlinePush + $amazonPush)
-                    - ($websiteSold + $offlineSold + $amazonSold)
-                );
+                                $available += max(0, ($websitePush + $offlinePush + $amazonPush) 
+                                 - ($websiteSold + $offlineSold + $amazonSold));
             }
 
             $product->available_stock = $available;
-
             return $product;
         });
 
@@ -166,22 +160,42 @@ class DashboardController extends Controller
             $days = 90;
         }
 
-        $salesData = [];
+        // ✅ REAL DATA - Confirmed, Delivered, Cancelled Counts
+        $confirmedData = [];
+        $deliveredData = [];
+        $cancelledData = [];
         $labels = [];
 
         for ($i = $days - 1; $i >= 0; $i--) {
             $date = now()->subDays($i);
             $labels[] = $date->format('d M');
 
-            $websiteSales = Order::where('status', 'delivered')
+            // Website Orders
+            $confirmedData[] = Order::where('status', 'confirmed')
                 ->whereDate('created_at', $date->toDateString())
-                ->sum('total');
+                ->count();
 
-            $amazonSales = AmazonOrder::where('order_status', 'Delivered')
+            $deliveredData[] = Order::where('status', 'delivered')
+                ->whereDate('created_at', $date->toDateString())
+                ->count();
+
+            $cancelledData[] = Order::where('status', 'cancelled')
+                ->whereDate('created_at', $date->toDateString())
+                ->count();
+
+            // Amazon Orders
+            $lastIndex = count($confirmedData) - 1;
+            $confirmedData[$lastIndex] += AmazonOrder::where('order_status', 'Confirmed')
                 ->whereDate('purchase_date', $date->toDateString())
-                ->sum('order_total');
+                ->count();
 
-            $salesData[] = $websiteSales + $amazonSales;
+            $deliveredData[$lastIndex] += AmazonOrder::where('order_status', 'Delivered')
+                ->whereDate('purchase_date', $date->toDateString())
+                ->count();
+
+            $cancelledData[$lastIndex] += AmazonOrder::whereIn('order_status', ['Canceled', 'Cancelled'])
+                ->whereDate('purchase_date', $date->toDateString())
+                ->count();
         }
 
         $orderStats = [
@@ -221,8 +235,10 @@ class DashboardController extends Controller
             'orderStats',
             'monthlySalesData',
             'range',
-            'salesData',
             'labels',
+            'confirmedData',
+            'deliveredData',
+            'cancelledData',
             'productsInStock',
         ));
     }
@@ -240,27 +256,48 @@ class DashboardController extends Controller
         }
 
         $labels = [];
-        $salesData = [];
+        $confirmedData = [];
+        $deliveredData = [];
+        $cancelledData = [];
 
         for ($i = $days - 1; $i >= 0; $i--) {
             $date = now()->subDays($i);
             $labels[] = $date->format('d M');
 
-            $websiteSales = Order::where('status', 'delivered')
+            // Website Orders
+            $confirmedData[] = Order::where('status', 'confirmed')
                 ->whereDate('created_at', $date->toDateString())
-                ->sum('total');
+                ->count();
 
-            $amazonSales = AmazonOrder::where('order_status', 'Delivered')
+            $deliveredData[] = Order::where('status', 'delivered')
+                ->whereDate('created_at', $date->toDateString())
+                ->count();
+
+            $cancelledData[] = Order::where('status', 'cancelled')
+                ->whereDate('created_at', $date->toDateString())
+                ->count();
+
+            // Amazon Orders
+            $lastIndex = count($confirmedData) - 1;
+            $confirmedData[$lastIndex] += AmazonOrder::where('order_status', 'Confirmed')
                 ->whereDate('purchase_date', $date->toDateString())
-                ->sum('order_total');
+                ->count();
 
-            $salesData[] = $websiteSales + $amazonSales;
+            $deliveredData[$lastIndex] += AmazonOrder::where('order_status', 'Delivered')
+                ->whereDate('purchase_date', $date->toDateString())
+                ->count();
+
+            $cancelledData[$lastIndex] += AmazonOrder::whereIn('order_status', ['Canceled', 'Cancelled'])
+                ->whereDate('purchase_date', $date->toDateString())
+                ->count();
         }
 
         return response()->json([
             'success' => true,
             'labels' => $labels,
-            'salesData' => $salesData
+            'confirmedData' => $confirmedData,
+            'deliveredData' => $deliveredData,
+            'cancelledData' => $cancelledData
         ]);
     }
 }

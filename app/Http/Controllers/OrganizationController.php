@@ -13,86 +13,86 @@ use Illuminate\Support\Facades\Mail;
 class OrganizationController extends Controller
 {
     public function index(Request $request)
-{
-    $organizations = Organization::query()
-        ->when($request->filled('search'), function ($q) use ($request) {
-            $search = trim($request->search);
+    {
+        $organizations = Organization::query()
+            ->when($request->filled('search'), function ($q) use ($request) {
+                $search = trim($request->search);
 
-            $q->where(function ($qq) use ($search) {
-                $qq->where('name', 'LIKE', "%{$search}%")
-                   ->orWhere('email', 'LIKE', "%{$search}%")
-                   ->orWhere('mobile', 'LIKE', "%{$search}%");
-            });
-        })
+                $q->where(function ($qq) use ($search) {
+                    $qq->where('name', 'LIKE', "%{$search}%")
+                    ->orWhere('email', 'LIKE', "%{$search}%")
+                    ->orWhere('mobile', 'LIKE', "%{$search}%");
+                });
+            })
 
-        ->when($request->filled('status'), function ($q) use ($request) {
-            $q->where('is_active', $request->status);
-        })
-
-     
-        ->when(
-            $request->filled('adv_field') &&
-            $request->filled('adv_condition') &&
-            $request->filled('adv_value'),
-            function ($q) use ($request) {
+            ->when($request->filled('status'), function ($q) use ($request) {
+                $q->where('is_active', $request->status);
+            })
 
         
-                $allowedFields = [
-                    'name',
-                    'email',
-                    'mobile',
-                    'city',
-                    'address',
-                ];
+            ->when(
+                $request->filled('adv_field') &&
+                $request->filled('adv_condition') &&
+                $request->filled('adv_value'),
+                function ($q) use ($request) {
 
-                $field = $request->adv_field;
-                $cond  = $request->adv_condition;
-                $value = trim($request->adv_value);
+            
+                    $allowedFields = [
+                        'name',
+                        'email',
+                        'mobile',
+                        'city',
+                        'address',
+                    ];
 
-                if (!in_array($field, $allowedFields) || $value === '') {
-                    return;
+                    $field = $request->adv_field;
+                    $cond  = $request->adv_condition;
+                    $value = trim($request->adv_value);
+
+                    if (!in_array($field, $allowedFields) || $value === '') {
+                        return;
+                    }
+
+                    switch ($cond) {
+                        case 'like':
+                            $q->where($field, 'LIKE', "%{$value}%");
+                            break;
+
+                        case 'starts_with':
+                            $q->where($field, 'LIKE', "{$value}%");
+                            break;
+
+                        case 'ends_with':
+                            $q->where($field, 'LIKE', "%{$value}");
+                            break;
+
+                        case '=':
+                            $q->where($field, '=', $value);
+                            break;
+
+                        case '!=':
+                            $q->where($field, '!=', $value);
+                            break;
+                    }
                 }
+            )
+            ->orderBy('name')
+            ->paginate(10)
+            ->appends($request->query());
 
-                switch ($cond) {
-                    case 'like':
-                        $q->where($field, 'LIKE', "%{$value}%");
-                        break;
-
-                    case 'starts_with':
-                        $q->where($field, 'LIKE', "{$value}%");
-                        break;
-
-                    case 'ends_with':
-                        $q->where($field, 'LIKE', "%{$value}");
-                        break;
-
-                    case '=':
-                        $q->where($field, '=', $value);
-                        break;
-
-                    case '!=':
-                        $q->where($field, '!=', $value);
-                        break;
-                }
-            }
-        )
-        ->orderBy('name')
-        ->paginate(10)
-        ->appends($request->query());
-
-    return view('organizations.index', compact('organizations'));
-}
+        return view('organizations.index', compact('organizations'));
+    }
 
     public function create()
     {
         return view('organizations.create');
     }
-  public function show(Organization $organization)
-{
-    $organization->load('notificationEmails');
+    public function show(Organization $organization)
+    {
+        $organization->load('notificationEmails');
 
-    return view('organizations.show', compact('organization'));
-}
+        return view('organizations.show', compact('organization'));
+    }
     public function store(Request $request)
     {
         $data = $this->validated($request);
@@ -196,37 +196,37 @@ class OrganizationController extends Controller
             );
     }
     public function notificationSettings()
-{
-    $organizations = Organization::with('notificationEmails')->get();
+    {
+        $organizations = Organization::with('notificationEmails')->get();
 
-    return view('admin.notification-settings.index', compact('organizations'));
-}
+        return view('admin.notification-settings.index', compact('organizations'));
+    }
 
-public function storeNotificationEmail(Request $request, Organization $organization)
-{
-    $request->validate([
-        'name' => 'nullable|string|max:255',
-        'email' => 'required|email|max:255',
-    ]);
+    public function storeNotificationEmail(Request $request, Organization $organization)
+    {
+        $request->validate([
+            'name' => 'nullable|string|max:255',
+            'email' => 'required|email|max:255',
+        ]);
 
-    $organization->notificationEmails()->create([
-        'name' => $request->name,
-        'email' => $request->email,
-        'receive_order_notification' => $request->boolean('receive_order_notification'),
-        'receive_registration_notification' => $request->boolean('receive_registration_notification'),
-        'receive_contact_notification' => $request->boolean('receive_contact_notification'),
-        'is_active' => $request->boolean('is_active', true),
-    ]);
+        $organization->notificationEmails()->create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'receive_order_notification' => $request->boolean('receive_order_notification'),
+            'receive_registration_notification' => $request->boolean('receive_registration_notification'),
+            'receive_contact_notification' => $request->boolean('receive_contact_notification'),
+            'is_active' => $request->boolean('is_active', true),
+        ]);
 
-    return back()->with('success', 'Notification email added successfully.');
-}
+        return back()->with('success', 'Notification email added successfully.');
+    }
 
-public function destroyNotificationEmail($id)
-{
-    OrganizationNotificationEmail::findOrFail($id)->delete();
+    public function destroyNotificationEmail($id)
+    {
+        OrganizationNotificationEmail::findOrFail($id)->delete();
 
-    return back()->with('success', 'Notification email deleted successfully.');
-}
+        return back()->with('success', 'Notification email deleted successfully.');
+    }
 
     private function deleteLogo(?string $path): void
     {
@@ -234,17 +234,17 @@ public function destroyNotificationEmail($id)
             S3Helper::delete($path);
         }
     }
-    // ✅ Invoice Logo Upload Method
-private function uploadInvoiceLogo(Request $request, string $name): ?string
-{
-    $folder = Str::slug($name);
-    $path   = "admin/organization/{$folder}/invoice-logo";
+   
+    private function uploadInvoiceLogo(Request $request, string $name): ?string
+    {
+        $folder = Str::slug($name);
+        $path   = "admin/organization/{$folder}/invoice-logo";
 
-    return S3Helper::storeAs(
-        $request->file('invoice_logo'),
-        $path,
-        'invoice-logo.' . $request->file('invoice_logo')->getClientOriginalExtension()
-    );
-}
+        return S3Helper::storeAs(
+            $request->file('invoice_logo'),
+            $path,
+            'invoice-logo.' . $request->file('invoice_logo')->getClientOriginalExtension()
+        );
+    }
 
 }

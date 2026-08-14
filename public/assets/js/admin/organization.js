@@ -266,25 +266,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ================= ROW CLICK =================
-    document.querySelectorAll('.clickable-row').forEach(row => {
-        row.addEventListener('click', function(e) {
-            // Don't navigate if clicking on interactive elements
-            if (e.target.tagName === 'A' || 
-                e.target.tagName === 'BUTTON' || 
-                e.target.tagName === 'INPUT' ||
-                e.target.closest('a') ||
-                e.target.closest('button') ||
-                e.target.closest('input')) {
-                return;
-            }
-            
-            const url = this.dataset.url;
-            if (url) {
-                window.location.href = url;
-            }
+   
+        document.querySelectorAll('.clickable-row').forEach(row => {
+            row.addEventListener('click', function(e) {
+                
+                if (e.target.closest('input[type="checkbox"]')) {
+                    return;
+                }
+                if (e.target.closest('a') || e.target.closest('button') || e.target.closest('form')) {
+                    return;
+                }
+                
+                const url = this.dataset.url;
+                if (url) {
+                    console.log('Redirecting to:', url);
+                    window.location.href = url;
+                }
+            });
         });
-    });
 
     // ================= ENTER KEY IN ADVANCED FILTER =================
     const advValue = document.getElementById('advValue');

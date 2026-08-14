@@ -440,22 +440,22 @@ rows="3">{{ old('coupon_description') }}</textarea>
                     <div class="form-group">
                         <label class="form-label fw-semibold mb-2">
                             <i class="fas fa-shopping-cart text-primary me-1"></i>
-                            Minimum Order Amount <span class="text-danger">*</span>
+                            Minimum Order Amount 
                         </label>
 
                         <div class="input-group">
                             <span class="input-group-text bg-light">₹</span>
                            <input type="number"
-       name="min_order_amount"
-       value="{{ old('min_order_amount') }}"
-       class="form-control @error('min_order_amount') is-invalid @enderror"
-       placeholder="0.00"
-       step="0.01"
-       min="0">
+                                name="min_order_amount"
+                                value="{{ old('min_order_amount') }}"
+                                class="form-control @error('min_order_amount') is-invalid @enderror"
+                                placeholder="0.00"
+                                step="0.01"
+                                min="0">
 
-@error('min_order_amount')
-    <div class="invalid-feedback">{{ $message }}</div>
-@enderror
+                            @error('min_order_amount')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
 
                         </div>
                         <div class="form-text mt-2">

@@ -24,45 +24,59 @@ class CouponController extends Controller
             'subCategory',
             'product'
         ])
-            ->when($request->search, function ($q) use ($request) {
-                $q->where(function ($qq) use ($request) {
-                    $qq->where('name', 'like', '%' . $request->search . '%')
-                       ->orWhere('code', 'like', '%' . $request->search . '%');
-                });
-            })
-            ->when($request->coupon_type, function ($q) use ($request) {
-                $q->where('coupon_type', $request->coupon_type);
-            })
-            ->when($request->status !== null && $request->status !== '', function ($q) use ($request) {
-                $q->where('is_active', $request->status);
-            })
-            ->when(
-                $request->adv_field && $request->adv_condition && $request->adv_value,
-                function ($q) use ($request) {
-                    $allowed = ['name', 'code', 'coupon_type'];
-                    if (!in_array($request->adv_field, $allowed)) {
-                        return;
-                    }
-                    if ($request->adv_condition === 'like') {
-                        $q->where(
-                            $request->adv_field,
-                            'like',
-                            '%' . $request->adv_value . '%'
-                        );
-                    } else {
-                        $q->where(
-                            $request->adv_field,
-                            $request->adv_condition,
-                            $request->adv_value
-                        );
-                    }
+        ->when($request->search, function ($q) use ($request) {
+            $q->where(function ($qq) use ($request) {
+                $qq->where('name', 'like', '%' . $request->search . '%')
+                ->orWhere('code', 'like', '%' . $request->search . '%');
+            });
+        })
+        ->when($request->coupon_type, function ($q) use ($request) {
+            $q->where('coupon_type', $request->coupon_type);
+        })
+        ->when($request->status !== null && $request->status !== '', function ($q) use ($request) {
+            $q->where('is_active', $request->status);
+        })
+        // ✅ YEH NAYA CODE ADD KARO - Category Filter
+        ->when($request->category_id, function ($q) use ($request) {
+            $q->where(function ($qq) use ($request) {
+                $qq->where('category_id', $request->category_id)
+                ->orWhere('subcategory_id', $request->category_id);
+            });
+        })
+        ->when(
+            $request->adv_field && $request->adv_condition && $request->adv_value,
+            function ($q) use ($request) {
+                $allowed = ['name', 'code', 'coupon_type'];
+                if (!in_array($request->adv_field, $allowed)) {
+                    return;
                 }
-            )
-            ->orderBy('id', 'desc')
-            ->paginate(10)
-            ->appends($request->query());
+                if ($request->adv_condition === 'like') {
+                    $q->where(
+                        $request->adv_field,
+                        'like',
+                        '%' . $request->adv_value . '%'
+                    );
+                } else {
+                    $q->where(
+                        $request->adv_field,
+                        $request->adv_condition,
+                        $request->adv_value
+                    );
+                }
+            }
+        )
+        ->orderBy('id', 'desc')
+        ->paginate(10)
+        ->appends($request->query());
 
-        return view('coupons.index', compact('coupons'));
+        
+        $categories = Category::whereNull('parent_id')
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+            
+
+        return view('coupons.index', compact('coupons', 'categories'));
     }
     public function create()
     {
@@ -79,9 +93,6 @@ class CouponController extends Controller
         ->orderBy('name')
         ->get();
 
-        
-
-        // Initially empty, AJAX se load honge
         $subCategories = collect();
 
         $products = collect();
@@ -116,7 +127,7 @@ class CouponController extends Controller
         'coupon_type'        => 'required|in:NORMAL,BANK',
         'discount_type'      => 'required|in:FLAT,PERCENT',
         'value'              => 'required|numeric|min:0',
-        'min_order_amount'   => 'required|numeric|min:0',
+        'min_order_amount'   => 'nullable|numeric|min:0',
         'usage_limit'        => 'required|integer|min:1',
         'starts_at'          => 'required|date',
         'expires_at'         => 'required|date|after_or_equal:starts_at',
@@ -204,7 +215,7 @@ class CouponController extends Controller
                 'coupon_type'      => $data['coupon_type'],
                 'discount_type'    => $data['discount_type'],
                 'value'            => $data['value'],
-                'min_order_amount' => $data['min_order_amount'] ?? null,
+                'min_order_amount'   => $data['min_order_amount'] ?? null,
                 'max_discount'     => $data['max_discount'] ?? null,
                 'usage_limit'      => $data['usage_limit'] ?? null,
                 'used_count'       => 0,
@@ -286,7 +297,7 @@ class CouponController extends Controller
             'discount_type'      => 'required|in:FLAT,PERCENT',
             'coupon_type' => 'required|in:NORMAL,BANK',
             'value'              => 'required|numeric|min:0',
-            'min_order_amount'   => 'required|numeric|min:0',
+             'min_order_amount'   => 'nullable|numeric|min:0', 
             'usage_limit'        => 'required|integer|min:1',
             'starts_at'          => 'required|date',
             'expires_at'         => 'required|date|after_or_equal:starts_at',
@@ -309,7 +320,7 @@ class CouponController extends Controller
                 'description'        => $data['coupon_description'] ?? null,
                 'discount_type'      => $data['discount_type'],
                 'value'              => $data['value'],
-                'min_order_amount'   => $data['min_order_amount'],
+                'min_order_amount'   => $data['min_order_amount'] ?? null, 
                 'max_discount'       => $data['max_discount'] ?? null,
                 'usage_limit'        => $data['usage_limit'],
                 'is_active'          => $data['is_active'],
