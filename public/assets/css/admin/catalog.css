@@ -211,6 +211,11 @@
     z-index: 10;
 }
 /* ================= COUPON PAGE ================= */
+/* ============================================
+   THEME COLORS - MAHERA JEWEL (MAROON)
+   ============================================ */
+
+/* ================= COUPON PAGE ================= */
 
 .coupon-page .filter-sidebar{
     right: -360px;
@@ -223,7 +228,7 @@
 
 .coupon-page .filter-header{
     padding: 15px;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #e8e8f0;
     display: flex;
     justify-content: space-between;
 }
@@ -231,40 +236,46 @@
 .coupon-page #clearSearch{
     cursor: pointer;
 }
+
 /* ================= COUPON CREATE / EDIT ================= */
 
 .platform-box {
     cursor: pointer;
     transition: all 0.2s ease;
-    border: 1px solid #dee2e6;
+    border: 1px solid #e8e8f0;
 }
 
 .platform-box:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-    border-color: #adb5bd;
+    box-shadow: 0 4px 12px rgba(107, 26, 58, 0.10);
+    border-color: #B84A6A;
 }
 
+/* ✅ PRIMARY COLOR - MAROON */
 .border-primary {
-    border-color: #0d6efd !important;
-    background-color: #f8f9ff !important;
+    border-color: #6B1A3A !important;
+    background-color: rgba(139, 36, 82, 0.06) !important;
 }
 
+/* ✅ CHECK ICON - MAROON */
 .check-icon {
     z-index: 10;
     text-shadow: 0 0 2px #fff;
+    color: #6B1A3A;
 }
 
+/* ✅ FORM ELEMENTS - MAROON */
 .form-control,
 .form-select {
     border-radius: 6px;
     transition: all 0.15s;
+    border: 1.5px solid #e8e8f0;
 }
 
 .form-control:focus,
 .form-select:focus {
-    border-color: #86b7fe;
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+    border-color: #6B1A3A;
+    box-shadow: 0 0 0 0.2rem rgba(107, 26, 58, 0.15);
 }
 
 .card {
@@ -283,18 +294,319 @@ hr {
 .form-select-sm {
     padding: 0.25rem 0.5rem;
 }
+
+/* ✅ COUPON CLICKABLE - MAROON HOVER */
 .coupon-clickable {
     cursor: pointer;
 }
 
 .coupon-clickable:hover {
-    background-color: #f8f9fa;
+    background-color: rgba(139, 36, 82, 0.04);
 }
-.coupon-clickable {
+
+/* ============================================
+   ALL ICONS - MAROON THEME
+   ============================================ */
+
+/* ✅ All icons should be maroon */
+.fas, .far, .fal, .fab, .bi {
+    color: #6B1A3A;
+}
+
+/* ✅ Text primary - Maroon */
+.text-primary {
+    color: #6B1A3A !important;
+}
+
+/* ✅ Section title icons */
+.section-title i,
+.section-title .fas,
+.section-title .far {
+    color: #6B1A3A;
+}
+
+/* ✅ Form label icons */
+.form-label i,
+.form-label .fas,
+.form-label .far {
+    color: #6B1A3A;
+}
+
+/* ✅ Form text icons - Soft Maroon */
+.form-text i {
+    color: #B84A6A;
+}
+
+/* ✅ Badge icons */
+.badge-gold i {
+    color: #B8860B;
+}
+
+/* ✅ Button icons - White for primary button */
+.btn-primary i,
+.btn-theme-primary i {
+    color: #ffffff;
+}
+
+/* ✅ Outline button icons - Maroon */
+.btn-outline-secondary i,
+.btn-theme-outline i {
+    color: #6B1A3A;
+}
+
+/* ✅ Platform card icons */
+.icon-box i {
+    color: #6B1A3A;
+}
+
+/* ✅ Check icon */
+.check-icon i {
+    color: #6B1A3A;
+}
+
+/* ============================================
+   COUPON HEADER - MAROON GRADIENT
+   ============================================ */
+
+/* ============================================
+   COUPON HEADER - LIGHT MAROON
+   ============================================ */
+
+/* ✅ Yeh change karo - Light Maroon */
+.coupon-header {
+    background: linear-gradient(135deg, #8B2452 0%, #6B1A3A 100%);
+    padding: 16px 24px;
+    border-bottom: 2px solid #F4B94E;
+}
+
+.coupon-header h4 {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 20px;
+    margin-bottom: 2px;
+}
+
+.coupon-header h4 i {
+    color: #F4B94E;
+}
+
+.coupon-header p {
+    color: rgba(255,255,255,0.75);
+    font-size: 13px;
+    margin-bottom: 0;
+}
+
+.coupon-header p i {
+    color: rgba(255,255,255,0.5);
+}
+/* ============================================
+   BADGE GOLD
+   ============================================ */
+
+.badge-gold {
+    background: rgba(244, 185, 78, 0.15);
+    color: #B8860B;
+    padding: 6px 16px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+/* ============================================
+   SECTION WRAPPER
+   ============================================ */
+
+.section-wrapper {
+    background: #fafafc;
+    border-radius: 12px;
+    padding: 20px 24px;
+    border: 1px solid #e8e8f0;
+    transition: all 0.3s ease;
+}
+
+.section-wrapper:hover {
+    border-color: #B84A6A;
+}
+
+/* ============================================
+   SECTION TITLE WITH ICON
+   ============================================ */
+
+.section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a2e;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-title .icon {
+    width: 32px;
+    height: 32px;
+    background: rgba(139, 36, 82, 0.08);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6B1A3A;
+    font-size: 14px;
+}
+
+/* ============================================
+   DIVIDER
+   ============================================ */
+
+.divider {
+    border: none;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #e8e8f0, transparent);
+    margin: 28px 0;
+}
+
+/* ============================================
+   INPUT GROUP THEME
+   ============================================ */
+
+.input-group-theme .input-group-text {
+    background: rgba(139, 36, 82, 0.06);
+    border: 1.5px solid #e8e8f0;
+    color: #6B1A3A;
+    font-weight: 600;
+    border-radius: 10px 0 0 10px;
+}
+
+.input-group-theme .form-control {
+    border-left: none;
+    border-radius: 0 10px 10px 0;
+}
+
+/* ============================================
+   PLATFORM CARDS
+   ============================================ */
+
+.platform-card {
+    border: 2px solid #e8e8f0;
+    border-radius: 12px;
+    padding: 16px 20px;
     cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
 }
-.coupon-clickable:hover {
-    background-color: #f8f9fa;
+
+.platform-card:hover {
+    border-color: #B84A6A;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(107, 26, 58, 0.08);
+}
+
+.platform-card.selected {
+    border-color: #6B1A3A;
+    background: rgba(139, 36, 82, 0.06);
+    box-shadow: 0 0 0 4px rgba(139, 36, 82, 0.08);
+}
+
+.platform-card .check-icon {
+    color: #6B1A3A;
+    font-size: 20px;
+}
+
+.platform-card .icon-box {
+    width: 40px;
+    height: 40px;
+    background: rgba(139, 36, 82, 0.08);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* ============================================
+   BUTTONS - MAROON THEME
+   ============================================ */
+
+.btn-theme-primary {
+    background: #6B1A3A;
+    border: none;
+    color: white;
+    padding: 10px 28px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-theme-primary:hover {
+    background: #8B2452;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(107, 26, 58, 0.3);
+}
+
+.btn-theme-outline {
+    background: transparent;
+    border: 2px solid #6B1A3A;
+    color: #6B1A3A;
+    padding: 10px 28px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-theme-outline:hover {
+    background: #6B1A3A;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-theme-light {
+    background: transparent;
+    border: 2px solid #e8e8f0;
+    color: #4a4a6a;
+    padding: 10px 28px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-theme-light:hover {
+    border-color: #6B1A3A;
+    color: #6B1A3A;
+    background: rgba(139, 36, 82, 0.04);
+}
+
+.badge-theme {
+    background: rgba(139, 36, 82, 0.08);
+    color: #6B1A3A;
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 10px;
+}
+
+/* ============================================
+   FORM LABEL
+   ============================================ */
+
+.form-label {
+    font-weight: 600;
+    font-size: 13px;
+    color: #4a4a6a;
+    margin-bottom: 6px;
+}
+
+.form-label .required {
+    color: #dc3545;
+}
+
+/* ============================================
+   FORM TEXT
+   ============================================ */
+
+.form-text {
+    font-size: 12px;
+    color: #8a8aaa;
+    margin-top: 4px;
 }
 /* ================= ADVANCED FILTER SIDEBAR (GLOBAL) ================= */
 
