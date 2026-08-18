@@ -685,7 +685,7 @@ document.querySelectorAll('.platform-card').forEach(card => {
                 <select name="coupon_type" id="coupon_type" class="form-select @error('coupon_type') is-invalid @enderror">
                     <option value="">Select type</option>
                     <option value="NORMAL" {{ old('coupon_type') === 'NORMAL' ? 'selected' : '' }}>Coupon</option>
-                    <option value="BANK" {{ old('coupon_type') === 'BANK' ? 'selected' : '' }}>Bank Offer</option>
+                    <!-- <option value="BANK" {{ old('coupon_type') === 'BANK' ? 'selected' : '' }}>Bank Offer</option> -->
                 </select>
                 @error('coupon_type')
                     <div class="invalid-feedback">{{ $message }}</div>

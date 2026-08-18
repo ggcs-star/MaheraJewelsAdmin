@@ -708,9 +708,9 @@ subCategory?.addEventListener('change', async function () {
                     <option value="NORMAL" {{ old('coupon_type', $coupon->coupon_type) === 'NORMAL' ? 'selected' : '' }}>
                         Coupon
                     </option>
-                    <option value="BANK" {{ old('coupon_type', $coupon->coupon_type) === 'BANK' ? 'selected' : '' }}>
+                    <!-- <option value="BANK" {{ old('coupon_type', $coupon->coupon_type) === 'BANK' ? 'selected' : '' }}>
                         Bank Offer
-                    </option>
+                    </option> -->
                 </select>
                 @error('coupon_type')
                     <div class="invalid-feedback">{{ $message }}</div>
