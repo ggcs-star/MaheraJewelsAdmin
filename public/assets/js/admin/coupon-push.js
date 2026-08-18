@@ -501,4 +501,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
     toggleFields();
 });
+// ==========================================
+// Category Filter Auto-Submit (Main + Sidebar Sync)
+// ==========================================
+const categoryFilterMain = document.getElementById('filterCategoryMain');
+const categoryFilterSidebar = document.getElementById('filterCategory');
 
+if (categoryFilterMain) {
+    categoryFilterMain.addEventListener('change', function() {
+        if (categoryFilterSidebar) {
+            categoryFilterSidebar.value = this.value;
+        }
+        const form = document.getElementById('filterForm');
+        if (form) {
+            form.submit();
+        }
+    });
+}
+
+if (categoryFilterSidebar) {
+    categoryFilterSidebar.addEventListener('change', function() {
+        if (categoryFilterMain) {
+            categoryFilterMain.value = this.value;
+        }
+        const form = document.getElementById('filterForm');
+        if (form) {
+            form.submit();
+        }
+    });
+}

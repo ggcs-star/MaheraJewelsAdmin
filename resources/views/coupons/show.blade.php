@@ -12,13 +12,14 @@
         <div class="d-flex align-items-center justify-content-between">
             <div>
                 <h4 class="fw-bold text-dark mb-1">
-                    <i class="fas fa-eye text-primary me-2"></i>Coupon Details
+                    <i class="fas fa-eye me-2" style="color: #6B1A3A;"></i>Coupon Details
                 </h4>
                 <p class="text-muted mb-0">View complete coupon information</p>
             </div>
             <div class="text-end">
-                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
-                    <i class="fas fa-ticket-alt me-1"></i> {{ $coupon->code }}
+                <!-- ✅ Change 1 -->
+                <span class="badge px-3 py-2 rounded-pill" style="background: rgba(244, 185, 78, 0.12); color: #B8860B; border: 1px solid rgba(244, 185, 78, 0.15);">
+                    <i class="fas fa-ticket-alt me-1" style="color: #F4B94E;"></i> {{ $coupon->code }}
                 </span>
             </div>
         </div>
@@ -31,7 +32,8 @@
                 <div class="p-4 rounded-3 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 h-100">
                     <div class="d-flex align-items-center mb-2">
                         <div class="bg-primary/20 rounded-circle p-2 me-2">
-                            <i class="fas fa-circle-check text-primary"></i>
+                            <!-- ✅ Change 2 -->
+                            <i class="fas fa-circle-check" style="color: #6B1A3A;"></i>
                         </div>
                         <span class="text-muted small">Status</span>
                     </div>
@@ -47,7 +49,8 @@
                 <div class="p-4 rounded-3 bg-gradient-to-r from-info/10 to-info/5 border border-info/20 h-100">
                     <div class="d-flex align-items-center mb-2">
                         <div class="bg-info/20 rounded-circle p-2 me-2">
-                            <i class="fas fa-tags text-info"></i>
+                            <!-- ✅ Change 3 -->
+                            <i class="fas fa-tags" style="color: #17a2b8;"></i>
                         </div>
                         <span class="text-muted small">Coupon Type</span>
                     </div>
@@ -95,16 +98,19 @@
                 <div class="card border-0 shadow-sm rounded-3 h-100">
                     <div class="card-header bg-white border-bottom py-3">
                         <h6 class="fw-bold mb-0">
-                            <i class="fas fa-info-circle text-primary me-2"></i>Coupon Overview
+                            <!-- ✅ Change 4 -->
+                            <i class="fas fa-info-circle me-2" style="color: #6B1A3A;"></i>Coupon Overview
                         </h6>
                     </div>
                     <div class="card-body p-4 text-center">
                         <div class="bg-primary/10 rounded-circle p-4 d-inline-flex mx-auto mb-3">
-                            <i class="fas fa-ticket-alt text-primary fa-3x"></i>
+                            <!-- ✅ Change 5 -->
+                            <i class="fas fa-ticket-alt fa-3x" style="color: #6B1A3A;"></i>
                         </div>
                         <h5 class="fw-bold mb-2">{{ $coupon->name }}</h5>
                         <div class="bg-light rounded-3 p-2 mb-3">
-                            <code class="text-primary fw-bold fs-5">{{ $coupon->code }}</code>
+                            <!-- ✅ Change 6 -->
+                            <code class="fw-bold fs-5" style="color: #6B1A3A;">{{ $coupon->code }}</code>
                         </div>
                         <p class="text-muted small">{{ $coupon->description ?? 'No description provided.' }}</p>
                         
@@ -137,7 +143,8 @@
                         <div class="card border-0 shadow-sm rounded-3">
                             <div class="card-header bg-white border-bottom py-3">
                                 <h6 class="fw-bold mb-0">
-                                    <i class="fas fa-cog text-primary me-2"></i>Generation Details
+                                    <!-- ✅ Change 7 -->
+                                    <i class="fas fa-cog me-2" style="color: #6B1A3A;"></i>Generation Details
                                 </h6>
                             </div>
                             <div class="card-body p-4">
@@ -146,7 +153,8 @@
                                         <div class="p-3 bg-light rounded-3">
                                             <div class="text-muted small mb-1">Generate Type</div>
                                             <div class="fw-bold">
-                                                <i class="fas fa-{{ ($coupon->generate_type ?? 'single') === 'bulk' ? 'layer-group' : 'tag' }} text-primary me-1"></i>
+                                                <!-- ✅ Change 8 -->
+                                                <i class="fas fa-{{ ($coupon->generate_type ?? 'single') === 'bulk' ? 'layer-group' : 'tag' }} me-1" style="color: #6B1A3A;"></i>
                                                 {{ ucfirst($coupon->generate_type ?? 'Single') }}
                                             </div>
                                         </div>
@@ -156,7 +164,8 @@
                                             <div class="p-3 bg-light rounded-3">
                                                 <div class="text-muted small mb-1">Campaign Name</div>
                                                 <div class="fw-bold">
-                                                    <i class="fas fa-flag text-primary me-1"></i>
+                                                    <!-- ✅ Change 9 -->
+                                                    <i class="fas fa-flag me-1" style="color: #6B1A3A;"></i>
                                                     {{ $coupon->campaign_name ?? '-' }}
                                                 </div>
                                             </div>
@@ -165,7 +174,8 @@
                                             <div class="p-3 bg-light rounded-3">
                                                 <div class="text-muted small mb-1">Quantity</div>
                                                 <div class="fw-bold">
-                                                    <i class="fas fa-sort-numeric-up text-primary me-1"></i>
+                                                    <!-- ✅ Change 10 -->
+                                                    <i class="fas fa-sort-numeric-up me-1" style="color: #6B1A3A;"></i>
                                                     {{ $coupon->quantity ?? '-' }}
                                                 </div>
                                             </div>
@@ -189,7 +199,8 @@
                                         <div class="p-3 bg-light rounded-3">
                                             <div class="text-muted small mb-1">Minimum Order</div>
                                             <div class="fw-bold">
-                                                <i class="fas fa-shopping-cart text-primary me-1"></i>
+                                                <!-- ✅ Change 11 -->
+                                                <i class="fas fa-shopping-cart me-1" style="color: #6B1A3A;"></i>
                                                 ₹{{ number_format($coupon->min_order_amount) }}
                                             </div>
                                         </div>
@@ -198,7 +209,8 @@
                                         <div class="p-3 bg-light rounded-3">
                                             <div class="text-muted small mb-1">Max Discount</div>
                                             <div class="fw-bold">
-                                                <i class="fas fa-chart-line text-primary me-1"></i>
+                                                <!-- ✅ Change 12 -->
+                                                <i class="fas fa-chart-line me-1" style="color: #6B1A3A;"></i>
                                                 {{ $coupon->max_discount ? '₹'.number_format($coupon->max_discount) : 'No limit' }}
                                             </div>
                                         </div>
@@ -208,8 +220,9 @@
                                             <div class="text-muted small mb-1">Platforms</div>
                                             <div class="d-flex flex-wrap gap-1">
                                                 @foreach($coupon->platforms as $platform)
-                                                    <span class="badge bg-primary bg-opacity-10 text-primary px-2 py-1">
-                                                        <i class="fas fa-check-circle me-1"></i> {{ $platform->name }}
+                                                    <!-- ✅ Change 13 -->
+                                                    <span class="badge px-2 py-1" style="background: rgba(139, 36, 82, 0.08); color: #6B1A3A;">
+                                                        <i class="fas fa-check-circle me-1" style="color: #6B1A3A;"></i> {{ $platform->name }}
                                                     </span>
                                                 @endforeach
                                             </div>
@@ -224,7 +237,8 @@
                         <div class="card border-0 shadow-sm rounded-3">
                             <div class="card-header bg-white border-bottom py-3">
                                 <h6 class="fw-bold mb-0">
-                                    <i class="fas fa-box text-primary me-2"></i>Product Restrictions
+                                    <!-- ✅ Change 14 -->
+                                    <i class="fas fa-box me-2" style="color: #6B1A3A;"></i>Product Restrictions
                                 </h6>
                             </div>
                             <div class="card-body p-4">
@@ -233,7 +247,8 @@
                                         <div class="p-3 bg-light rounded-3">
                                             <div class="text-muted small mb-1">Category</div>
                                             <div class="fw-bold">
-                                                <i class="fas fa-folder text-primary me-1"></i>
+                                                <!-- ✅ Change 15 -->
+                                                <i class="fas fa-folder me-1" style="color: #6B1A3A;"></i>
                                                 {{ $coupon->category?->name ?? 'All Categories' }}
                                             </div>
                                         </div>
@@ -242,7 +257,8 @@
                                         <div class="p-3 bg-light rounded-3">
                                             <div class="text-muted small mb-1">Sub Category</div>
                                             <div class="fw-bold">
-                                                <i class="fas fa-folder-open text-primary me-1"></i>
+                                                <!-- ✅ Change 16 -->
+                                                <i class="fas fa-folder-open me-1" style="color: #6B1A3A;"></i>
                                                 {{ $coupon->subcategory?->name ?? 'All' }}
                                             </div>
                                         </div>
@@ -251,7 +267,8 @@
                                         <div class="p-3 bg-light rounded-3">
                                             <div class="text-muted small mb-1">Product</div>
                                             <div class="fw-bold">
-                                                <i class="fas fa-cube text-primary me-1"></i>
+                                                <!-- ✅ Change 17 -->
+                                                <i class="fas fa-cube me-1" style="color: #6B1A3A;"></i>
                                                 {{ $coupon->product?->name ?? 'All Products' }}
                                             </div>
                                         </div>
@@ -260,7 +277,8 @@
                                         <div class="p-3 bg-light rounded-3">
                                             <div class="text-muted small mb-1">One Time Per User</div>
                                             <div class="fw-bold">
-                                                <i class="fas fa-user-check text-primary me-1"></i>
+                                                <!-- ✅ Change 18 -->
+                                                <i class="fas fa-user-check me-1" style="color: #6B1A3A;"></i>
                                                 {{ $coupon->one_time_per_user ? 'Yes' : 'No' }}
                                             </div>
                                         </div>
@@ -283,7 +301,8 @@
                                         <div class="p-3 bg-light rounded-3">
                                             <div class="text-muted small mb-1">Start Date</div>
                                             <div class="fw-bold">
-                                                <i class="fas fa-calendar-day text-primary me-1"></i>
+                                                <!-- ✅ Change 19 -->
+                                                <i class="fas fa-calendar-day me-1" style="color: #6B1A3A;"></i>
                                                 {{ $coupon->starts_at->format('d M Y') }}
                                                 <small class="text-muted ms-2">{{ $coupon->starts_at->format('h:i A') }}</small>
                                             </div>
@@ -341,7 +360,8 @@
                                         <div class="p-3 bg-light rounded-3">
                                             <div class="text-muted small mb-1">Discount Type</div>
                                             <div class="fw-bold">
-                                                <i class="fas fa-{{ $coupon->discount_type === 'PERCENT' ? 'percentage' : 'coins' }} text-primary me-1"></i>
+                                                <!-- ✅ Change 20 -->
+                                                <i class="fas fa-{{ $coupon->discount_type === 'PERCENT' ? 'percentage' : 'coins' }} me-1" style="color: #6B1A3A;"></i>
                                                 {{ $coupon->discount_type === 'PERCENT' ? 'Percentage Discount' : 'Fixed Amount' }}
                                             </div>
                                         </div>
@@ -373,8 +393,9 @@
                     </a>
                 </div>
                 <div class="d-flex gap-3">
-                    <a href="{{ admin_route('coupons.edit', $coupon) }}" class="btn btn-primary px-4 fw-semibold">
-                        <i class="fas fa-edit me-2"></i> Edit Coupon
+                    <!-- ✅ Change 21 -->
+                    <a href="{{ admin_route('coupons.edit', $coupon) }}" class="btn px-4 fw-semibold" style="background: #6B1A3A; color: #fff; border: none;">
+                        <i class="fas fa-edit me-2" style="color: #fff;"></i> Edit Coupon
                     </a>
                 </div>
             </div>

@@ -448,100 +448,100 @@
                                     @else
                                         <span class="status-badge" style="background: #dcfce7; color: #10B981;">✓ In Stock</span>
                                     @endif
-                                  </td>
-                              </tr>
+                                </td>
+                            </tr>
                         @empty
-                              <tr>
-                                 <td colspan="4" class="px-5 py-8 text-center text-gray-400">No products found</td>
-                              </tr>
+                            <tr>
+                                <td colspan="4" class="px-5 py-8 text-center text-gray-400">No products found</td>
+                            </tr>
                         @endforelse
-                     </tbody>
-                  </table>
-             </div>
-         </div>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-         <div class="section-card overflow-hidden">
-             <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
-                 <div class="section-title mb-0">
-                     <span></span>
-                     Recent Orders
-                 </div>
-                 <a href="{{ route('admin.orders.index') }}" class="text-xs font-semibold" style="color: #8B2452;">View All →</a>
-             </div>
-             <div class="overflow-x-auto">
-                 <table class="w-full">
-                     <thead style="background: #f8fafc;">
-                         <tr>
-                             <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500">Order #</th>
-                             <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500">Amount</th>
-                             <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500">Date</th>
-                             <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500">Status</th>
-                          </tr>
-                     </thead>
-                     <tbody>
-    @forelse($recentOrders->take(5) as $order)
-    <tr class="order-table-row cursor-pointer" onclick="window.location='{{ route('admin.orders.show', $order->id) }}'">
-        <td class="px-5 py-3 text-sm font-medium text-gray-800">
-            @if($order->is_amazon ?? false)
-                <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded">Amazon</span>
-            @endif
-            {{ $order->order_number }}
-        </td>
-        <td class="px-5 py-3 text-sm font-semibold text-gray-800">
-            ₹{{ number_format($order->total ?? $order->order_total ?? 0, 2) }}
-        </td>
-        <td class="px-5 py-3 text-sm text-gray-500">
-            {{ isset($order->created_at) ? $order->created_at->format('d M Y') : (isset($order->purchase_date) ? date('d M Y', strtotime($order->purchase_date)) : 'N/A') }}
-        </td>
-        <td class="px-5 py-3">
-            @php
-                $status = $order->status ?? $order->order_status ?? 'pending';
-                $statusClass = match($status) {
-                    'pending' => 'bg-yellow-100 text-yellow-700',
-                    'confirmed' => 'bg-blue-100 text-blue-700',
-                    'processing' => 'bg-purple-100 text-purple-700',
-                    'shipped' => 'bg-pink-100 text-pink-700',
-                    'delivered' => 'bg-green-100 text-green-700',
-                    'Canceled', 'Cancelled' => 'bg-red-100 text-red-700',
-                    default => 'bg-gray-100 text-gray-700'
-                };
-            @endphp
-            <span class="status-badge {{ $statusClass }}">
-                {{ ucfirst($status) }}
-            </span>
-        </td>
-    </tr>
-    @empty
-    <tr>
-        <td colspan="4" class="px-5 py-8 text-center text-gray-400">No orders found</td>
-    </tr>
-    @endforelse
-</tbody>
-                  </table>
-             </div>
-         </div>
-     </div>
+        <div class="section-card overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
+                <div class="section-title mb-0">
+                    <span></span>
+                    Recent Orders
+                </div>
+                <a href="{{ route('admin.orders.index') }}" class="text-xs font-semibold" style="color: #8B2452;">View All →</a>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead style="background: #f8fafc;">
+                        <tr>
+                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500">Order #</th>
+                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500">Amount</th>
+                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500">Date</th>
+                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-500">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($recentOrders->take(5) as $order)
+                        <tr class="order-table-row cursor-pointer" onclick="window.location='{{ route('admin.orders.show', $order->id) }}'">
+                            <td class="px-5 py-3 text-sm font-medium text-gray-800">
+                                @if($order->is_amazon ?? false)
+                                    <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded">Amazon</span>
+                                @endif
+                                {{ $order->order_number }}
+                            </td>
+                            <td class="px-5 py-3 text-sm font-semibold text-gray-800">
+                                ₹{{ number_format($order->total ?? $order->order_total ?? 0, 2) }}
+                            </td>
+                            <td class="px-5 py-3 text-sm text-gray-500">
+                                {{ isset($order->created_at) ? $order->created_at->format('d M Y') : (isset($order->purchase_date) ? date('d M Y', strtotime($order->purchase_date)) : 'N/A') }}
+                            </td>
+                            <td class="px-5 py-3">
+                                @php
+                                    $status = $order->status ?? $order->order_status ?? 'pending';
+                                    $statusClass = match($status) {
+                                        'pending' => 'bg-yellow-100 text-yellow-700',
+                                        'confirmed' => 'bg-blue-100 text-blue-700',
+                                        'processing' => 'bg-purple-100 text-purple-700',
+                                        'shipped' => 'bg-pink-100 text-pink-700',
+                                        'delivered' => 'bg-green-100 text-green-700',
+                                        'Canceled', 'Cancelled' => 'bg-red-100 text-red-700',
+                                        default => 'bg-gray-100 text-gray-700'
+                                    };
+                                @endphp
+                                <span class="status-badge {{ $statusClass }}">
+                                    {{ ucfirst($status) }}
+                                </span>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="4" class="px-5 py-8 text-center text-gray-400">No orders found</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-     <div class="footer-card p-5">
-         <div class="grid grid-cols-2 md:grid-cols-4 gap-5 text-center">
-             <div>
-                 <p class="text-xl font-bold text-gray-800">{{ number_format($totalProducts) }}</p>
-                 <p class="text-xs text-gray-500 mt-1">Total Products</p>
-             </div>
-             <div>
-                 <p class="text-xl font-bold text-gray-800">{{ number_format($orderStats['delivered']) }}</p>
-                 <p class="text-xs text-gray-500 mt-1">Orders Delivered</p>
-             </div>
-             <div>
-                 <p class="text-xl font-bold text-gray-800">{{ number_format($productsInStock) }}</p>
-                 <p class="text-xs text-gray-500 mt-1">Products in Stock</p>
-             </div>
-             <div>
-                 <p class="text-xl font-bold text-gray-800">₹{{ number_format($currentMonthSales, 2) }}</p>
-                 <p class="text-xs text-gray-500 mt-1">This Month Revenue</p>
-             </div>
-         </div>
-     </div>
+    <div class="footer-card p-5">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-5 text-center">
+            <div>
+                <p class="text-xl font-bold text-gray-800">{{ number_format($totalProducts) }}</p>
+                <p class="text-xs text-gray-500 mt-1">Total Products</p>
+            </div>
+            <div>
+                <p class="text-xl font-bold text-gray-800">{{ number_format($orderStats['delivered']) }}</p>
+                <p class="text-xs text-gray-500 mt-1">Orders Delivered</p>
+            </div>
+            <div>
+                <p class="text-xl font-bold text-gray-800">{{ number_format($productsInStock) }}</p>
+                <p class="text-xs text-gray-500 mt-1">Products in Stock</p>
+            </div>
+            <div>
+                <p class="text-xl font-bold text-gray-800">₹{{ number_format($currentMonthSales, 2) }}</p>
+                <p class="text-xs text-gray-500 mt-1">This Month Revenue</p>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -557,7 +557,9 @@
             if (data.success) {
                 if (salesChart) {
                     salesChart.data.labels = data.labels;
-                    salesChart.data.datasets[0].data = data.salesData;
+                    salesChart.data.datasets[0].data = data.confirmedData;
+                    salesChart.data.datasets[1].data = data.deliveredData;
+                    salesChart.data.datasets[2].data = data.cancelledData;
                     salesChart.update();
                 }
                 
@@ -588,10 +590,12 @@
     });
     
     document.addEventListener('DOMContentLoaded', function() {
-        // Sales Overview Chart - Theme colors
+        // Sales Overview Chart - Real Data
         var salesCtx = document.getElementById('salesChart').getContext('2d');
         var labels = {!! json_encode($labels) !!};
-        var salesData = {!! json_encode($salesData) !!};
+        var confirmedData = {!! json_encode($confirmedData) !!};
+        var deliveredData = {!! json_encode($deliveredData) !!};
+        var cancelledData = {!! json_encode($cancelledData) !!};
         
         salesChart = new Chart(salesCtx, {
             type: 'line',
@@ -600,8 +604,8 @@
                 datasets: [
                     {
                         label: 'Confirmed',
-                        data: salesData.map((val, i) => Math.floor(val * 0.6)),
-                        borderColor: '#8B2452',      // Theme primary color
+                        data: confirmedData,
+                        borderColor: '#8B2452',
                         backgroundColor: 'rgba(139, 36, 82, 0.05)',
                         borderWidth: 2.5,
                         fill: true,
@@ -614,8 +618,8 @@
                     },
                     {
                         label: 'Delivered',
-                        data: salesData.map((val, i) => Math.floor(val * 0.3)),
-                        borderColor: '#F4A261',      // Theme secondary color
+                        data: deliveredData,
+                        borderColor: '#F4A261',
                         backgroundColor: 'rgba(244, 162, 97, 0.05)',
                         borderWidth: 2.5,
                         fill: true,
@@ -628,8 +632,8 @@
                     },
                     {
                         label: 'Cancelled',
-                        data: salesData.map((val, i) => Math.floor(val * 0.1)),
-                        borderColor: '#6B1A3E',      // Theme primary dark
+                        data: cancelledData,
+                        borderColor: '#6B1A3E',
                         backgroundColor: 'rgba(107, 26, 62, 0.05)',
                         borderWidth: 2.5,
                         fill: true,
@@ -715,7 +719,7 @@
                 labels: ['Confirmed', 'Delivered', 'Cancelled'],
                 datasets: [{
                     data: [orderStats.confirmed, orderStats.delivered, orderStats.cancelled],
-                    backgroundColor: ['#8B2452', '#F4A261', '#6B1A3E'],  // Theme colors
+                    backgroundColor: ['#8B2452', '#F4A261', '#6B1A3E'],
                     borderWidth: 0,
                     hoverOffset: 8
                 }]

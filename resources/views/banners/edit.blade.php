@@ -145,19 +145,19 @@
                     <div class="col-md-3 mb-3">
                         <label class="form-label fw-semibold" style="color: #4a5568; font-size: 13px;">Start Date</label>
                         <input type="date"
-                               name="start_date"
-                               value="{{ old('start_date', $banner->start_date ?? '') }}"
-                               class="form-control"
-                               style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px;">
+                            name="start_date"
+                            value="{{ old('start_date', $banner->start_date ? \Carbon\Carbon::parse($banner->start_date)->format('Y-m-d') : '') }}"
+                            class="form-control"
+                            style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px;">
                     </div>
 
                     <div class="col-md-3 mb-3">
                         <label class="form-label fw-semibold" style="color: #4a5568; font-size: 13px;">End Date</label>
                         <input type="date"
-                               name="end_date"
-                               value="{{ old('end_date', $banner->end_date ?? '') }}"
-                               class="form-control"
-                               style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px;">
+                            name="end_date"
+                            value="{{ old('end_date', $banner->end_date ? \Carbon\Carbon::parse($banner->end_date)->format('Y-m-d') : '') }}"
+                            class="form-control"
+                            style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 12px;">
                     </div>
 
                     <div class="col-md-2 mb-3">
