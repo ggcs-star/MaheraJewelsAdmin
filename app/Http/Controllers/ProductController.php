@@ -62,7 +62,7 @@ private function isUploadedFile($file): bool
             'visibility'
         ])
             ->with([
-                'category:id,name',
+                'categories:id,name',
                 'supplier:id,name',
                 'warehouse:id,name,city'
             ])
@@ -76,11 +76,12 @@ private function isUploadedFile($file): bool
                 });
             })
 
-            ->when(
-                $request->filled('category_id'),
-                fn($q) =>
-                $q->where('category_id', $request->category_id)
-            )
+        ->when(
+    $request->filled('category_id'),
+    fn($q) => $q->whereHas('categories', function ($categoryQuery) use ($request) {
+        $categoryQuery->where('categories.id', $request->category_id);
+    })
+)
 
             ->when(
                 $request->filled('supplier_id'),
@@ -188,9 +189,13 @@ private function isUploadedFile($file): bool
             $productData = $this->validateProduct($request);
             $productData = $this->handleProductImages($request, $productData);
 
-            $product = $this->createProduct($request, $productData);
+        $categoryIds = $request->input('category_ids', []);
 
-            $totals = $this->handleVariants($request, $product);
+$product = $this->createProduct($request, $productData);
+
+$product->categories()->sync($categoryIds);
+
+$totals = $this->handleVariants($request, $product);
 
             $this->updateProductPrices($product, $totals);
         });
@@ -210,7 +215,8 @@ private function isUploadedFile($file): bool
             'short_description' => 'nullable|string|max:500',
             'description' => 'nullable|string',
 
-            'category_id' => 'required|exists:categories,id',
+'category_ids' => 'required|array|min:1',
+'category_ids.*' => 'required|integer|distinct|exists:categories,id',
             'supplier_id' => 'nullable|exists:suppliers,id',
             'brand' => 'nullable|string|max:100',
 
@@ -461,8 +467,7 @@ $data['is_best_seller'] = $request->boolean('is_best_seller');
     }
     public function edit(Product $product)
     {
-    $product->load('variants');
-
+$product->load(['variants', 'categories']);
     $categories = Category::select('id', 'name', 'parent_id')
         ->orderBy('name')
         ->get();
@@ -497,6 +502,42 @@ $data['is_best_seller'] = $request->boolean('is_best_seller');
             $productData = $this->handleProductImagesForUpdate($request, $product, $productData);
 
             $product->update($productData);
+
+$parentIds = collect($request->input('category_ids', []))
+    ->map(fn ($id) => (int) $id)
+    ->unique()
+    ->values();
+
+$subcategoryIds = collect($request->input('subcategory_ids', []))
+    ->map(fn ($id) => (int) $id)
+    ->unique()
+    ->values();
+
+// Check that selected subcategories belong to selected parents.
+$validSubcategoryIds = Category::whereIn('id', $subcategoryIds)
+    ->whereIn('parent_id', $parentIds)
+    ->pluck('id')
+    ->map(fn ($id) => (int) $id);
+
+if ($validSubcategoryIds->count() !== $subcategoryIds->count()) {
+    throw \Illuminate\Validation\ValidationException::withMessages([
+        'subcategory_ids' => 'Selected subcategories do not match the selected categories.',
+    ]);
+}
+
+// Save parent categories and subcategories together.
+$allCategoryIds = $parentIds
+    ->merge($subcategoryIds)
+    ->unique()
+    ->values()
+    ->all();
+
+$product->categories()->sync($allCategoryIds);
+
+// Keep the legacy category_id field in sync.
+$product->category_id = $parentIds->first();
+$product->save();
+
 
             $keepVariantIds = [];
             
@@ -548,7 +589,8 @@ $data['is_best_seller'] = $request->boolean('is_best_seller');
             'short_description' => 'nullable|string|max:500',
             'description' => 'nullable|string',
 
-            'category_id' => 'required|exists:categories,id',
+'category_ids' => 'required|array|min:1',
+'category_ids.*' => 'required|integer|distinct|exists:categories,id',
             'supplier_id' => 'nullable|exists:suppliers,id',
             'brand' => 'nullable|string|max:100',
 
