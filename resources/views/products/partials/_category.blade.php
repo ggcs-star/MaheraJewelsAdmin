@@ -1,58 +1,169 @@
-<div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-5">
-    <div class="px-5 py-3 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
-        <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-lg bg-[#8B2452]/10 flex items-center justify-center">
-                <svg class="w-4 h-4 text-[#8B2452]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                </svg>
-            </div>
-            <h3 class="text-base font-bold text-gray-800">Category</h3>
-            <span class="ml-auto text-xs text-gray-400">Organize your product</span>
-        </div>
+<div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-5">
+    <div class="px-5 py-4 border-b border-gray-100 bg-gray-50">
+        <h3 class="text-base font-bold text-gray-800">Categories & Subcategories</h3>
+        <p class="text-xs text-gray-500 mt-1">
+            Select categories first, then choose their subcategories.
+        </p>
     </div>
 
-    <div class="p-5">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                    Category <span class="text-red-500">*</span>
-                </label>
-                <select id="mainCategory" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm bg-white">
-                    <option value="">Select category</option>
-                    @foreach ($categories->whereNull('parent_id') as $cat)
-                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                    @endforeach
-                </select>
-                <p class="text-xs text-gray-400 mt-1">Choose the primary category for this product.</p>
-            </div>
+    @php
+        $selectedCategoryIds = collect(old(
+            'category_ids',
+            isset($product) ? $product->categories->pluck('id')->all() : []
+        ))->map(fn ($id) => (int) $id)->all();
 
-            <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                    Sub Category
-                </label>
-                <select id="subCategory" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm bg-white" disabled>
-                    <option value="">Select sub category</option>
-                </select>
-                <p class="text-xs text-gray-400 mt-1">Available after selecting main category.</p>
-            </div>
+        if (empty($selectedCategoryIds) && isset($product) && $product->category_id) {
+            $selectedCategoryIds = [(int) $product->category_id];
+        }
 
-            <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                    Brand
-                </label>
-                <input type="text"
-                       name="brand"
-                       class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#8B2452] focus:ring-2 focus:ring-[#8B2452]/20 transition-all text-sm"
-                       placeholder="e.g. Samsung, Nike"
-                       value="{{ old('brand', $product->brand ?? '') }}">
-                <p class="text-xs text-gray-400 mt-1">Optional – helps with filtering & search.</p>
-            </div>
+        $selectedSubcategoryIds = collect(old(
+            'subcategory_ids',
+            isset($product) && isset($product->subcategories)
+                ? $product->subcategories->pluck('id')->all()
+                : []
+        ))->map(fn ($id) => (int) $id)->all();
+    @endphp
 
-            <!-- Hidden final category - EXACTLY as original, just moved inside -->
-            <input type="hidden"
-                   name="category_id"
-                   id="finalCategoryId"
-                   value="{{ old('category_id', $product->category_id ?? '') }}">
+    <div class="p-5 space-y-4">
+        @foreach ($categories->whereNull('parent_id') as $category)
+            @php
+                $children = $categories->where('parent_id', $category->id)->values();
+                $categorySelected = in_array((int) $category->id, $selectedCategoryIds, true);
+            @endphp
+
+            <div class="category-group border border-gray-200 rounded-xl overflow-hidden"
+                 data-category-id="{{ $category->id }}">
+
+                <label class="flex items-center gap-3 p-4 cursor-pointer hover:bg-gray-50">
+                    <input
+                        type="checkbox"
+                        name="category_ids[]"
+                        value="{{ $category->id }}"
+                        class="parent-category-checkbox rounded text-[#8B2452] focus:ring-[#8B2452]"
+                        {{ $categorySelected ? 'checked' : '' }}
+                    >
+
+                    <span class="font-semibold text-sm text-gray-800">
+                        {{ $category->name }}
+                    </span>
+
+                    <span class="ml-auto text-xs text-gray-400">
+                        {{ $children->count() }} subcategories
+                    </span>
+                </label>
+
+                <div class="subcategory-panel {{ $categorySelected ? '' : 'hidden' }}
+                            border-t border-gray-100 bg-gray-50 p-4">
+
+                    @if ($children->isNotEmpty())
+                        <p class="text-xs font-semibold text-gray-500 uppercase mb-3">
+                            Select subcategories
+                        </p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            @foreach ($children as $subcategory)
+                                <label class="flex items-center gap-2 p-2 rounded-lg bg-white border border-gray-100 cursor-pointer hover:border-[#8B2452]/40">
+                                    <input
+                                        type="checkbox"
+                                        name="subcategory_ids[]"
+                                        value="{{ $subcategory->id }}"
+                                        class="subcategory-checkbox rounded text-[#8B2452] focus:ring-[#8B2452]"
+                                        data-parent-id="{{ $category->id }}"
+                                        {{ in_array((int) $subcategory->id, $selectedSubcategoryIds, true) ? 'checked' : '' }}
+                                    >
+
+                                    <span class="text-sm text-gray-700">
+                                        {{ $subcategory->name }}
+                                    </span>
+                                </label>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-sm text-gray-500">
+                            No subcategories available for this category.
+                        </p>
+                    @endif
+                </div>
+            </div>
+        @endforeach
+
+        @error('category_ids')
+            <p class="text-xs text-red-500">{{ $message }}</p>
+        @enderror
+
+        @error('category_ids.*')
+            <p class="text-xs text-red-500">{{ $message }}</p>
+        @enderror
+
+        @error('subcategory_ids')
+            <p class="text-xs text-red-500">{{ $message }}</p>
+        @enderror
+
+        @error('subcategory_ids.*')
+            <p class="text-xs text-red-500">{{ $message }}</p>
+        @enderror
+
+        <div class="rounded-lg bg-[#8B2452]/5 border border-[#8B2452]/10 p-3">
+            <p class="text-sm text-gray-700">
+                Selected categories:
+                <strong id="selectedCategoryCount" class="text-[#8B2452]">0</strong>
+            </p>
+            <p class="text-sm text-gray-700 mt-1">
+                Selected subcategories:
+                <strong id="selectedSubcategoryCount" class="text-[#8B2452]">0</strong>
+            </p>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const groups = document.querySelectorAll('.category-group');
+
+    function updateSelection() {
+        let categoryCount = 0;
+        let subcategoryCount = 0;
+
+        groups.forEach(function (group) {
+            const parent = group.querySelector('.parent-category-checkbox');
+            const panel = group.querySelector('.subcategory-panel');
+            const children = group.querySelectorAll('.subcategory-checkbox');
+
+            if (parent.checked) {
+                categoryCount++;
+                panel?.classList.remove('hidden');
+            } else {
+                panel?.classList.add('hidden');
+
+                // Unselect child categories when the parent is unchecked.
+                children.forEach(function (child) {
+                    child.checked = false;
+                });
+            }
+
+            children.forEach(function (child) {
+                if (child.checked) subcategoryCount++;
+            });
+        });
+
+        document.getElementById('selectedCategoryCount').textContent = categoryCount;
+        document.getElementById('selectedSubcategoryCount').textContent = subcategoryCount;
+    }
+
+    groups.forEach(function (group) {
+        const parent = group.querySelector('.parent-category-checkbox');
+
+        parent.addEventListener('change', updateSelection);
+        group.querySelectorAll('.subcategory-checkbox').forEach(function (child) {
+            child.addEventListener('change', function () {
+                if (child.checked && !parent.checked) {
+                    parent.checked = true;
+                }
+                updateSelection();
+            });
+        });
+    });
+
+    updateSelection();
+});
+</script>

@@ -4,16 +4,18 @@ namespace App\Http\Controllers\Api\Users;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
-use Throwable;
 use App\Models\Platform;
 use App\Transformers\ProductListTransformer;
-
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class CategoryController extends Controller
 {
+    /**
+     * Get all active, public parent categories and their children.
+     */
     public function index(): JsonResponse
     {
         try {
@@ -22,52 +24,54 @@ class CategoryController extends Controller
                 ->where('visibility', 'public')
                 ->where('status', 'active')
                 ->with([
-                    'children' => function ($q) {
-                        $q->where('visibility', 'public')
-                          ->where('status', 'active')
-                          ->orderBy('sort_order');
-                    }
+                    'children' => function ($query) {
+                        $query->where('visibility', 'public')
+                            ->where('status', 'active')
+                            ->orderBy('sort_order');
+                    },
                 ])
                 ->orderBy('sort_order')
                 ->get();
 
             return response()->json([
                 'success' => true,
-                'data' => $categories->map(fn ($cat) => [
-                    'id' => $cat->id,
-                    'name' => $cat->name,
-                    'slug' => $cat->slug,
-                    'image_url' => $cat->image_url,
-                    'created_at' => $cat->created_at,
-                    'updated_at' => $cat->updated_at,
-                    'children' => $cat->children->map(fn ($child) => [
+                'data' => $categories->map(fn ($category) => [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'slug' => $category->slug,
+                    'image_url' => $category->image_url,
+                    'created_at' => $category->created_at,
+                    'updated_at' => $category->updated_at,
+                    'children' => $category->children->map(fn ($child) => [
                         'id' => $child->id,
                         'name' => $child->name,
                         'slug' => $child->slug,
                         'image_url' => $child->image_url,
                         'created_at' => $child->created_at,
                         'updated_at' => $child->updated_at,
-                    ]),
-                ]),
+                    ])->values(),
+                ])->values(),
             ]);
-
         } catch (Throwable $e) {
-
             Log::error('Category List API Error', [
                 'message' => $e->getMessage(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Unable to fetch categories'
+                'message' => 'Unable to fetch categories',
             ], 500);
         }
     }
+
+    /**
+     * Get one active, public category.
+     */
     public function show(int $category_id): JsonResponse
     {
         try {
             $category = Category::query()
-                ->where('id', $category_id)
+                ->whereKey($category_id)
                 ->where('visibility', 'public')
                 ->where('status', 'active')
                 ->firstOrFail();
@@ -83,9 +87,7 @@ class CategoryController extends Controller
                     'updated_at' => $category->updated_at,
                 ],
             ]);
-
         } catch (Throwable $e) {
-
             Log::error('Category Detail API Error', [
                 'message' => $e->getMessage(),
                 'category_id' => $category_id,
@@ -97,51 +99,109 @@ class CategoryController extends Controller
             ], 404);
         }
     }
+
+    /**
+     * Get products assigned to a category through category_product.
+     */
     public function products(Category $category): JsonResponse
     {
-        $platform = Platform::getOwnWebsite();
+        try {
+            // Do not expose inactive or private categories.
+            if (
+                $category->visibility !== 'public' ||
+                $category->status !== 'active'
+            ) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Category not found',
+                ], 404);
+            }
 
-     $products = $category->products()
+            $platform = Platform::getOwnWebsite();
 
-    ->leftJoin('product_clicks', 'products.id', '=', 'product_clicks.product_id')
+            if (! $platform) {
+                Log::error('Category Products API: Website platform not found');
 
-    ->whereHas('platformListings', fn ($q) =>
-        $q->where('platform_id', $platform->id)->userVisible()
-    )
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Website platform is not configured',
+                ], 500);
+            }
 
-    ->with([
-        'category:id,name',
+            // Aggregate clicks first so multiple click rows cannot duplicate products.
+            $clickCounts = DB::table('product_clicks')
+                ->select('product_id')
+                ->selectRaw('SUM(click_count) as click_count')
+                ->groupBy('product_id');
 
-        'variants.platformPricings' => fn ($q) =>
-            $q->where('status', 'active'),
-    ])
+            $products = $category->products()
+                ->leftJoinSub(
+                    $clickCounts,
+                    'product_clicks_summary',
+                    function ($join) {
+                        $join->on(
+                            'products.id',
+                            '=',
+                            'product_clicks_summary.product_id'
+                        );
+                    }
+                )
+                ->whereHas('platformListings', function ($query) use ($platform) {
+                    $query->where('platform_id', $platform->id)
+                        ->userVisible();
+                })
+                ->with([
+                    // Keep the legacy primary category relationship available.
+                    'category:id,name',
 
-    ->select(
-        'products.*',
-        DB::raw('COALESCE(product_clicks.click_count,0) as click_count')
-    )
+                    // Include all categories assigned through the pivot.
+                    'categories:id,name,slug',
 
-    // Agar Similar Styles ko sabse zyada viewed products dikhane hain
-    ->orderByDesc('click_count')
+                    'variants.platformPricings' => function ($query) {
+                        $query->where('status', 'active');
+                    },
+                ])
+                ->select(
+                    'products.*',
+                    DB::raw(
+                        'COALESCE(product_clicks_summary.click_count, 0) as click_count'
+                    )
+                )
+                ->orderByDesc('click_count')
+                ->paginate(12);
 
-    ->paginate(12);
-
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'category' => [
-                    'id' => $category->id,
-                    'name' => $category->name,
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'category' => [
+                        'id' => $category->id,
+                        'name' => $category->name,
+                        'slug' => $category->slug,
+                        'image_url' => $category->image_url,
+                    ],
+                    'products' => $products->getCollection()
+                        ->map(fn ($product) =>
+                            ProductListTransformer::transform($product)
+                        )
+                        ->values(),
+                    'pagination' => [
+                        'current_page' => $products->currentPage(),
+                        'last_page' => $products->lastPage(),
+                        'per_page' => $products->perPage(),
+                        'total' => $products->total(),
+                    ],
                 ],
-                'products' => $products->getCollection()
-                    ->map(fn ($p) => ProductListTransformer::transform($p)),
-                'pagination' => [
-                    'current_page' => $products->currentPage(),
-                    'total' => $products->total(),
-                ],
-            ],
-        ]);
+            ]);
+        } catch (Throwable $e) {
+            Log::error('Category Products API Error', [
+                'message' => $e->getMessage(),
+                'category_id' => $category->id ?? null,
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Unable to fetch category products',
+            ], 500);
+        }
     }
-
-
 }
