@@ -46,8 +46,14 @@ class ProductDetailTransformer
                 'name' => $product->category?->name,
             ],
 
-            'stock' => $listing?->platform_stock ?? 0,
-            'in_stock' => ($listing?->platform_stock ?? 0) > 0,
+            
+            'stock' => (int) $product->variants->sum(
+                fn ($variant) => (int) ($variant->quantity ?? 0)
+            ),
+            'in_stock' => $product->variants->contains(
+                fn ($variant) => (int) ($variant->quantity ?? 0) > 0
+            ),
+
 
             'variants' => $product->variants->map(function ($variant) use ($product, $websitePlatform) {
 
@@ -72,7 +78,7 @@ class ProductDetailTransformer
                     'price' => $pricing?->price,
                     'final_price' => $pricing?->final_price,
                     'currency' => $pricing?->currency ?? 'INR',
-                    'quantity' => $pricing?->quantity ?? 0,
+                    'quantity' => (int) ($variant->quantity ?? 0),
 
                     // ✅ PO Data
                     'po_quantity' => $variant->po_quantity ?? 0,
@@ -84,7 +90,7 @@ class ProductDetailTransformer
                         ? S3Helper::url($variant->image_url)
                         : null,
 
-                    'in_stock' => ($pricing?->quantity ?? 0) > 0,
+                    'in_stock' => (int) ($variant->quantity ?? 0) > 0,
 
                     'discount' => $pricing ? [
                         'type' => $pricing->discount_type,

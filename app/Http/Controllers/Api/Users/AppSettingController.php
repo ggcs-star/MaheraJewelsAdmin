@@ -3,59 +3,49 @@
 namespace App\Http\Controllers\Api\Users;
 
 use App\Http\Controllers\Controller;
-use App\Models\AppSetting;
+use App\Services\AppSettingService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class AppSettingController extends Controller
 {
+    use ApiResponse;
+
+    public function __construct(
+        private readonly AppSettingService $appSettingService
+    ) {
+    }
+
     public function index(): JsonResponse
     {
         try {
-
-            $setting = Cache::remember(
-                'app_settings',
-                3600,
-                function () {
-                    return AppSetting::query()
-                        ->where('is_active', true)
-                        ->latest()
-                        ->first();
-                }
-            );
+            $setting = $this->appSettingService->getActiveSetting();
 
             if (!$setting) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'App settings not found'
-                ], 404);
+                return $this->errorResponse(
+                    'App settings not found',
+                    404
+                );
             }
 
-            return response()->json([
-                'success' => true,
-                'data' => [
+            return $this->successResponse(
+                'App settings fetched successfully',
+                [
                     'app_name' => $setting->app_name,
-
                     'app_logo' => $setting->app_logo_url,
                     'splash_logo' => $setting->splash_logo_url,
                     'header_logo' => $setting->header_logo_url,
-
                     'is_active' => $setting->is_active,
                 ]
-            ]);
-
-        } catch (Throwable $e) {
-
+            );
+        } catch (Throwable $exception) {
             Log::error('App Setting API Error', [
-                'message' => $e->getMessage(),
+                'exception' => $exception,
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Unable to fetch app settings'
-            ], 500);
+            return $this->errorResponse();
         }
     }
 }

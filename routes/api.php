@@ -18,6 +18,7 @@
     use App\Http\Controllers\Api\Users\OrganizationController;
     use App\Http\Controllers\Api\CommentController;
     use App\Http\Controllers\InstagramController;
+     use App\Http\Controllers\Api\Users\WishlistController;
     use App\Http\Controllers\Api\Users\PageImpressionController;
 
 
@@ -157,6 +158,10 @@
         Route::get('/categories/order', [UserCategoryController::class,'index']);
 
         Route::post('/categories/order', [UserCategoryController::class,'save']);
+         Route::get('/wishlist', [WishlistController::class, 'index']);
+        Route::post('/wishlist', [WishlistController::class, 'store']);
+        Route::delete('/wishlist/{productId}', [WishlistController::class, 'destroy']);
+
     });
 
 

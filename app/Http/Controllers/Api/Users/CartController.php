@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 
 class CartController extends Controller
@@ -252,8 +253,12 @@ class CartController extends Controller
             abort(422, 'Pricing configuration missing for this product');
         }
 
-        if ($pricing->quantity < $qty) {
-            abort(422, 'Requested quantity not available');
+        if ((int) $pricing->quantity <= 0) {
+            abort(422, 'Out of stock');
+        }
+
+        if ((int) $pricing->quantity < $qty) {
+            abort(422, "Only {$pricing->quantity} items available in stock");
         }
 
         return $pricing;
@@ -305,12 +310,12 @@ class CartController extends Controller
 
     private function errorResponse(string $context, Throwable $e): JsonResponse
     {
+        $status = $e instanceof HttpExceptionInterface ? $e->getStatusCode() : 500;
+
         return response()->json([
             'success' => false,
-            'error' => $e->getMessage(),
-            'file' => $e->getFile(),
-            'line' => $e->getLine(),
-        ], 500);
+            'error' => $e instanceof HttpExceptionInterface ? $e->getMessage() : 'Something went wrong',
+        ], $status);
     }
 
 
