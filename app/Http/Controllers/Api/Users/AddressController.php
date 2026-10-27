@@ -4,163 +4,185 @@ namespace App\Http\Controllers\Api\Users;
 
 use App\Http\Controllers\Controller;
 use App\Models\UserAddress;
+use App\Services\AddressService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class AddressController extends Controller
 {
+    use ApiResponse;
+
+    public function __construct(
+        private readonly AddressService $addressService
+    ) {
+    }
 
     public function index(): JsonResponse
     {
         try {
             $user = auth()->user();
 
-            $addresses = UserAddress::where('user_id', $user->id)
-                ->orderByDesc('is_default')
-                ->latest()
-                ->get()
-                ->map(fn($address) => $this->formatAddress($address));
+            $addresses = $this->addressService
+                ->getAddresses($user->id);
 
-            return response()->json([
-                'success' => true,
-                'data' => [
+            return $this->successResponse(
+                'Addresses fetched successfully',
+                [
                     'addresses' => $addresses,
                     'total' => $addresses->count(),
                 ]
-            ]);
-        } catch (Throwable $e) {
-            $this->logError('Get Address', $e);
-            return $this->errorResponse('Unable to fetch addresses');
+            );
+        } catch (Throwable $exception) {
+            $this->logError('Get Address', $exception);
+
+            return $this->errorResponse();
         }
     }
-
 
     public function store(Request $request): JsonResponse
     {
         $data = $this->validateAddress($request);
 
         try {
-            DB::beginTransaction();
+            $address = $this->addressService->createAddress(
+                $request->user()->id,
+                $data
+            );
 
-            $user = $request->user();
+            return $this->successResponse(
+                'Address added successfully',
+                [
+                    'address' => $this->addressService
+                        ->formatAddress($address),
+                ],
+                201
+            );
+        } catch (Throwable $exception) {
+            $this->logError(
+                'Add Address',
+                $exception,
+                $request->user()?->id
+            );
 
-            if ($data['is_default']) {
-                $this->unsetDefaultAddress($user->id, $data['type']);
-            }
-
-            $address = UserAddress::create([
-                'user_id' => $user->id,
-                ...$data
-            ]);
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Address added successfully',
-                'data' => [
-                    'address' => $this->formatAddress($address)
-                ]
-            ], 201);
-
-        } catch (Throwable $e) {
-            DB::rollBack();
-            $this->logError('Add Address', $e, $request->user()?->id);
-            return $this->errorResponse('Unable to add address');
+            return $this->errorResponse();
         }
     }
+
     public function show(int $addressId): JsonResponse
     {
         try {
-            $user = auth()->user();
+            $address = $this->addressService->getAddress(
+                $addressId,
+                auth()->user()->id
+            );
 
-            $address = $this->findUserAddress($addressId, $user->id);
+            return $this->successResponse(
+                'Address fetched successfully',
+                $this->addressService->formatAddress($address)
+            );
+        } catch (Throwable $exception) {
+            $this->logError(
+                'Get Address',
+                $exception,
+                auth()->id(),
+                $addressId
+            );
 
-            return response()->json([
-                'success' => true,
-                'data' => $this->formatAddress($address)
-            ]);
-
-        } catch (Throwable $e) {
-            $this->logError('Get Address', $e, auth()->id(), $addressId);
-
-            return $this->errorResponse('Unable to fetch address');
+            return $this->errorResponse();
         }
     }
 
-    public function update(Request $request, int $addressId): JsonResponse
-    {
+    public function update(
+        Request $request,
+        int $addressId
+    ): JsonResponse {
         $data = $this->validateAddress($request);
 
         try {
-            DB::beginTransaction();
+            $address = $this->addressService->updateAddress(
+                $addressId,
+                $request->user()->id,
+                $data
+            );
 
-            $user = $request->user();
-            $address = $this->findUserAddress($addressId, $user->id);
-
-            if ($data['is_default']) {
-                $this->unsetDefaultAddress($user->id, $data['type'], $address->id);
-            }
-
-            $address->update($data);
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Address updated successfully',
-                'data' => [
-                    'address' => $this->formatAddress($address)
+            return $this->successResponse(
+                'Address updated successfully',
+                [
+                    'address' => $this->addressService
+                        ->formatAddress($address),
                 ]
-            ]);
+            );
+        } catch (Throwable $exception) {
+            $this->logError(
+                'Update Address',
+                $exception,
+                $request->user()?->id,
+                $addressId
+            );
 
-        } catch (Throwable $e) {
-            DB::rollBack();
-            $this->logError('Update Address', $e, $request->user()?->id, $addressId);
-            return $this->errorResponse('Unable to update address');
+            return $this->errorResponse();
         }
     }
-
 
     public function destroy(int $addressId): JsonResponse
     {
         try {
-            DB::beginTransaction();
+            $this->addressService->deleteAddress(
+                $addressId,
+                auth()->user()->id
+            );
 
-            $user = auth()->user();
-            $address = $this->findUserAddress($addressId, $user->id);
+            return $this->successResponse(
+                'Address deleted successfully'
+            );
+        } catch (Throwable $exception) {
+            $this->logError(
+                'Delete Address',
+                $exception,
+                auth()->id(),
+                $addressId
+            );
 
-            $wasDefault = $address->is_default;
-            $type = $address->type;
-
-            $address->delete();
-
-            if ($wasDefault) {
-                UserAddress::where('user_id', $user->id)
-                    ->where('type', $type)
-                    ->orderBy('id')
-                    ->limit(1)
-                    ->update(['is_default' => true]);
-            }
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Address deleted successfully'
-            ]);
-
-        } catch (Throwable $e) {
-            DB::rollBack();
-            $this->logError('Delete Address', $e, auth()->id(), $addressId);
-            return $this->errorResponse('Unable to delete address');
+            return $this->errorResponse();
         }
     }
 
+    public function setDefault($addressId): JsonResponse
+    {
+        try {
+            $address = $this->addressService->setDefaultAddress(
+                (int) $addressId,
+                auth()->user()->id
+            );
 
+            if (!$address) {
+                return $this->errorResponse(
+                    'Address not found',
+                    404
+                );
+            }
+
+            return $this->successResponse(
+                'Default address updated successfully',
+                [
+                    'address' => $this->addressService
+                        ->formatAddress($address),
+                ]
+            );
+        } catch (Throwable $exception) {
+            $this->logError(
+                'Set Default Address',
+                $exception,
+                auth()->id(),
+                $addressId
+            );
+
+            return $this->errorResponse();
+        }
+    }
 
     private function validateAddress(Request $request): array
     {
@@ -178,107 +200,16 @@ class AddressController extends Controller
         ]);
     }
 
-    private function findUserAddress(int $addressId, int $userId): UserAddress
-    {
-        $address = UserAddress::where('id', $addressId)
-            ->where('user_id', $userId)
-            ->first();
-
-        if (!$address) {
-            abort(response()->json([
-                'success' => false,
-                'message' => 'Address not found'
-            ], 404));
-        }
-
-        return $address;
-    }
-
-    private function unsetDefaultAddress(int $userId, string $type, ?int $exceptId = null): void
-    {
-        UserAddress::where('user_id', $userId)
-            ->where('type', $type)
-            ->when($exceptId, fn($q) => $q->where('id', '!=', $exceptId))
-            ->update(['is_default' => false]);
-    }
-
-    private function formatAddress(UserAddress $address): array
-    {
-        return [
-            'id' => $address->id,
-            'type' => $address->type,
-            'full_name' => $address->full_name,
-            'phone' => $address->phone,
-            'address_line_1' => $address->address_line_1,
-            'address_line_2' => $address->address_line_2,
-            'city' => $address->city,
-            'state' => $address->state,
-            'postal_code' => $address->postal_code,
-            'country' => $address->country,
-            'is_default' => $address->is_default,
-        ];
-    }
-
-    private function logError(string $context, Throwable $e, $userId = null, $addressId = null): void
-    {
+    private function logError(
+        string $context,
+        Throwable $exception,
+        $userId = null,
+        $addressId = null
+    ): void {
         Log::error("{$context} API Error", [
-            'message' => $e->getMessage(),
+            'exception' => $exception,
             'user_id' => $userId,
             'address_id' => $addressId,
         ]);
-    }
-
-    private function errorResponse(string $message): JsonResponse
-    {
-        return response()->json([
-            'success' => false,
-            'message' => $message
-        ], 500);
-    }
-    public function setDefault($addressId): JsonResponse
-    {
-        try {
-            DB::beginTransaction();
-
-            $user = auth()->user();
-            $address = UserAddress::where('id', $addressId)
-                ->where('user_id', $user->id)
-                ->first();
-
-            if (!$address) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Address not found'
-                ], 404);
-            }
-
-            UserAddress::where('user_id', $user->id)
-                ->where('type', $address->type)
-                ->update(['is_default' => false]);
-
-            $address->update(['is_default' => true]);
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Default address updated successfully',
-                'data' => [
-                    'address' => $this->formatAddress($address)
-                ]
-            ]);
-
-        } catch (Throwable $e) {
-            DB::rollBack();
-            Log::error('Set Default Address Error', [
-                'message' => $e->getMessage(),
-                'user_id' => auth()->id(),
-                'address_id' => $addressId
-            ]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Unable to set default address'
-            ], 500);
-        }
     }
 }

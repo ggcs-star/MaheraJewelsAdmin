@@ -330,13 +330,18 @@
             <td style="padding: 12px 14px; text-align: center;">
                 <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
                     @if($isAmazon)
-                        <a href="{{ route('admin.orders.show', $order->id) }}" style="background: transparent; border: none; color: #f59e0b; font-size: 0.9rem;" title="View Amazon Order">
+                        <a href="{{ route('admin.orders.show', [
+    'id' => $order->id,
+    'source' => 'amazon',
+    'back' => url()->full()
+]) }}" style="background: transparent; border: none; color: #f59e0b; font-size: 0.9rem;" title="View Amazon Order">
                             <i class="fas fa-eye"></i>
                         </a>
                         <span style="font-size: 0.55rem; color: #7c9eb2; font-style: italic;">Read-only</span>
                     @else
                         <a href="{{ route('admin.orders.show', [
                             'id' => $order->id,
+                            'source' => 'website',
                             'back' => url()->full()
                         ]) }}"
                         style="background: transparent; border: none; color: #f59e0b; font-size: 0.9rem;"

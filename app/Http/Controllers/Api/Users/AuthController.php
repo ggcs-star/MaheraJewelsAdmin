@@ -14,12 +14,14 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 use App\Services\ActivityLogService;
+use App\Traits\ApiResponse;
 
 use Illuminate\Support\Facades\Http;
 use UAParser\Parser;
+
 class AuthController extends Controller
 {
-
+use ApiResponse;
 
     private function normalizeEmail(string $email): string
     {
@@ -82,18 +84,18 @@ class AuthController extends Controller
 
             DB::commit();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Registration successful. OTP has been sent to your email.',
-                'data' => [
+            return $this->successResponse(
+                'Registration successful. OTP has been sent to your email.',
+                [
                     'user' => [
                         'id' => $user->id,
                         'name' => $user->name,
                         'email' => $user->email,
                     ],
-                    'otp_sent_to' => $email
-                ]
-            ], 201);
+                    'otp_sent_to' => $email,
+                ],
+                201
+            );
 
         } catch (Throwable $e) {
 
@@ -104,10 +106,7 @@ class AuthController extends Controller
                 'email' => $data['email'] ?? null,
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Registration failed. Please try again later.'
-            ], 500);
+            return $this->errorResponse('Something went wrong', 500);
         }
     }
 
@@ -126,10 +125,7 @@ class AuthController extends Controller
             $otp = $otpService->verify($email, $data['otp'], 'email_verification');
 
             if (!$otp) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid or expired OTP'
-                ], 422);
+                return $this->errorResponse('Invalid or expired OTP', 422);
             }
 
             DB::beginTransaction();
@@ -137,10 +133,7 @@ class AuthController extends Controller
             $user = User::where('email', $email)->first();
 
             if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User not found'
-                ], 404);
+                return $this->errorResponse('User not found', 404);
             }
 
             if (!$user->email_verified_at) {
@@ -153,14 +146,13 @@ class AuthController extends Controller
 
             DB::commit();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Email verified successfully',
-                'data' => [
+            return $this->successResponse(
+                'Email verified successfully',
+                [
                     'email_verified' => true,
                     'email_verified_at' => $user->email_verified_at,
                 ]
-            ]);
+            );
 
         } catch (Throwable $e) {
 
@@ -171,10 +163,7 @@ class AuthController extends Controller
                 'email' => $data['email'],
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'OTP verification failed. Please try again.'
-            ], 500);
+            return $this->errorResponse('Something went wrong', 500);
         }
     }
 
@@ -192,31 +181,25 @@ class AuthController extends Controller
         $user = User::where('email', $email)->first();
 
         if (!$user) {
-            return response()->json([
-                'status' => false,
-                'message' => 'You are not registered'
-            ], 404);
+            return $this->errorResponse('You are not registered', 404);
         }
 
         if (!Auth::attempt(['email' => $email, 'password' => $request->password])) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Invalid email or password'
-            ], 401);
+            return $this->errorResponse('Invalid email or password', 401);
         }
 
         if (!$user->email_verified_at) {
 
             $this->sendEmailOtp($email, $otpService);
 
-            return response()->json([
-                'status' => false,
-                'message' => 'Please verify your email. OTP has been sent again.',
-                'data' => [
+            return $this->errorResponse(
+                'Please verify your email. OTP has been sent again.',
+                403,
+                [
                     'email' => $email,
-                    'otp_sent' => true
+                    'otp_sent' => true,
                 ]
-            ], 403);
+            );
         }
 $parser = Parser::create();
 
@@ -249,17 +232,18 @@ $user->update([
     'login'
 );
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Login successful',
-            'token' => $token,
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'email_verified_at' => $user->email_verified_at,
+        return $this->successResponse(
+            'Login successful',
+            [
+                'token' => $token,
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'email_verified_at' => $user->email_verified_at,
+                ],
             ]
-        ]);
+        );
     }
 public function verifyResetOtp(Request $request, OtpService $otpService)
 {
@@ -275,16 +259,10 @@ public function verifyResetOtp(Request $request, OtpService $otpService)
         $otp = $otpService->verify($email, $data['otp'], 'password_reset');
 
         if (!$otp) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid or expired OTP'
-            ], 422);
+            return $this->errorResponse('Invalid or expired OTP', 422);
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'OTP verified successfully'
-        ]);
+        return $this->successResponse('OTP verified successfully');
 
     } catch (Throwable $e) {
 
@@ -293,10 +271,7 @@ public function verifyResetOtp(Request $request, OtpService $otpService)
             'email' => $data['email'],
         ]);
 
-        return response()->json([
-            'success' => false,
-            'message' => 'OTP verification failed'
-        ], 500);
+        return $this->errorResponse('Something went wrong', 500);
     }
 }
 public function resetPassword(Request $request, OtpService $otpService)
@@ -322,10 +297,7 @@ public function resetPassword(Request $request, OtpService $otpService)
         $otp = $otpService->verify($email, $data['otp'], 'password_reset');
 
         if (!$otp) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid or expired OTP'
-            ], 422);
+            return $this->errorResponse('Invalid or expired OTP', 422);
         }
 
         DB::beginTransaction();
@@ -333,10 +305,7 @@ public function resetPassword(Request $request, OtpService $otpService)
         $user = User::where('email', $email)->first();
 
         if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'User not found'
-            ], 404);
+            return $this->errorResponse('User not found', 404);
         }
 
         $user->update([
@@ -351,10 +320,7 @@ $user->tokens()->where('name', 'user-token')->delete();
 
         DB::commit();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Password reset successfully'
-        ]);
+        return $this->successResponse('Password reset successfully');
 
     } catch (Throwable $e) {
 
@@ -365,10 +331,7 @@ $user->tokens()->where('name', 'user-token')->delete();
             'email' => $data['email'],
         ]);
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Password reset failed. Try again.'
-        ], 500);
+        return $this->errorResponse('Something went wrong', 500);
     }
 }
 
@@ -384,31 +347,24 @@ $user->tokens()->where('name', 'user-token')->delete();
             $user = User::where('email', $email)->first();
 
             if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'User not found'
-                ], 404);
+                return $this->errorResponse('User not found', 404);
             }
 
             if ($user->email_verified_at) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Email is already verified'
-                ], 422);
+                return $this->errorResponse('Email is already verified', 422);
             }
 
             $otp = $otpService->generate($email, 'email_verification');
 
             Mail::to($email)->send(new OtpMail($otp->code));
 
-            return response()->json([
-                'success' => true,
-                'message' => 'OTP has been resent successfully',
-                'data' => [
+            return $this->successResponse(
+                'OTP has been resent successfully',
+                [
                     'email' => $email,
-                    'expires_in' => 600
+                    'expires_in' => 600,
                 ]
-            ]);
+            );
 
         } catch (Throwable $e) {
 
@@ -417,10 +373,7 @@ $user->tokens()->where('name', 'user-token')->delete();
                 'email' => $data['email'] ?? null,
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Unable to resend OTP. Please try again later.'
-            ], 500);
+            return $this->errorResponse('Something went wrong', 500);
         }
     }
 
@@ -447,13 +400,10 @@ if ($user) {
     $this->sendResetOtp($email, $otpService);
 }
 
-return response()->json([
-    'success' => true,
-    'message' => 'If the email exists, a reset OTP has been sent.',
-    'data' => [
-        'expires_in' => 600
-    ]
-]);
+return $this->successResponse(
+    'If the email exists, a reset OTP has been sent.',
+    ['expires_in' => 600]
+);
     
 
     } catch (Throwable $e) {
@@ -463,10 +413,7 @@ return response()->json([
             'email' => $data['email'] ?? null,
         ]);
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Unable to process request. Try again later.'
-        ], 500);
+        return $this->errorResponse('Something went wrong', 500);
     }
 }
 
@@ -474,9 +421,6 @@ return response()->json([
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Logged out successfully'
-        ]);
+        return $this->successResponse('Logged out successfully');
     }
 }

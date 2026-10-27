@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Api\Users;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\PageImpression;
+use App\Traits\ApiResponseTrait;
 
 class PageImpressionController extends Controller
 {
+    use ApiResponseTrait;
+
     public function store(Request $request)
     {
         $request->validate([
@@ -25,10 +28,12 @@ class PageImpressionController extends Controller
 
         $page->increment('impression_count');
 
-        return response()->json([
-            'success' => true,
-            'page_name' => $page->page_name,
-            'impression_count' => $page->fresh()->impression_count
-        ]);
+        return $this->successResponse(
+            'Page impression recorded successfully.',
+            [
+                'page_name' => $page->page_name,
+                'impression_count' => $page->fresh()->impression_count
+            ]
+        );
     }
 }

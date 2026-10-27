@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Users;
 
 use App\Http\Controllers\Controller;
+use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -10,16 +11,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Helpers\S3Helper;
+
 class ProfileController extends Controller
 {
+    use ApiResponse;
+
     public function show(): JsonResponse
     {
         try {
             $user = auth()->user();
 
-            return response()->json([
-                'success' => true,
-                'data' => [
+            return $this->successResponse(
+                'Profile fetched successfully',
+                [
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
@@ -27,7 +31,7 @@ class ProfileController extends Controller
                     'profile_image' => $user->profile_image,
                     'created_at' => $user->created_at?->toISOString(),
                 ]
-            ]);
+            );
 
         } catch (Throwable $e) {
 
@@ -36,10 +40,7 @@ class ProfileController extends Controller
                 'user_id' => auth()->id(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Unable to fetch profile details'
-            ], 500);
+            return $this->errorResponse('Something went wrong', 500);
         }
     }
 
@@ -78,10 +79,9 @@ class ProfileController extends Controller
             $user->update($updateData);
             $user->refresh();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Profile updated successfully',
-                'data' => [
+            return $this->successResponse(
+                'Profile updated successfully',
+                [
                     'id'            => $user->id,
                     'name'          => $user->name,
                     'email'         => $user->email,
@@ -90,7 +90,7 @@ class ProfileController extends Controller
                     'profile_image' => $user->profile_image,
                     'created_at'    => $user->created_at?->toISOString(),
                 ]
-            ]);
+            );
 
         } catch (Throwable $e) {
 
@@ -99,13 +99,10 @@ class ProfileController extends Controller
                 'user_id' => auth()->id(),
             ]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Unable to update profile'
-            ], 500);
+            return $this->errorResponse('Something went wrong', 500);
         }
     }
-    
+
     private function handleAvatar($file, $user): string
     {
         Log::info('Handling avatar upload', [
@@ -128,13 +125,13 @@ class ProfileController extends Controller
         $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
 
         try {
-        $uploaded = S3Helper::storeAs(
+            $uploaded = S3Helper::storeAs(
                 $file,
                 $path,
                 $fileName
             );
-            
-                if (!$uploaded) {
+
+            if (!$uploaded) {
                 $uploaded = S3Helper::storeAs(
                     $file,
                     $path,
@@ -154,18 +151,18 @@ class ProfileController extends Controller
                     ]
                 );
             }
-            
+
             if (!$uploaded) {
                 throw new \Exception('S3 upload failed - no path returned');
             }
 
             $url = S3Helper::url($uploaded);
-            
+
             Log::info('S3 upload success', [
                 'path' => $uploaded,
                 'url' => $url
             ]);
-            
+
             return $uploaded;
 
         } catch (\Exception $e) {
@@ -177,41 +174,37 @@ class ProfileController extends Controller
             throw $e;
         }
     }
+
     public function removeImage(): JsonResponse
     {
         try {
             $user = auth()->user();
-            
+
             if ($user->profile_image) {
                 S3Helper::delete($user->profile_image);
-                
+
                 $user->profile_image = null;
                 $user->save();
             }
-            
-            return response()->json([
-                'success' => true,
-                'message' => 'Profile image removed successfully',
-                'data' => [
+
+            return $this->successResponse(
+                'Profile image removed successfully',
+                [
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
                     'mobile' => $user->mobile,
                     'profile_image' => null
                 ]
-            ]);
-            
+            );
+
         } catch (Throwable $e) {
             Log::error('Remove profile image error', [
                 'message' => $e->getMessage(),
                 'user_id' => auth()->id()
             ]);
-            
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to remove image'
-            ], 500);
+
+            return $this->errorResponse('Something went wrong', 500);
         }
     }
-
 }

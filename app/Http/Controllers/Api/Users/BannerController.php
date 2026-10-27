@@ -3,159 +3,129 @@
 namespace App\Http\Controllers\Api\Users;
 
 use App\Http\Controllers\Controller;
-use App\Models\Banner;
+use App\Services\BannerService;
+use App\Traits\ApiResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class BannerController extends Controller
 {
-    public function index(Request $request)
+    use ApiResponse;
+
+    public function __construct(
+        private readonly BannerService $bannerService
+    ) {
+    }
+
+    public function index(Request $request): JsonResponse
     {
         try {
-            $query = Banner::where('status', 1)
-                ->where(function($q) {
-                    $q->whereNull('start_date')
-                      ->orWhere('start_date', '<=', now());
-                })
-                ->where(function($q) {
-                    $q->whereNull('end_date')
-                      ->orWhere('end_date', '>=', now());
-                });
+            $page = $request->has('page')
+                && in_array($request->input('page'), ['home', 'category', 'product'], true)
+                    ? $request->input('page')
+                    : null;
 
-            if ($request->has('page') && in_array($request->page, ['home', 'category', 'product'])) {
-                $query->where('page', $request->page);
-            }
+            $position = $request->has('position')
+                && in_array($request->input('position'), ['hero', 'mid', 'bottom'], true)
+                    ? $request->input('position')
+                    : null;
 
-            if ($request->has('position') && in_array($request->position, ['hero', 'mid', 'bottom'])) {
-                $query->where('position', $request->position);
-            }
+            $banners = $this->bannerService->getBanners(
+                $page,
+                $position
+            );
 
-            $banners = $query->orderBy('sort_order')->get();
+            return $this->successResponse(
+                'Banners retrieved successfully',
+                $banners
+            );
+        } catch (Throwable $exception) {
+            Log::error('Banner List API Error', [
+                'exception' => $exception,
+            ]);
 
-            return response()->json([
-                'success' => true,
-                'data' => $banners,
-                'message' => 'Banners retrieved successfully'
-            ], 200);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve banners',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->errorResponse();
         }
     }
 
-    public function show($id)
+    public function show($id): JsonResponse
     {
         try {
-            $banner = Banner::where('id', $id)
-                ->where('status', 1)
-                ->where(function($q) {
-                    $q->whereNull('start_date')
-                      ->orWhere('start_date', '<=', now());
-                })
-                ->where(function($q) {
-                    $q->whereNull('end_date')
-                      ->orWhere('end_date', '>=', now());
-                })
-                ->first();
+            $banner = $this->bannerService->findBanner($id);
 
             if (!$banner) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Banner not found'
-                ], 404);
+                return $this->errorResponse(
+                    'Banner not found',
+                    404
+                );
             }
 
-            return response()->json([
-                'success' => true,
-                'data' => $banner,
-                'message' => 'Banner retrieved successfully'
-            ], 200);
+            return $this->successResponse(
+                'Banner retrieved successfully',
+                $banner
+            );
+        } catch (Throwable $exception) {
+            Log::error('Banner Detail API Error', [
+                'exception' => $exception,
+                'banner_id' => $id,
+            ]);
 
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve banner',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->errorResponse();
         }
     }
 
-    public function getByPage($page)
+    public function getByPage($page): JsonResponse
     {
         try {
-            if (!in_array($page, ['home', 'category', 'product'])) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid page type'
-                ], 400);
+            if (!in_array($page, ['home', 'category', 'product'], true)) {
+                return $this->errorResponse(
+                    'Invalid page type',
+                    400
+                );
             }
 
-            $banners = Banner::where('status', 1)
-                ->where('page', $page)
-                ->where(function($q) {
-                    $q->whereNull('start_date')
-                      ->orWhere('start_date', '<=', now());
-                })
-                ->where(function($q) {
-                    $q->whereNull('end_date')
-                      ->orWhere('end_date', '>=', now());
-                })
-                ->orderBy('sort_order')
-                ->get();
+            $banners = $this->bannerService->getBannersByPage($page);
 
-            return response()->json([
-                'success' => true,
-                'data' => $banners,
-                'message' => "Banners for {$page} page retrieved successfully"
-            ], 200);
+            return $this->successResponse(
+                "Banners for {$page} page retrieved successfully",
+                $banners
+            );
+        } catch (Throwable $exception) {
+            Log::error('Banner Page API Error', [
+                'exception' => $exception,
+                'page' => $page,
+            ]);
 
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve banners',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->errorResponse();
         }
     }
 
-    public function getByPosition($position)
+    public function getByPosition($position): JsonResponse
     {
         try {
-            if (!in_array($position, ['hero', 'mid', 'bottom'])) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Invalid position type'
-                ], 400);
+            if (!in_array($position, ['hero', 'mid', 'bottom'], true)) {
+                return $this->errorResponse(
+                    'Invalid position type',
+                    400
+                );
             }
 
-            $banners = Banner::where('status', 1)
-                ->where('position', $position)
-                ->where(function($q) {
-                    $q->whereNull('start_date')
-                      ->orWhere('start_date', '<=', now());
-                })
-                ->where(function($q) {
-                    $q->whereNull('end_date')
-                      ->orWhere('end_date', '>=', now());
-                })
-                ->orderBy('sort_order')
-                ->get();
+            $banners = $this->bannerService
+                ->getBannersByPosition($position);
 
-            return response()->json([
-                'success' => true,
-                'data' => $banners,
-                'message' => "Banners for {$position} position retrieved successfully"
-            ], 200);
+            return $this->successResponse(
+                "Banners for {$position} position retrieved successfully",
+                $banners
+            );
+        } catch (Throwable $exception) {
+            Log::error('Banner Position API Error', [
+                'exception' => $exception,
+                'position' => $position,
+            ]);
 
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to retrieve banners',
-                'error' => $e->getMessage()
-            ], 500);
+            return $this->errorResponse();
         }
     }
 }
